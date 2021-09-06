@@ -57,20 +57,10 @@ namespace Spino {
 			void update(std::string search, const char* update);
 
 			std::string findOne(std::string s) const;
-			/*
-			void find(std::string s, std::vector<std::shared_ptr<rapidjson::Value>>& results, const bool onlyOne = false) const;
-			*/
 			shared_ptr<Cursor> find(std::string s) const;
 
 			void dropOne(std::string s);
 			void drop(std::string s, bool onlyOne = false);
-
-			/*
-			std::string to_string() const;
-			void to_ostream(ostream& out) const;
-			void from_string(std::string s);
-			void from_json(rapidjson::Value& j);
-			*/
 
 		private:
 			bool mergeObjects(ValueType& dstObject, ValueType& srcObject);

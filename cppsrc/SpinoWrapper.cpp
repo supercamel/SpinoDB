@@ -127,27 +127,6 @@ Napi::Value CollectionWrapper::find(const Napi::CallbackInfo& info) {
 		auto curwrapper = Napi::Persistent(CursorWrapper::Create(info.Env(), cur));
 		return curwrapper.Value();
 	}
-
-	/*
-	   std::vector<shared_ptr<rapidjson::Document>> results;
-	   try {
-	   collection->find(info[0].As<Napi::String>().Utf8Value(), results);
-	   } catch(Spino::parse_error& e) {
-	   Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
-	   }
-
-	   Napi::Array data = Napi::Array::New(env);
-	   for(uint32_t i = 0; i < results.size(); i++) {
-	   rapidjson::StringBuffer buffer;
-	   rapidjson::Writer<rapidjson::StringBuffer, rapidjson::Document::EncodingType, rapidjson::UTF8<>> writer(buffer);
-	   results[i]->Accept(writer);
-
-	   auto doc = Napi::String::New(env, buffer.GetString());
-	   data[i] = doc;
-	   }
-
-	   return data;
-	   */
 }
 
 Napi::Value CollectionWrapper::dropOne(const Napi::CallbackInfo& info) {

@@ -62,27 +62,6 @@ namespace Spino{
 		return cursor->next();
 	}
 
-	/*
-	void Collection::find(std::string s, std::vector<rapidjson::Value*>& results, const bool onlyOne) const {
-		Spino::QueryParser parser(s);
-		auto block = parser.parse_expression();
-
-		Spino::QueryExecutor exec;
-		auto& arr = doc[name.c_str()];
-		for (rapidjson::Value::ConstMemberIterator itr = arr.MemberBegin();
-				itr != arr.MemberEnd(); ++itr) {
-			exec.set_json(&(*itr));
-			if(exec.resolve(block)) {
-				results.push_back(&(*itr));
-				if(onlyOne) {
-					break;
-				}
-			}
-			itr++;
-		}
-	}
-	*/
-
 	shared_ptr<Cursor> Collection::find(std::string s) const {
 		return make_shared<Cursor>(doc[name.c_str()], s);
 	}
@@ -109,65 +88,6 @@ namespace Spino{
 			}
 		}
 	}
-
-	/*
-	std::string Collection::to_string() const {
-		std::string s;
-		s = "\"" + name + "\":[";
-
-		for(auto it = documents.begin(); it != documents.end(); ) {
-			auto d = *it;
-			rapidjson::StringBuffer buffer;
-			rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-			d->Accept(writer);
-
-			s += buffer.GetString();
-			it++;
-			if(it != documents.end()) {
-				s += ",";
-			}
-		}
-		s += "]";
-		return s;
-	}
-
-	void Collection::to_ostream(ostream& out) const {
-		out << "\"" + name + "\":[";
-		for(auto it = documents.begin(); it != documents.end(); ) {
-			rapidjson::OStreamWrapper osw(out);
-
-			rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
-			(*it)->Accept(writer);
-			it++;
-			if(it != documents.end()) {
-				out << ",";
-			}
-		}
-		out << "]";
-	}
-
-	void Collection::from_string(std::string s) {
-		rapidjson::Document j;
-		j.Parse(s.c_str());
-		from_json(j);
-	}
-
-	void Collection::from_json(rapidjson::Document& j) {
-		documents.clear();
-
-		rapidjson::Value& arr = j[name.c_str()];
-		if(arr.IsArray()) {
-			rapidjson::Value::ConstValueIterator itr = arr.Begin();
-			int count = 0;
-			while(itr != arr.End()) {
-				auto doc = std::make_shared<rapidjson::Value>();
-				documents.push_back(doc);
-				cout << count++ << endl;
-			}
-		}
-	}
-	*/
-
 
 	bool Collection::mergeObjects(ValueType& dstObject, ValueType& srcObject)
 	{
