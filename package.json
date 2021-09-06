@@ -1,28 +1,32 @@
 {
-  "name": "spinodb",
-  "version": "1.0.2",
-  "description": "SpinoDB is an in-memory NoSQL database that is fast and self-contained. It is a NodeJS addon written in C++ and is suitable for web and desktop applications with demanding performance requirements.",
-  "main": "./build/Release/spinodb.node",
-  "gypfile": true,
-  "dependencies": {
-    "node-gyp": "^8.2.0",
-    "node-addon-api": "^4.1.0"
-  },
-  "keywords": [
-	  "NoSQL",
-	  "database",
-	  "document-oriented",
-	  "in-memory",
-	  "cache",
-	  "datastore"
+	"name": "spinodb",
+	"version": "1.0.3",
+	"description": "SpinoDB is an in-memory NoSQL database that is fast and self-contained. It is a NodeJS addon written in C++ and is suitable for web and desktop applications with demanding performance requirements.",
+	"main": "./build/Release/spinodb.node",
+	"gypfile": true,
+	"dependencies": {
+		"node-addon-api": "^4.1.0",
+		"node-gyp": "^8.2.0"
+	},
+	"keywords": [
+		"NoSQL",
+		"database",
+		"document-oriented",
+		"in-memory",
+		"cache",
+		"datastore"
   ],
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node-gyp rebuild",
-    "clean": "node-gyp clean",
-    "install": "node-gyp rebuild"
+	  "test": "echo \"Error: no test specified\" && exit 1",
+	  "build": "node-gyp rebuild",
+	  "clean": "node-gyp clean",
+	  "install": "node-gyp rebuild"
   },
   "author": "Sam Cowen",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+	  "type": "git",
+	  "url": "https://github.com/supercamel/SpinoDB.git"
+  }
 }
