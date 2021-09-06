@@ -1,5 +1,7 @@
 # SpinoDB
 
+*work in progress*
+
 SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is NodeJS addon written in C++ and is intended to be used with NodeJS for both web applications and desktop applications that require either the performance of an in-memory database or the ease of distribution that comes with using a self-contained database. It may also be used as a fast cache to complement a traditional database.
 
 SpinoDB is designed for speed. It can parse a database file at ~100MB/s. A simple findOne() query on a collection of 10 million documents will typically return a result within 200m/s. Small collections will return results in microseconds.
