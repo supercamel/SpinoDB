@@ -410,14 +410,9 @@ namespace Spino {
 		}
 
 		stack_ptr = 0;
+		stack[0].boolean = false;
 		b->Accept(this);
-		auto& result = stack[--stack_ptr];
-		if(result.type == TYPE_BOOLEAN) {
-			if(result.boolean == true) {
-				return true;
-			}
-		}
-		return false;
+		return stack[0].boolean;
 	}
 
 }
