@@ -27,6 +27,7 @@ Napi::Object CollectionWrapper::Create(Napi::Env env, std::shared_ptr<Spino::Col
 			InstanceMethod("getName", &CollectionWrapper::get_name),
 			InstanceMethod("append", &CollectionWrapper::append),
 			InstanceMethod("update", &CollectionWrapper::update),
+			InstanceMethod("findOneById", &CollectionWrapper::findOneById),
 			InstanceMethod("findOne", &CollectionWrapper::findOne),
 			InstanceMethod("find", &CollectionWrapper::find),
 			InstanceMethod("dropOne", &CollectionWrapper::dropOne),
@@ -80,7 +81,7 @@ Napi::Value CollectionWrapper::update(const Napi::CallbackInfo& info) {
 
 	try {
 		collection->update(
-				info[0].As<Napi::String>().Utf8Value(),
+				info[0].As<Napi::String>().Utf8Value().c_str(),
 				info[1].As<Napi::String>().Utf8Value().c_str()
 				);
 	} catch(Spino::parse_error& e) {
@@ -88,6 +89,29 @@ Napi::Value CollectionWrapper::update(const Napi::CallbackInfo& info) {
 	}
 	return Napi::Value();
 }
+
+Napi::Value CollectionWrapper::findOneById(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	Napi::HandleScope scope(env);
+
+	if(info.Length() != 1 || !info[0].IsString()) {
+		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
+	}
+
+	std::string result;
+	try {
+		result = collection->findOneById(info[0].As<Napi::String>().Utf8Value().c_str());
+	} catch(Spino::parse_error& e) {
+		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
+	}
+	if(result.length() > 0) {
+		return Napi::String::New(env, result.c_str());	
+	} 
+	else {
+		return Napi::Value();
+	}
+}
+
 
 
 Napi::Value CollectionWrapper::findOne(const Napi::CallbackInfo& info) {
@@ -100,7 +124,7 @@ Napi::Value CollectionWrapper::findOne(const Napi::CallbackInfo& info) {
 
 	std::string result;
 	try {
-		result = collection->findOne(info[0].As<Napi::String>().Utf8Value());
+		result = collection->findOne(info[0].As<Napi::String>().Utf8Value().c_str());
 	} catch(Spino::parse_error& e) {
 		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
 	}
@@ -120,7 +144,7 @@ Napi::Value CollectionWrapper::find(const Napi::CallbackInfo& info) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
 	}
 
-	auto cur = collection->find(info[0].As<Napi::String>().Utf8Value());
+	auto cur = collection->find(info[0].As<Napi::String>().Utf8Value().c_str());
 	if(cur == nullptr) {
 		return Napi::Value();
 	} else {
@@ -138,7 +162,7 @@ Napi::Value CollectionWrapper::dropOne(const Napi::CallbackInfo& info) {
 	}
 
 	try {
-		collection->dropOne(info[0].As<Napi::String>().Utf8Value());
+		collection->dropOne(info[0].As<Napi::String>().Utf8Value().c_str());
 	} catch(Spino::parse_error& e) {
 		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
 	}
@@ -154,7 +178,7 @@ Napi::Value CollectionWrapper::drop(const Napi::CallbackInfo& info) {
 	}
 
 	try {
-		collection->drop(info[0].As<Napi::String>().Utf8Value());
+		collection->drop(info[0].As<Napi::String>().Utf8Value().c_str());
 	} catch(Spino::parse_error& e) {
 		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
 	}

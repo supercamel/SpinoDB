@@ -379,6 +379,31 @@ namespace Spino {
 		}
 	}
 
+	void QueryExecutor::Visit(BasicFieldComparison* b) {
+		Value& v = stack[stack_ptr++];
+		if(stack_ptr == stack.size()) {
+			stack.resize(stack.size() + 100);
+		}
+
+		v.boolean = false;
+
+		auto a = b->jp.Get(*doc);
+		if(a) {
+			if(a->IsNumber() && (b->v.type == TYPE_NUMERIC)) {
+				if(fabs(a->GetDouble()-b->v.numeric) < 0.000001) {
+					v.type = TYPE_BOOLEAN;
+					v.boolean = true;
+				}
+			}
+			else if(a->IsString() && (b->v.type == TYPE_STRING)) {
+				if(a->GetString() == b->v.str) {
+					v.type = TYPE_BOOLEAN;
+					v.boolean = true;
+				}
+			}
+		}
+	}
+
 	bool QueryExecutor::resolve(std::shared_ptr<QueryNode> b) {
 		if(b == nullptr) {
 			return true;

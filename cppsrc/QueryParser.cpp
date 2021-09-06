@@ -8,8 +8,9 @@ using namespace std;
 
 using namespace Spino;
 
-QueryParser::QueryParser(std::string query) {
+QueryParser::QueryParser(const char* query) {
 	query_string = query;
+	cursor = 0;
 }
 
 Token QueryParser::peek() {
@@ -26,7 +27,7 @@ Token QueryParser::peek() {
  */
 Token QueryParser::lex() {
 	// while there are characters left to consume
-	while(cursor <= query_string.length()-1) {
+	while(curc() != '\0') {
 		//get the current character
 		switch(curc()) {
 			// chew up white space
@@ -133,7 +134,7 @@ Token QueryParser::lex() {
 std::string QueryParser::read_identifier() {
 	std::string s;
 	s += curc();
-	while(cursor < query_string.length()-1) {
+	while(curc() != '\0') {
 		next();
 		if((!isalpha(curc())) && (!isdigit(curc())) && (curc() != '_') && (curc() != '.')) {
 			return s;
@@ -149,7 +150,7 @@ std::string QueryParser::read_identifier() {
 std::string QueryParser::read_string_literal() {
 	std::string s;
 	next();
-	while(cursor < query_string.length()-1) {
+	while(curc() != '\0') {
 		char c = curc();
 		if(c == '\\') {
 			next();
@@ -181,7 +182,7 @@ std::string QueryParser::read_string_literal() {
 std::string QueryParser::read_numeric_literal() {
 	std::string s;
 	bool period_spotted = false;
-	while(cursor < query_string.length()) {
+	while(curc() != '\0') {
 		char c = curc();
 		if(!isdigit(curc())) {
 			if(curc() == '.') {
@@ -228,7 +229,24 @@ std::shared_ptr<QueryNode> QueryParser::parse_expression() {
 				throw parse_error("Expected a colon after identifier");
 			}
 
-			f->operation = parse_operator_expression();
+			tok = peek();
+			if((tok.token == TOK_STRING_LITERAL) || (tok.token == TOK_NUMERIC_LITERAL)) {
+				tok = lex();
+				auto cmp = make_shared<BasicFieldComparison>();
+				cmp->jp = PointerType(ptr.c_str());
+
+				if(tok.token == TOK_STRING_LITERAL) {
+					cmp->v.type = TYPE_STRING;
+					cmp->v.str = tok.raw;
+				} else {
+					cmp->v.type = TYPE_NUMERIC;
+					cmp->v.numeric = std::stof(tok.raw);
+				}
+
+				return cmp;
+			} else {
+				f->operation = parse_operator_expression();
+			}
 
 			tok = lex();
 			if(tok.token != TOK_RH_BRACE) {

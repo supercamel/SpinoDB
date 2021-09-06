@@ -1,3 +1,4 @@
+/*
 #include "QueryPrinter.h"
 
 using namespace std;
@@ -58,3 +59,4 @@ void QueryPrinter::Visit(Operator* a) {
 	indent--;
 }	
 
+*/

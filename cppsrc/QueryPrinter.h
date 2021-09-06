@@ -8,6 +8,7 @@
  *
  */
 
+/*
 #include "QueryWalker.h"
 #include "QueryNodes.h"
 #include <iostream>
@@ -34,6 +35,7 @@ namespace Spino {
 	};
 
 }
+*/
 
 
 #endif

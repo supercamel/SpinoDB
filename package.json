@@ -18,7 +18,7 @@
   ],
   "devDependencies": {},
   "scripts": {
-	  "test": "echo \"Error: no test specified\" && exit 1",
+	  "test": "node test.js",
 	  "build": "node-gyp rebuild",
 	  "clean": "node-gyp clean",
 	  "install": "node-gyp rebuild"

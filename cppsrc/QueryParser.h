@@ -80,11 +80,11 @@ class Token
 
 class QueryParser {
 	public:
-		QueryParser(std::string text);
+		QueryParser(const char* text);
 
 		std::shared_ptr<QueryNode> parse_expression();
 	private:
-		std::string query_string;
+		const char* query_string;
 		uint32_t cursor = 0;
 
 		inline char curc() const {

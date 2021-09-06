@@ -1,3 +1,4 @@
+/*
 #ifndef QUERY_WALKER_H
 #define QUERY_WALKER_H
 
@@ -17,4 +18,4 @@ namespace Spino {
 
 #endif
 
-
+*/
