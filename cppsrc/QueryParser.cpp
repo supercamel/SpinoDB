@@ -205,6 +205,49 @@ std::string QueryParser::read_numeric_literal() {
 	return s;
 }
 
+std::shared_ptr<BasicFieldComparison> QueryParser::parse_basic_comparison() {
+	if(lex().token == TOK_LH_BRACE) {
+		auto tok = lex();
+		// if the token is a field, parse rhs
+		if(tok.token == TOK_FIELD_NAME) {
+			std::string field_name = tok.raw;
+			stringstream ss(tok.raw);
+			string intermediate;
+			string ptr;
+			while(getline(ss, intermediate, '.')) {
+				ptr += "/" + intermediate;
+			}
+
+			tok = lex();
+			if(tok.token != TOK_COLON) {
+				throw parse_error("Expected a colon after identifier");
+			}
+
+			tok = peek();
+			if((tok.token == TOK_STRING_LITERAL) || (tok.token == TOK_NUMERIC_LITERAL)) {
+				tok = lex();
+				auto cmp = make_shared<BasicFieldComparison>();
+				cmp->field_name = field_name;
+				cmp->jp = PointerType(ptr.c_str());
+
+				if(tok.token == TOK_STRING_LITERAL) {
+					cmp->v.type = TYPE_STRING;
+					cmp->v.str = tok.raw;
+				} else {
+					cmp->v.type = TYPE_NUMERIC;
+					cmp->v.numeric = std::stof(tok.raw);
+				}
+
+				if(lex().token == TOK_RH_BRACE) {
+					return cmp;
+				}
+			} 
+		}
+	}
+	throw parse_error("Could not parse basic comparison");
+}
+
+
 /* an expression can have the form
  * { <field_name>: <operator_expression> }
  * { $and/$or: { [ <expression1>, <expression2>,...<expressionN> ] }

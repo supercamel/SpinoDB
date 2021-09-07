@@ -26,6 +26,7 @@ class CollectionWrapper: public Napi::ObjectWrap<CollectionWrapper> {
 		static Napi::FunctionReference constructor;
 		Napi::Value set_name(const Napi::CallbackInfo& info);
 		Napi::Value get_name(const Napi::CallbackInfo& info);
+		Napi::Value create_index(const Napi::CallbackInfo& info);
 		Napi::Value append(const Napi::CallbackInfo& info);
 		Napi::Value update(const Napi::CallbackInfo& info);
 		Napi::Value findOneById(const Napi::CallbackInfo& info);

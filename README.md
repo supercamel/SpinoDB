@@ -183,6 +183,15 @@ To query the field of a sub object, the following syntax can be used
 
 When documents are first added to the database, they are given a unique ID. The ID encodes the document creation time which can be used to optimize findOne() operations. For best performance, search for documents by the 'id' and do not overwrite it. 
 
+**Indexing**
+
+Collections can be indexed. Indexing yields huge performance increases because the database can search for results far more efficiently. Note that indexed fields are not saved to disk and must be created in the application each time it runs.
+
+col.createIndex(<field_name>);
+
+	col.createIndex("steamProfile.steamId");
+
+
 **Persistence**
 
 The database can be loaded and stored to a file.

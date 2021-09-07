@@ -91,6 +91,7 @@ namespace Spino {
 
 	class BasicFieldComparison: public QueryNode {
 		public:
+			std::string field_name;
 			PointerType jp;
 			Value v;
 

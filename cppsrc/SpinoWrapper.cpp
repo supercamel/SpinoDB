@@ -25,6 +25,7 @@ Napi::Value CursorWrapper::next(const Napi::CallbackInfo& info) {
 Napi::Object CollectionWrapper::Create(Napi::Env env, std::shared_ptr<Spino::Collection> ptr) {
 	return DefineClass(env, "Collection", {
 			InstanceMethod("getName", &CollectionWrapper::get_name),
+			InstanceMethod("createIndex", &CollectionWrapper::create_index),
 			InstanceMethod("append", &CollectionWrapper::append),
 			InstanceMethod("update", &CollectionWrapper::update),
 			InstanceMethod("findOneById", &CollectionWrapper::findOneById),
@@ -44,6 +45,24 @@ CollectionWrapper::CollectionWrapper(const Napi::CallbackInfo& info) : Napi::Obj
 Napi::Value CollectionWrapper::get_name(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
 	return Napi::String::New(env, collection->get_name());
+}
+
+
+Napi::Value CollectionWrapper::create_index(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	Napi::HandleScope scope(env);
+
+	if(info.Length() != 1) {
+		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
+	}
+	if(info[0].IsString()) {
+		collection->create_index(info[0].As<Napi::String>().Utf8Value().c_str());
+	} 
+	else {
+		Napi::TypeError::New(env, "Argument must be a string").ThrowAsJavaScriptException();
+	}
+
+	return Napi::Value();
 }
 
 Napi::Value CollectionWrapper::append(const Napi::CallbackInfo& info) {

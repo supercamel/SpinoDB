@@ -30,7 +30,26 @@ namespace Spino{
 		_id.SetString(id.c_str(), id.length(), doc.GetAllocator());
 
 		d->AddMember("_id", _id, doc.GetAllocator());
-		doc[name.c_str()].PushBack(d->GetObject(), doc.GetAllocator());
+		ValueType& arr = doc[name.c_str()].PushBack(d->GetObject(), doc.GetAllocator());
+
+		ValueType& newdoc = arr[arr.Size()-1];
+
+		for(auto& idx : indices) {
+			auto v = idx->field.Get(newdoc);
+			if(v) {
+				if(v->IsString()) {
+					Value val;
+					val.type = TYPE_STRING;
+					val.str = v->GetString();
+					idx->index.insert({val, arr.Size()-1});
+				} else if(v->IsNumber()) {
+					Value val;
+					val.type = TYPE_NUMERIC;
+					val.numeric = v->GetDouble();
+					idx->index.insert({val, arr.Size()-1});
+				}
+			}
+		}
 	}
 
 	void Collection::update(const char* search, const char* update) {
@@ -52,6 +71,44 @@ namespace Spino{
 			}
 		}
 		hashmap.clear();
+	}
+
+	void Collection::create_index(const char* s) {
+		auto idx = make_shared<Collection::Index>();;
+		idx->field_name = s;
+		stringstream ss(s);
+		string intermediate;
+		string ptr;
+		while(getline(ss, intermediate, '.')) {
+			ptr += "/" + intermediate;
+		}
+		idx->field = PointerType(ptr.c_str());
+
+		auto& list = doc[name.c_str()];
+		auto n = list.Size();
+
+		for(uint32_t i = 0; i < n; i++) {
+			ValueType& doc = list[i].GetObject();
+			auto v = idx->field.Get(doc);
+
+			// only add string and number values to the index
+			if(v->IsString()) {
+				Value val;
+				val.type = TYPE_STRING;
+				val.str = v->GetString();
+				idx->index.insert({val, n});
+			}
+			else if(v->IsNumber()) {
+				Value val;
+				val.type = TYPE_NUMERIC;
+				val.numeric = v->GetDouble();
+				idx->index.insert({val, n});
+			} else {
+				// can't index objects or arrays, etc
+			}
+		}
+
+		indices.push_back(idx);
 	}
 
 	/**
@@ -97,6 +154,9 @@ namespace Spino{
 	}
 
 	std::string Collection::findOne(const char* s) {
+		std::string v; //result
+
+		//check hashmap for existing query results
 		std::string str = s;
 		auto hash = fnv1a_hash(str);
 		auto it = hashmap.find(hash);
@@ -104,11 +164,42 @@ namespace Spino{
 			return it->second;
 		}
 
-		auto cursor = find(s);
-		std::string v = cursor->next();
+		//check if it's an index search
+		QueryParser parser(s);
+		std::shared_ptr<BasicFieldComparison> bfc = nullptr;
+		try {
+			bfc = parser.parse_basic_comparison();
+		} catch(parse_error e) {
+
+		}
+		if(bfc != nullptr) {
+			for(auto& idx : indices) {
+				if(idx->field_name == bfc->field_name) {
+					auto iter = idx->index.find(bfc->v);
+					if(iter != idx->index.end()) {
+						auto n = iter->second;
+
+						rapidjson::StringBuffer sb;
+						rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+						doc[name.c_str()][n].Accept(writer);
+						v = sb.GetString();
+					}
+					break;
+				}
+			}
+		}
+
+		//if it's not an index search, do a linear search using a cursor
+		if(v == "") {
+			auto cursor = find(s);
+			v = cursor->next();
+		}
+
+		//if there is a result, add it to the hashmap for future reference
 		if(v != "") {
 			hashmap[hash] = v;
 		}
+
 		return v;
 	}
 
