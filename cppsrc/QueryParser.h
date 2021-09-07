@@ -82,6 +82,7 @@ class QueryParser {
 	public:
 		QueryParser(const char* text);
 
+		std::shared_ptr<BasicFieldComparison> parse_basic_comparison();
 		std::shared_ptr<QueryNode> parse_expression();
 	private:
 		const char* query_string;

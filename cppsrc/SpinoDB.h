@@ -11,6 +11,7 @@
 #include <fstream>
 #include <chrono>
 #include <thread>
+#include <sstream>
 
 
 #include "QueryNodes.h"
@@ -59,10 +60,13 @@ namespace Spino {
 
 			std::string get_name() const;
 
+			void create_index(const char* field);
+
 			void append(const char* s);
 			void update(const char* search, const char* update);
 
 			std::string findOneById(const char* id) const;
+			
 			std::string findOne(const char* s);
 			shared_ptr<Cursor> find(const char* s) const;
 
@@ -70,6 +74,15 @@ namespace Spino {
 			void drop(const char* s, bool onlyOne = false);
 
 		private:
+			class Index {
+				public:
+					std::string field_name;
+					PointerType field;
+					std::map<Spino::Value, int> index;
+			};
+
+
+			std::vector<shared_ptr<Index>> indices;
 			bool mergeObjects(ValueType& dstObject, ValueType& srcObject);
 
 			uint32_t fnv1a_hash(std::string& s);

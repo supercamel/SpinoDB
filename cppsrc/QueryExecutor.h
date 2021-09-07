@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <cmath>
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/pointer.h"
 #include "rapidjson/allocators.h"
@@ -31,13 +32,56 @@ namespace Spino {
 		TYPE_UNDEFINED
 	};
 
-	struct Value {
-		std::string str;
-		double numeric;
-		bool boolean;
-		bool null;
-		bool undefined;
-		uint32_t type;
+	class Value {
+		public:
+			bool operator<(const Value& other) const
+			{
+				if(type != other.type) {
+					return type < other.type;
+				}
+				else {
+					if(type == TYPE_NUMERIC) {
+						return numeric < other.numeric;
+					}
+					else if(type == TYPE_STRING) {
+						return str.compare(other.str);
+					}	
+				}
+				return false;
+			}
+
+			bool operator==(const Value& other) const
+			{
+				if(type == other.type) {
+					if(type == TYPE_NUMERIC) {
+						if(fabs(numeric-other.numeric) < 0.000001) {
+							return true;
+						}	
+					} 
+					else if(type == TYPE_STRING) {
+						if(str == other.str) {
+							return true;
+						}
+					}
+					else if(type == TYPE_BOOLEAN) {
+						return boolean == other.boolean;
+					}
+					else if(type == TYPE_NULL) {
+						return true;
+					}
+					else if(type == TYPE_UNDEFINED) {
+						return true;
+					}
+				}
+				return false;
+			}
+
+			std::string str;
+			double numeric;
+			bool boolean;
+			bool null;
+			bool undefined;
+			uint32_t type;
 	};
 
 

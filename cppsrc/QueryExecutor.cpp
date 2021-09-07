@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cmath>
 #include "QueryExecutor.h"
 #include "QueryParser.h"
 
@@ -141,79 +140,19 @@ namespace Spino {
 					auto& b = stack[--stack_ptr];
 					auto& a = stack[--stack_ptr];
 
-					bool boolean = true;
-					if(a.type != b.type) {
-						boolean = false;	
-					} else {
-						if(a.type == TYPE_NUMERIC) {
-							if(fabs(a.numeric-b.numeric) < 0.000001) {
-								boolean = true;
-							}	
-							else {
-								boolean = false;
-							}
-						} 
-						else if(a.type == TYPE_STRING) {
-							if(a.str == b.str) {
-								boolean = true;
-							}
-							else {
-								boolean = false;
-							}
-						}
-						else if(a.type == TYPE_BOOLEAN) {
-							boolean = a.boolean == b.boolean;
-						}
-						else if(a.type == TYPE_NULL) {
-							boolean = true;
-						}
-						else if(a.type == TYPE_UNDEFINED) {
-							boolean = false;
-						}
-					}
 					Value& v = stack[stack_ptr++];	
 					v.type = TYPE_BOOLEAN;
-					v.boolean = boolean;
+					v.boolean = (a == b);
 				}
 				break;
 			case TOK_NE:
 				{
 					auto& b = stack[--stack_ptr];
 					auto& a = stack[--stack_ptr];
-					bool boolean = true;
 
-					if(a.type != b.type) {
-						boolean = true;	
-					} else {
-						if(a.type == TYPE_NUMERIC) {
-							if(fabs(a.numeric-b.numeric) > 0.000001) {
-								boolean = true;
-							}	
-							else {
-								boolean = false;
-							}
-						} 
-						else if(a.type == TYPE_STRING) {
-							if(a.str != b.str) {
-								boolean = true;
-							}
-							else {
-								boolean = false;
-							}
-						}
-						else if(a.type == TYPE_BOOLEAN) {
-							boolean = a.boolean != b.boolean;
-						}
-						else if(a.type == TYPE_NULL) {
-							boolean = false;
-						}
-						else if(a.type == TYPE_UNDEFINED) {
-							boolean = false;
-						}
-					}
 					Value& v = stack[stack_ptr++];	
 					v.type = TYPE_BOOLEAN;
-					v.boolean = boolean;
+					v.boolean = !(a == b);
 				}
 				break;
 			case TOK_GREATER_THAN: 
