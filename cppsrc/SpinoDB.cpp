@@ -10,7 +10,7 @@ namespace Spino{
 		return name;
 	}
 
-	void Collection::append(const char* s) {
+	std::string Collection::append(const char* s) {
 		auto d = std::make_shared<DocType>();
 		d->Parse(s);
 
@@ -23,6 +23,8 @@ namespace Spino{
 		if(last_append_timestamp - timestamp != 0) {
 			id_counter = 0;
 		}
+
+		last_append_timestamp = timestamp;
 
 		id += id_counter_str;
 
@@ -49,6 +51,19 @@ namespace Spino{
 					idx->index.insert({val, arr.Size()-1});
 				}
 			}
+		}
+		return id;
+	}
+
+	void Collection::updateById(const char* id_cstr, const char* update) {
+		uint32_t domIdx;
+		if(domIndexFromId(id_cstr, domIdx)) {
+			DocType j;
+			j.Parse(update);
+
+			auto& arr = doc[name.c_str()];
+			mergeObjects(arr[domIdx], j.GetObject());
+			hashmap.clear();
 		}
 	}
 
@@ -115,6 +130,18 @@ namespace Spino{
 	 * The _id field is gauranteed to be ordered so we can do a binary search
 	 */
 	std::string Collection::findOneById(const char* id_cstr) const {
+		uint32_t m;
+		if(domIndexFromId(id_cstr, m)) {
+			auto& list = doc[name.c_str()];
+			rapidjson::StringBuffer sb;
+			rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+			list[m].Accept(writer);
+			return sb.GetString();
+		}
+		return "";
+	}
+
+	bool Collection::domIndexFromId(const char* id_cstr, uint32_t& domIdx) const {
 		uint32_t tsc = fast_atoi_len(id_cstr, 10);
 		uint32_t countc = fast_atoi_len(&id_cstr[10], 6);
 
@@ -143,14 +170,12 @@ namespace Spino{
 					R = m-1;
 				}
 				else {
-					rapidjson::StringBuffer sb;
-					rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-					list[m].Accept(writer);
-					return sb.GetString();
+					domIdx = m;
+					return true;
 				}
 			}
 		}
-		return "";
+		return false;
 	}
 
 	std::string Collection::findOne(const char* s) {
@@ -214,9 +239,67 @@ namespace Spino{
 		return hash;
 	}
 
-	shared_ptr<Cursor> Collection::find(const char* s) const {
-		return make_shared<Cursor>(doc[name.c_str()], s);
+	shared_ptr<BaseCursor> Collection::find(const char* s) const {
+		//check if it's an index search
+		QueryParser parser(s);
+		std::shared_ptr<BasicFieldComparison> bfc = nullptr;
+		try {
+			bfc = parser.parse_basic_comparison();
+		} catch(parse_error e) {
+
+		}
+
+		if(bfc != nullptr) {
+			for(auto& idx : indices) {
+				if(idx->field_name == bfc->field_name) {
+					auto range = idx->index.equal_range(bfc->v);
+					return make_shared<IndexCursor>(range, doc[name.c_str()]);
+				}
+			}
+		}
+		return make_shared<LinearCursor>(doc[name.c_str()], s);
 	}
+
+	void Collection::removeDomIdxFromIndex(uint32_t domIdx) {
+		ValueType& dom_object = doc[name.c_str()][domIdx];
+
+		for(auto idx : indices) {
+			std::vector<std::pair<Spino::Value, int>> idx_copies;
+			auto iitr = idx->index.begin();
+			while(iitr != idx->index.end()) {
+				auto entry = *iitr;
+				if(entry.second == domIdx) {
+					iitr = idx->index.erase(iitr);
+				} 
+				else if(entry.second > domIdx) {
+					idx_copies.push_back({iitr->first, iitr->second-1});
+					iitr = idx->index.erase(iitr);
+				}
+				else {	
+					iitr++;
+				}
+			}
+
+			for(auto i : idx_copies) {
+				idx->index.insert(i);
+			}
+		}
+	}
+
+	void Collection::dropById(const char* s) {
+		uint32_t domIdx;
+		if(domIndexFromId(s, domIdx)) {
+			removeDomIdxFromIndex(domIdx);
+
+			auto& arr = doc[name.c_str()];
+			auto iter = arr.Begin();
+			iter += domIdx;
+
+			doc[name.c_str()].Erase(iter);
+			hashmap.clear();
+		}
+	}
+
 
 	void Collection::dropOne(const char* j) {
 		drop(j, true);
@@ -228,10 +311,12 @@ namespace Spino{
 
 		auto& arr = doc[name.c_str()];
 		bool document_dropped = false;
+		uint32_t count = 0;
 		for (ValueType::ConstValueIterator itr = arr.Begin();
 				itr != arr.End(); ++itr) {
 			Spino::QueryExecutor exec(&(*itr));
 			if(exec.resolve(block)) {
+				removeDomIdxFromIndex(count);
 				itr = arr.Erase(itr);
 				document_dropped = true;
 				if(onlyOne) {
@@ -240,6 +325,7 @@ namespace Spino{
 			} else {
 				++itr;
 			}
+			count++;
 		}
 
 		if(document_dropped) {

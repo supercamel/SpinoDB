@@ -2,9 +2,13 @@
 
 *work in progress*
 
+*currently still a mish-mash of spaghetti code and ideas - actively being worked on, will be stable soon*
+
+*probably definitely full of bugs*
+
 SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is NodeJS addon written in C++ and is intended to be used with NodeJS for both web applications and desktop applications that require either the performance of an in-memory database or the ease of distribution that comes with using a self-contained database. It may also be used as a fast cache to complement a traditional database.
 
-SpinoDB is designed for speed. It can parse a database file at ~100MB/s. A simple findOne() query on a collection of 10 million documents will typically return a result within 200m/s. Small collections will return results in microseconds.
+SpinoDB is designed for speed. It can parse a database file at ~100MB/s. A findOne() query on an indexed field will typically return a result in ~50us. 
 
 The maximum amount of data that SpinoDB can store depends on your systems available RAM. Generally SpinoDB is suitable for managing up to a few GB of data.
 
@@ -61,6 +65,8 @@ append() will add a JSON document to a collection.
         }));
 
 append() will also accept a Javascript object, however it is about 15% faster to call JSON.stringify() on the object to convert it to a string. Note that append is quite slow because it requires memory allocation and the JSON object must be reparsed into the internal DOM structure. This is a target for future optimisation, however at present SpinoDB can append approximately 150k simple documents per second. 
+
+append() returns the ID string of the newly created document.
 
 **Find Queries**
 
@@ -179,9 +185,16 @@ To query the field of a sub object, the following syntax can be used
 
     { steamProfile.steamId: "7656112598325978325" }
 
-**id Field**
+**_id Field**
 
-When documents are first added to the database, they are given a unique ID. The ID encodes the document creation time which can be used to optimize findOne() operations. For best performance, search for documents by the 'id' and do not overwrite it. 
+When documents are first added to the database, they are given a unique ID. The ID encodes the document creation time which is used to optimize searching operations. For best performance, use the ByID functions.
+
+updateById(id_string, newDocument);
+
+findOneById(id_string);
+
+dropById(id_string);
+
 
 **Indexing**
 
@@ -191,6 +204,39 @@ col.createIndex(<field_name>);
 
 	col.createIndex("steamProfile.steamId");
 
+
+**Performance Tuning**
+
+When SpinoDB executes a search, it goes through 3 stages
+1. it will look up a cache of previously conducted queries and return a result from that. the cache is purged every time the collection is modified (appended, updated or a document dropped).
+2. if the query is a basic comparison to an indexed field, it will conduct a binary search on the index. this operation is very fast, typically under 50us for a findOne()
+3. finally, it will execute the query on every document. this is done linearly from the first document to the last. typically, might take a millisecond, but results vary. absolute worst case scenarious might take hundreds of milliseconds. 
+
+* use the id field with the ById functions whenever possible. performing operations by id is by far the fastest.
+* make sure you create indexes for fields you will be using to search for documents
+* use findOne over find if you only expect to get 1 result. 
+
+
+**Comparison To LokiJS**
+
+LokiJS is a similar in-memory NoSQL database, however it is far more mature and featurefull. It also has the advantage of being a pure javascript solution and can run in browsers. 
+
+Inserting 1 Million Documents (1x index field)
+
+LokiJS - 1590ms
+SpinoDB - 3400ms
+
+LokiJS is over 2x faster at inserting new documents. This is most likely because SpinoDB requires objects to be stringified and reparsed . .. we working on this.
+
+findOne by an indexed field
+LokiJS - 0.459ms
+SpinoDB - 0.049ms
+
+drop/remove by an indexed field
+LokiJS - 2076ms
+SpinoDB - 404ms
+
+Drop/remove is expensive because the index has to be reconstructed but SpinoDB is 5x faster.
 
 **Persistence**
 

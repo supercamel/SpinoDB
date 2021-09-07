@@ -1,18 +1,20 @@
 #include "SpinoWrapper.h"
 
-Napi::Object CursorWrapper::Create(Napi::Env env, std::shared_ptr<Spino::Cursor> ptr) {
+Napi::Object CursorWrapper::Create(Napi::Env env, std::shared_ptr<Spino::BaseCursor> ptr) {
 	return DefineClass(env, "Cursor", {
 			InstanceMethod("next", &CursorWrapper::next)
 			}, (void*)&ptr).New({});
 }
 
 CursorWrapper::CursorWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<CursorWrapper>(info)  {
-	auto sptr = static_cast<std::shared_ptr<Spino::Cursor>*>(info.Data());
+	auto sptr = static_cast<std::shared_ptr<Spino::BaseCursor>*>(info.Data());
 	cursor = *sptr;
 }
 
 Napi::Value CursorWrapper::next(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
+	Napi::HandleScope scope(env);
+
 	std::string n = cursor->next();
 	if(n.length() > 0) {
 		return Napi::String::New(env, n.c_str());	
@@ -31,6 +33,7 @@ Napi::Object CollectionWrapper::Create(Napi::Env env, std::shared_ptr<Spino::Col
 			InstanceMethod("findOneById", &CollectionWrapper::findOneById),
 			InstanceMethod("findOne", &CollectionWrapper::findOne),
 			InstanceMethod("find", &CollectionWrapper::find),
+			InstanceMethod("dropById", &CollectionWrapper::dropById),
 			InstanceMethod("dropOne", &CollectionWrapper::dropOne),
 			InstanceMethod("drop", &CollectionWrapper::drop)
 			}, (void*)&ptr).New({});
@@ -44,6 +47,7 @@ CollectionWrapper::CollectionWrapper(const Napi::CallbackInfo& info) : Napi::Obj
 
 Napi::Value CollectionWrapper::get_name(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
+	Napi::HandleScope scope(env);
 	return Napi::String::New(env, collection->get_name());
 }
 
@@ -80,7 +84,8 @@ Napi::Value CollectionWrapper::append(const Napi::CallbackInfo& info) {
 		Napi::Object json = env.Global().Get("JSON").As<Napi::Object>();
 		Napi::Function stringify = json.Get("stringify").As<Napi::Function>();
 		auto str = stringify.Call(json, { json_object }).As<Napi::String>();
-		collection->append(str.Utf8Value().c_str());
+		auto id = collection->append(str.Utf8Value().c_str());
+		return Napi::String::New(env, id.c_str());
 	} 
 	else {
 		Napi::TypeError::New(env, "Argument can be either a string or an object").ThrowAsJavaScriptException();
@@ -170,6 +175,23 @@ Napi::Value CollectionWrapper::find(const Napi::CallbackInfo& info) {
 		auto curwrapper = Napi::Persistent(CursorWrapper::Create(info.Env(), cur));
 		return curwrapper.Value();
 	}
+}
+
+Napi::Value CollectionWrapper::dropById(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	Napi::HandleScope scope(env);
+
+	if(info.Length() != 1 || !info[0].IsString()) {
+		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
+	}
+
+	try {
+		collection->dropById(info[0].As<Napi::String>().Utf8Value().c_str());
+	} catch(Spino::parse_error& e) {
+		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
+	}
+	return Napi::Value();
+
 }
 
 Napi::Value CollectionWrapper::dropOne(const Napi::CallbackInfo& info) {

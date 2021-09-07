@@ -50,6 +50,22 @@ namespace Spino {
 				return false;
 			}
 
+			bool operator>(const Value& other) const
+			{
+				if(type != other.type) {
+					return type > other.type;
+				}
+				else {
+					if(type == TYPE_NUMERIC) {
+						return numeric > other.numeric;
+					}
+					else if(type == TYPE_STRING) {
+						return other.str.compare(str);
+					}	
+				}
+				return false;
+			}
+
 			bool operator==(const Value& other) const
 			{
 				if(type == other.type) {

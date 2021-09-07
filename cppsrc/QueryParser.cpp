@@ -220,7 +220,7 @@ std::shared_ptr<BasicFieldComparison> QueryParser::parse_basic_comparison() {
 
 			tok = lex();
 			if(tok.token != TOK_COLON) {
-				throw parse_error("Expected a colon after identifier");
+				return nullptr;
 			}
 
 			tok = peek();
@@ -244,7 +244,7 @@ std::shared_ptr<BasicFieldComparison> QueryParser::parse_basic_comparison() {
 			} 
 		}
 	}
-	throw parse_error("Could not parse basic comparison");
+	return nullptr;
 }
 
 
@@ -286,6 +286,10 @@ std::shared_ptr<QueryNode> QueryParser::parse_expression() {
 					cmp->v.numeric = std::stof(tok.raw);
 				}
 
+				if(lex().token != TOK_RH_BRACE) {
+					throw parse_error("Missing closing brace after basic field comparison");
+				}
+
 				return cmp;
 			} else {
 				f->operation = parse_operator_expression();
@@ -316,7 +320,7 @@ std::shared_ptr<QueryNode> QueryParser::parse_expression() {
 
 				tok = lex();
 				if((tok.token != TOK_RH_BRACKET) && (tok.token != TOK_COMMA)) {
-					throw parse_error("Unexpected token in list");
+					throw parse_error("Unexpected token in list. " + tok.raw);
 				}
 			} while(tok.token != TOK_RH_BRACKET);
 

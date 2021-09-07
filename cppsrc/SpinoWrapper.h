@@ -6,13 +6,13 @@
 
 class CursorWrapper: public Napi::ObjectWrap<CursorWrapper> {
 	public:
-		static Napi::Object Create(Napi::Env, std::shared_ptr<Spino::Cursor> ptr);
+		static Napi::Object Create(Napi::Env, std::shared_ptr<Spino::BaseCursor> ptr);
 		CursorWrapper(const Napi::CallbackInfo& info);
 
 	private:
 		Napi::Value next(const Napi::CallbackInfo& info);
 
-		std::shared_ptr<Spino::Cursor> cursor;
+		std::shared_ptr<Spino::BaseCursor> cursor;
 };
 
 
@@ -32,6 +32,7 @@ class CollectionWrapper: public Napi::ObjectWrap<CollectionWrapper> {
 		Napi::Value findOneById(const Napi::CallbackInfo& info);
 		Napi::Value findOne(const Napi::CallbackInfo& info);
 		Napi::Value find(const Napi::CallbackInfo& info);
+		Napi::Value dropById(const Napi::CallbackInfo& info);
 		Napi::Value dropOne(const Napi::CallbackInfo& info);
 		Napi::Value drop(const Napi::CallbackInfo& info);
 

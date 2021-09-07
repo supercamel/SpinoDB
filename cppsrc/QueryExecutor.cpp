@@ -72,55 +72,18 @@ namespace Spino {
 	}
 
 	void QueryExecutor::Visit(LogicalExpression* l) {
-		uint32_t init_stack_sz = stack_ptr;
 		for(auto& i : l->fields) {
 			i->Accept(this);
-		}
-		uint32_t stack_growth = stack_ptr - init_stack_sz;
 
-
-
-		switch(l->op) {
-			case TOK_AND:
-				{
-					bool boolean = true;
-					for(uint32_t i = 0; i < stack_growth; i++) {
-						auto& a = stack[--stack_ptr];
-
-						if(a.boolean == false) {
-							boolean = false;
-						}
-					}
-					Value& v = stack[stack_ptr++];
-					v.type = TYPE_BOOLEAN;
-					v.boolean = boolean;
-				}
-				break;
-			case TOK_OR:
-				{
-					bool boolean = false;
-					for(uint32_t i = 0; i < stack_growth; i++) {
-						auto& a = stack[--stack_ptr];
-
-						if(a.type == TYPE_BOOLEAN) {
-							if(a.boolean == true) {
-								boolean = true;
-								break;
-							}
-						}
-						else if(a.type == TYPE_NUMERIC) {
-							if((a.numeric > -0.5) && (a.numeric < 0.5)) {
-								boolean = true;
-								break;
-							}
-						}
-					}
-					Value& v = stack[stack_ptr++];
-					v.type = TYPE_BOOLEAN;
-					v.boolean = boolean;
-
-				}
-				break;
+			auto& a = stack[--stack_ptr];
+			if((l->op == TOK_AND) && (a.boolean == false)) {
+				a.type == TYPE_BOOLEAN;
+				return;
+			}
+			if((l->op == TOK_OR) && (a.boolean == true)) {
+				a.type == TYPE_BOOLEAN;
+				return;
+			}
 		}
 	}
 
@@ -161,11 +124,9 @@ namespace Spino {
 					auto& a = stack[--stack_ptr];
 					bool boolean = false;
 
-					if((a.type == TYPE_NUMERIC) && (b.type == TYPE_NUMERIC)) {
-						if(a.numeric > b.numeric) {
-							boolean = true;
-						}	
-					}
+					if(a.numeric > b.numeric) {
+						boolean = true;
+					}	
 					Value& v = stack[stack_ptr++];
 					v.type = TYPE_BOOLEAN;
 					v.boolean = boolean;
@@ -177,10 +138,8 @@ namespace Spino {
 					auto& a = stack[--stack_ptr];
 					bool boolean = false;
 
-					if((a.type == TYPE_NUMERIC) && (b.type == TYPE_NUMERIC)) {
-						if(a.numeric < b.numeric) {
-							boolean = true;
-						}
+					if(a.numeric < b.numeric) {
+						boolean = true;
 					}
 					Value& v = stack[stack_ptr++];
 					v.type = TYPE_BOOLEAN;

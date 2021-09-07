@@ -21,9 +21,15 @@
 
 namespace Spino {
 
-	class Cursor {
+	class BaseCursor {
 		public:
-			Cursor(ValueType& list, const char* query) : list(list) { 
+			virtual std::string next() = 0;
+	};
+
+
+	class LinearCursor : public BaseCursor {
+		public:
+			LinearCursor(ValueType& list, const char* query) : list(list) { 
 				Spino::QueryParser parser(query);
 				head = parser.parse_expression();
 				iter = list.Begin();
@@ -51,6 +57,40 @@ namespace Spino {
 			std::shared_ptr<QueryNode> head;
 	};
 
+	// typedef so you can breath while reading this
+	// this is the type name of the pair that holds the start and end iterators 
+	// of a range of values in an index
+	typedef std::pair<
+		std::multimap<Spino::Value, int>::iterator, 
+		std::multimap<Spino::Value, int>::iterator
+			> IndexIteratorRange;
+
+	class IndexCursor : public BaseCursor {
+		public:
+			IndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom) : 
+				iter_range(iter_range), 
+				collection_dom(collection_dom) 
+			{
+				iter = iter_range.first;
+			}
+
+			std::string next() {
+				if(iter != iter_range.second) {
+					rapidjson::StringBuffer sb;
+					rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+					collection_dom[iter->second].Accept(writer);
+					iter++;
+					return sb.GetString();
+				} 
+				return "";
+			}
+
+		private:
+			ValueType& collection_dom;
+			IndexIteratorRange iter_range;
+			std::multimap<Spino::Value, int>::iterator iter;
+	};
+
 
 	class Collection {
 		public:
@@ -62,14 +102,16 @@ namespace Spino {
 
 			void create_index(const char* field);
 
-			void append(const char* s);
+			std::string append(const char* s);
+
+			void updateById(const char* id, const char* update);
 			void update(const char* search, const char* update);
 
 			std::string findOneById(const char* id) const;
-			
 			std::string findOne(const char* s);
-			shared_ptr<Cursor> find(const char* s) const;
+			shared_ptr<BaseCursor> find(const char* s) const;
 
+			void dropById(const char* s);
 			void dropOne(const char* s);
 			void drop(const char* s, bool onlyOne = false);
 
@@ -78,10 +120,12 @@ namespace Spino {
 				public:
 					std::string field_name;
 					PointerType field;
-					std::map<Spino::Value, int> index;
+					std::multimap<Spino::Value, int> index;
 			};
 
 
+			void removeDomIdxFromIndex(uint32_t domIdx);
+			bool domIndexFromId(const char* s, uint32_t& domIdx) const;
 			std::vector<shared_ptr<Index>> indices;
 			bool mergeObjects(ValueType& dstObject, ValueType& srcObject);
 
