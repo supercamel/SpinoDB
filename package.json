@@ -1,6 +1,6 @@
 {
 	"name": "spinodb",
-	"version": "1.0.4",
+	"version": "1.0.8",
 	"description": "SpinoDB is an in-memory NoSQL database that is fast and self-contained. It is a NodeJS addon written in C++ and is suitable for web and desktop applications with demanding performance requirements.",
 	"main": "./build/Release/spinodb.node",
 	"gypfile": true,
