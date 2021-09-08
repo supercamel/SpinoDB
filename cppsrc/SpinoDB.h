@@ -23,6 +23,7 @@ namespace Spino {
 
 	class BaseCursor {
 		public:
+            virtual ~BaseCursor() { };
 			virtual std::string next() = 0;
 	};
 
@@ -34,6 +35,8 @@ namespace Spino {
 				head = parser.parse_expression();
 				iter = list.Begin();
 			}
+
+            ~LinearCursor() { }
 
 			std::string next() {
 				while(iter != list.End()) {
@@ -74,6 +77,8 @@ namespace Spino {
 				iter = iter_range.first;
 			}
 
+            ~IndexCursor() { }
+
 			std::string next() {
 				if(iter != iter_range.second) {
 					rapidjson::StringBuffer sb;
@@ -98,6 +103,12 @@ namespace Spino {
 				id_counter = 0;	
 			}
 
+            ~Collection() {
+                for(auto i : indices) {
+                    delete i;
+                }
+            }
+
 			std::string get_name() const;
 
 			void create_index(const char* field);
@@ -109,7 +120,7 @@ namespace Spino {
 
 			std::string findOneById(const char* id) const;
 			std::string findOne(const char* s);
-			shared_ptr<BaseCursor> find(const char* s) const;
+			BaseCursor* find(const char* s) const;
 
 			void dropById(const char* s);
 			void dropOne(const char* s);
@@ -126,7 +137,7 @@ namespace Spino {
 
 			void removeDomIdxFromIndex(uint32_t domIdx);
 			bool domIndexFromId(const char* s, uint32_t& domIdx) const;
-			std::vector<shared_ptr<Index>> indices;
+			std::vector<Index*> indices;
 			bool mergeObjects(ValueType& dstObject, ValueType& srcObject);
 
 			uint32_t fnv1a_hash(std::string& s);
@@ -157,15 +168,21 @@ namespace Spino {
 				doc.SetObject();
 			}
 
-			std::shared_ptr<Collection> add_collection(std::string name);
-			std::shared_ptr<Collection> get_collection(std::string name) const;
+            ~SpinoDB() {
+                for(auto c : collections) {
+                    delete c;
+                }
+            }
+
+			Collection* add_collection(std::string name);
+			Collection* get_collection(std::string name) const;
 			void drop_collection(std::string name);
 
 			void save(std::string path) const;
 			void load(std::string path);
 
 		private:
-			std::vector<std::shared_ptr<Collection>> collections;
+			std::vector<Collection*> collections;
 			DocType doc;
 	};
 

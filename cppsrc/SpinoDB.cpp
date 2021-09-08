@@ -11,8 +11,8 @@ namespace Spino{
 	}
 
 	std::string Collection::append(const char* s) {
-		auto d = std::make_shared<DocType>();
-		d->Parse(s);
+        DocType d;
+		d.Parse(s);
 
 		uint32_t timestamp = std::time(0);
 		std::string id = std::to_string(timestamp);
@@ -31,10 +31,10 @@ namespace Spino{
 		ValueType _id;
 		_id.SetString(id.c_str(), id.length(), doc.GetAllocator());
 
-		d->AddMember("_id", _id, doc.GetAllocator());
+		d.AddMember("_id", _id, doc.GetAllocator());
 
         auto& arr = doc[name.c_str()];
-		arr.PushBack(d->GetObject(), doc.GetAllocator());
+		arr.PushBack(d.GetObject(), doc.GetAllocator());
 
 
 
@@ -93,7 +93,7 @@ namespace Spino{
 	}
 
 	void Collection::create_index(const char* s) {
-		auto idx = make_shared<Collection::Index>();;
+		auto idx = new Collection::Index();
 		idx->field_name = s;
 		stringstream ss(s);
 		string intermediate;
@@ -244,7 +244,7 @@ namespace Spino{
 		return hash;
 	}
 
-	shared_ptr<BaseCursor> Collection::find(const char* s) const {
+	BaseCursor* Collection::find(const char* s) const {
 		//check if it's an index search
 		QueryParser parser(s);
 		std::shared_ptr<BasicFieldComparison> bfc = nullptr;
@@ -254,12 +254,12 @@ namespace Spino{
 			for(auto& idx : indices) {
 				if(idx->field_name == bfc->field_name) {
 					auto range = idx->index.equal_range(bfc->v);
-					return make_shared<IndexCursor>(range, doc[name.c_str()]);
+					return new IndexCursor(range, doc[name.c_str()]);
 				}
 			}
 		}
 
-		return make_shared<LinearCursor>(doc[name.c_str()], s);
+		return new LinearCursor(doc[name.c_str()], s);
 	}
 
 	void Collection::removeDomIdxFromIndex(uint32_t domIdx) {
@@ -385,7 +385,7 @@ namespace Spino{
 		return true ;
 	}
 
-	std::shared_ptr<Collection> SpinoDB::add_collection(std::string name) {
+	Collection* SpinoDB::add_collection(std::string name) {
 		for(auto i : collections) {
 			if(i->get_name() == name) {
 				return nullptr;
@@ -397,12 +397,12 @@ namespace Spino{
 		index.SetString(name.c_str(), name.size(), doc.GetAllocator());
 		doc.AddMember(index, v, doc.GetAllocator());
 
-		auto c = std::make_shared<Collection>(doc, name);
+		auto c = new Collection(doc, name);
 		collections.push_back(c);
 		return c;
 	}
 
-	std::shared_ptr<Collection> SpinoDB::get_collection(std::string name) const {
+	Collection* SpinoDB::get_collection(std::string name) const {
 		for(auto c : collections) {
 			if(c->get_name() == name) {
 				return c;
@@ -415,6 +415,7 @@ namespace Spino{
 		for(auto it = collections.begin(); it != collections.end(); ) {
 			auto c = *it;
 			if(c->get_name() == name) {
+                delete c;
 				collections.erase(it);
 			} else {
 				it++;
@@ -440,7 +441,7 @@ namespace Spino{
 		doc.ParseStream(isw);
 
 		for (auto& m : doc.GetObject()) {
-			auto c = make_shared<Collection>(doc, m.name.GetString());
+			auto c = new Collection(doc, m.name.GetString());
 			collections.push_back(c);
 		}
 

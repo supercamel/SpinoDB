@@ -6,22 +6,23 @@
 
 class CursorWrapper: public Napi::ObjectWrap<CursorWrapper> {
 	public:
-		static Napi::Object Create(Napi::Env, std::shared_ptr<Spino::BaseCursor> ptr);
+		static Napi::Object Create(Napi::Env, Spino::BaseCursor* ptr);
 		CursorWrapper(const Napi::CallbackInfo& info);
+        ~CursorWrapper();
 
 	private:
 		Napi::Value next(const Napi::CallbackInfo& info);
 
-		std::shared_ptr<Spino::BaseCursor> cursor;
+        Spino::BaseCursor* cursor;
 };
 
 
 
 class CollectionWrapper: public Napi::ObjectWrap<CollectionWrapper> {
 	public:
-		static Napi::Object Create(Napi::Env env, std::shared_ptr<Spino::Collection> ptr);
+		static Napi::Object Create(Napi::Env env, Spino::Collection* ptr);
 		CollectionWrapper(const Napi::CallbackInfo& info);
-		
+
 	private:
 		static Napi::FunctionReference constructor;
 		Napi::Value set_name(const Napi::CallbackInfo& info);
@@ -37,7 +38,7 @@ class CollectionWrapper: public Napi::ObjectWrap<CollectionWrapper> {
 		Napi::Value dropOne(const Napi::CallbackInfo& info);
 		Napi::Value drop(const Napi::CallbackInfo& info);
 
-		std::shared_ptr<Spino::Collection> collection;
+		Spino::Collection* collection;
 };
 
 
@@ -45,6 +46,7 @@ class SpinoWrapper: public Napi::ObjectWrap<SpinoWrapper> {
 	public:
 		static Napi::Object Init(Napi::Env env, Napi::Object exports); 
 		SpinoWrapper(const Napi::CallbackInfo& info); 
+        ~SpinoWrapper() { delete sambodb; }
 
 	private:
 		static Napi::FunctionReference constructor; 
@@ -53,7 +55,7 @@ class SpinoWrapper: public Napi::ObjectWrap<SpinoWrapper> {
 		Napi::Value add_collection(const Napi::CallbackInfo& info);
 		Napi::Value get_collection(const Napi::CallbackInfo& info);
 		Napi::Value drop_collection(const Napi::CallbackInfo& info);
-		std::shared_ptr<Spino::SpinoDB> sambodb; 
+		Spino::SpinoDB* sambodb; 
 };
 
 #endif

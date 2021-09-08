@@ -1,14 +1,18 @@
 #include "SpinoWrapper.h"
 
-Napi::Object CursorWrapper::Create(Napi::Env env, std::shared_ptr<Spino::BaseCursor> ptr) {
+Napi::Object CursorWrapper::Create(Napi::Env env, Spino::BaseCursor* ptr) {
 	return DefineClass(env, "Cursor", {
 			InstanceMethod("next", &CursorWrapper::next)
-			}, (void*)&ptr).New({});
+			}, (void*)ptr).New({});
 }
 
 CursorWrapper::CursorWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<CursorWrapper>(info)  {
-	auto sptr = static_cast<std::shared_ptr<Spino::BaseCursor>*>(info.Data());
-	cursor = *sptr;
+	cursor = static_cast<Spino::BaseCursor*>(info.Data());
+}
+
+CursorWrapper::~CursorWrapper() {
+
+    delete cursor;
 }
 
 Napi::Value CursorWrapper::next(const Napi::CallbackInfo& info) {
@@ -42,8 +46,7 @@ Napi::Object CollectionWrapper::Create(Napi::Env env, std::shared_ptr<Spino::Col
 
 
 CollectionWrapper::CollectionWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<CollectionWrapper>(info)  {
-	auto sptr = static_cast<std::shared_ptr<Spino::Collection>*>(info.Data());
-	collection = *sptr;
+	collection = static_cast<Spino::Collection*>(info.Data());
 }
 
 Napi::Value CollectionWrapper::get_name(const Napi::CallbackInfo& info) {
