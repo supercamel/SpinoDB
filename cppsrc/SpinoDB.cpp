@@ -32,7 +32,11 @@ namespace Spino{
 		_id.SetString(id.c_str(), id.length(), doc.GetAllocator());
 
 		d->AddMember("_id", _id, doc.GetAllocator());
-		ValueType& arr = doc[name.c_str()].PushBack(d->GetObject(), doc.GetAllocator());
+
+        auto& arr = doc[name.c_str()];
+		arr.PushBack(d->GetObject(), doc.GetAllocator());
+
+
 
 		ValueType& newdoc = arr[arr.Size()-1];
 
@@ -111,13 +115,13 @@ namespace Spino{
 				Value val;
 				val.type = TYPE_STRING;
 				val.str = v->GetString();
-				idx->index.insert({val, n});
+				idx->index.insert({val, i});
 			}
 			else if(v->IsNumber()) {
 				Value val;
 				val.type = TYPE_NUMERIC;
 				val.numeric = v->GetDouble();
-				idx->index.insert({val, n});
+				idx->index.insert({val, i});
 			} else {
 				// can't index objects or arrays, etc
 			}
@@ -192,11 +196,8 @@ namespace Spino{
 		//check if it's an index search
 		QueryParser parser(s);
 		std::shared_ptr<BasicFieldComparison> bfc = nullptr;
-		try {
-			bfc = parser.parse_basic_comparison();
-		} catch(parse_error e) {
+		bfc = parser.parse_basic_comparison();
 
-		}
 		if(bfc != nullptr) {
 			for(auto& idx : indices) {
 				if(idx->field_name == bfc->field_name) {
@@ -216,8 +217,8 @@ namespace Spino{
 
 		//if it's not an index search, do a linear search using a cursor
 		if(v == "") {
-			auto cursor = find(s);
-			v = cursor->next();
+			auto cursor = LinearCursor(doc[name.c_str()], s);
+			v = cursor.next();
 		}
 
 		//if there is a result, add it to the hashmap for future reference
@@ -228,6 +229,10 @@ namespace Spino{
 		return v;
 	}
 
+	/**
+	 * fnv-1a is a very fast hashing algorithm with low collision rates
+	 * at least, that's what the internet told me
+	 */
 	uint32_t Collection::fnv1a_hash(std::string& s) {
 		auto length = s.length()+1;
 		unsigned int hash = OFFSET_BASIS;
@@ -243,11 +248,7 @@ namespace Spino{
 		//check if it's an index search
 		QueryParser parser(s);
 		std::shared_ptr<BasicFieldComparison> bfc = nullptr;
-		try {
-			bfc = parser.parse_basic_comparison();
-		} catch(parse_error e) {
-
-		}
+		bfc = parser.parse_basic_comparison();
 
 		if(bfc != nullptr) {
 			for(auto& idx : indices) {
@@ -257,12 +258,11 @@ namespace Spino{
 				}
 			}
 		}
+
 		return make_shared<LinearCursor>(doc[name.c_str()], s);
 	}
 
 	void Collection::removeDomIdxFromIndex(uint32_t domIdx) {
-		ValueType& dom_object = doc[name.c_str()][domIdx];
-
 		for(auto idx : indices) {
 			std::vector<std::pair<Spino::Value, int>> idx_copies;
 			auto iitr = idx->index.begin();
@@ -306,6 +306,10 @@ namespace Spino{
 	}
 
 	void Collection::drop(const char* j, bool onlyOne) {
+		// TODO
+		// do an index search first
+		//
+
 		Spino::QueryParser parser(j);
 		auto block = parser.parse_expression();
 
@@ -317,14 +321,12 @@ namespace Spino{
 			Spino::QueryExecutor exec(&(*itr));
 			if(exec.resolve(block)) {
 				removeDomIdxFromIndex(count);
-				itr = arr.Erase(itr);
+				arr.Erase(itr);
 				document_dropped = true;
 				if(onlyOne) {
 					break;
 				}
-			} else {
-				++itr;
-			}
+			} 
 			count++;
 		}
 

@@ -61,15 +61,15 @@ namespace Spino {
 	// this is the type name of the pair that holds the start and end iterators 
 	// of a range of values in an index
 	typedef std::pair<
-		std::multimap<Spino::Value, int>::iterator, 
-		std::multimap<Spino::Value, int>::iterator
+		std::multimap<Spino::Value, uint32_t>::iterator, 
+		std::multimap<Spino::Value, uint32_t>::iterator
 			> IndexIteratorRange;
 
 	class IndexCursor : public BaseCursor {
 		public:
 			IndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom) : 
-				iter_range(iter_range), 
-				collection_dom(collection_dom) 
+				collection_dom(collection_dom),
+				iter_range(iter_range)
 			{
 				iter = iter_range.first;
 			}
@@ -88,13 +88,13 @@ namespace Spino {
 		private:
 			ValueType& collection_dom;
 			IndexIteratorRange iter_range;
-			std::multimap<Spino::Value, int>::iterator iter;
+			std::multimap<Spino::Value, uint32_t>::iterator iter;
 	};
 
 
 	class Collection {
 		public:
-			Collection(DocType& doc, std::string name) : doc(doc), name(name) {
+			Collection(DocType& doc, std::string name) : name(name), doc(doc) {
 				id_counter = 0;	
 			}
 
@@ -120,7 +120,7 @@ namespace Spino {
 				public:
 					std::string field_name;
 					PointerType field;
-					std::multimap<Spino::Value, int> index;
+					std::multimap<Spino::Value, uint32_t> index;
 			};
 
 

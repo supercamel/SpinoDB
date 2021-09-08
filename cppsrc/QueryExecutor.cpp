@@ -76,12 +76,18 @@ namespace Spino {
 			i->Accept(this);
 
 			auto& a = stack[--stack_ptr];
+			// if it's an AND query and the result is false, stop here
+			// the AND query is false. the stack has a false already on it.
 			if((l->op == TOK_AND) && (a.boolean == false)) {
-				a.type == TYPE_BOOLEAN;
+				a.type = TYPE_BOOLEAN;
 				return;
 			}
+
+			//if it's an OR query and the result is true, stop here
+			//the result of the OR query is true and 'true' is on top of the stack already
+			//so we just return here
 			if((l->op == TOK_OR) && (a.boolean == true)) {
-				a.type == TYPE_BOOLEAN;
+				a.type = TYPE_BOOLEAN;
 				return;
 			}
 		}

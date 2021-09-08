@@ -44,7 +44,7 @@ namespace Spino {
 						return numeric < other.numeric;
 					}
 					else if(type == TYPE_STRING) {
-						return str.compare(other.str);
+						return str.compare(other.str) < 0;
 					}	
 				}
 				return false;
@@ -60,7 +60,7 @@ namespace Spino {
 						return numeric > other.numeric;
 					}
 					else if(type == TYPE_STRING) {
-						return other.str.compare(str);
+						return str.compare(other.str) > 0;
 					}	
 				}
 				return false;

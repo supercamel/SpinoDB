@@ -29,6 +29,7 @@ Napi::Object CollectionWrapper::Create(Napi::Env env, std::shared_ptr<Spino::Col
 			InstanceMethod("getName", &CollectionWrapper::get_name),
 			InstanceMethod("createIndex", &CollectionWrapper::create_index),
 			InstanceMethod("append", &CollectionWrapper::append),
+            InstanceMethod("updateById", &CollectionWrapper::updateById),
 			InstanceMethod("update", &CollectionWrapper::update),
 			InstanceMethod("findOneById", &CollectionWrapper::findOneById),
 			InstanceMethod("findOne", &CollectionWrapper::findOne),
@@ -93,6 +94,27 @@ Napi::Value CollectionWrapper::append(const Napi::CallbackInfo& info) {
 
 	return Napi::Value();
 }
+
+Napi::Value CollectionWrapper::updateById(const Napi::CallbackInfo& info) {
+	Napi::Env env = info.Env();
+	Napi::HandleScope scope(env);
+
+	if(info.Length() != 2 || !info[0].IsString() || !info[1].IsString()) {
+		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
+	}
+
+
+	try {
+		collection->updateById(
+				info[0].As<Napi::String>().Utf8Value().c_str(),
+				info[1].As<Napi::String>().Utf8Value().c_str()
+				);
+	} catch(Spino::parse_error& e) {
+		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
+	}
+	return Napi::Value();
+}
+
 
 Napi::Value CollectionWrapper::update(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
