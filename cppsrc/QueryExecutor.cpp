@@ -1,4 +1,3 @@
-#include <iostream>
 #include "QueryExecutor.h"
 #include "QueryParser.h"
 

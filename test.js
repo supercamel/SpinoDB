@@ -1,13 +1,38 @@
-const spino = require('./build/Release/spinodb.node');
+const spino = require('./build/Debug/spinodb.node');
 
-var db = new spino.Spino();
+function delay(delayInms) {
+	return new Promise(resolve => {
+		setTimeout(() => {
+			resolve(2);
+		}, delayInms);
+	});
+}
 
-//db.load("test.db");
+async function main() {
+	var db = new spino.Spino();
 
-var col = db.addCollection('test');
+	//db.load("test.db");
 
-col.createIndex("number");
+	var col = db.addCollection('test');
 
+	col.createIndex("number");
+
+	for(var i = 0; i < 10; i++) {
+		var id = col.append(JSON.stringify({
+			number: i,
+			text: "test"
+		}));
+
+		col.dropById(id);
+	}
+
+	let delayres = await delay(3000);
+}
+main();
+
+
+
+	/*
 console.time("Adding documents");
 for(var i = 0; i < 1000000; i++) {
 	col.append(JSON.stringify({
@@ -62,3 +87,4 @@ console.log(col.findOne("{number: 5}"));
 console.time("$and");
 col.findOne("{$and: [{number: 900000}, {subobject.bool: true}]}");
 console.timeEnd("$and");
+*/

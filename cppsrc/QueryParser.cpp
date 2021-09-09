@@ -1,6 +1,5 @@
 #include "QueryParser.h"
 
-#include <iostream>
 #include <sstream>
 #include <set>
 

@@ -81,7 +81,8 @@ Napi::Value CollectionWrapper::append(const Napi::CallbackInfo& info) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
 	}
 	if(info[0].IsString()) {
-		collection->append(info[0].As<Napi::String>().Utf8Value().c_str());
+		auto id = collection->append(info[0].As<Napi::String>().Utf8Value().c_str());
+		return Napi::String::New(env, id.c_str());
 	} 
 	else if(info[0].IsObject()) {
 		Napi::Object json_object = info[0].As<Napi::Object>();

@@ -2,7 +2,6 @@
 #define SPINODB_INCLUDED
 
 #include <napi.h>
-#include <iostream>
 #include <vector>
 #include <list>
 #include <ctime>
