@@ -17,7 +17,6 @@ CursorWrapper::~CursorWrapper() {
 
 Napi::Value CursorWrapper::next(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	std::string n = cursor->next();
 	if(n.length() > 0) {
@@ -51,14 +50,12 @@ CollectionWrapper::CollectionWrapper(const Napi::CallbackInfo& info) : Napi::Obj
 
 Napi::Value CollectionWrapper::get_name(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 	return Napi::String::New(env, collection->get_name());
 }
 
 
 Napi::Value CollectionWrapper::create_index(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -75,7 +72,6 @@ Napi::Value CollectionWrapper::create_index(const Napi::CallbackInfo& info) {
 
 Napi::Value CollectionWrapper::append(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -101,7 +97,6 @@ Napi::Value CollectionWrapper::append(const Napi::CallbackInfo& info) {
 
 Napi::Value CollectionWrapper::updateById(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 2 || !info[0].IsString() || !info[1].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -122,7 +117,6 @@ Napi::Value CollectionWrapper::updateById(const Napi::CallbackInfo& info) {
 
 Napi::Value CollectionWrapper::update(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 2 || !info[0].IsString() || !info[1].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -142,7 +136,6 @@ Napi::Value CollectionWrapper::update(const Napi::CallbackInfo& info) {
 
 Napi::Value CollectionWrapper::findOneById(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -166,7 +159,6 @@ Napi::Value CollectionWrapper::findOneById(const Napi::CallbackInfo& info) {
 
 Napi::Value CollectionWrapper::findOne(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -188,7 +180,6 @@ Napi::Value CollectionWrapper::findOne(const Napi::CallbackInfo& info) {
 
 Napi::Value CollectionWrapper::find(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -205,7 +196,6 @@ Napi::Value CollectionWrapper::find(const Napi::CallbackInfo& info) {
 
 Napi::Value CollectionWrapper::dropById(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -222,7 +212,6 @@ Napi::Value CollectionWrapper::dropById(const Napi::CallbackInfo& info) {
 
 Napi::Value CollectionWrapper::dropOne(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -238,7 +227,6 @@ Napi::Value CollectionWrapper::dropOne(const Napi::CallbackInfo& info) {
 
 Napi::Value CollectionWrapper::drop(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -255,8 +243,6 @@ Napi::Value CollectionWrapper::drop(const Napi::CallbackInfo& info) {
 Napi::FunctionReference SpinoWrapper::constructor;
 
 Napi::Object SpinoWrapper::Init(Napi::Env env, Napi::Object exports) {
-	Napi::HandleScope scope(env);
-
 	Napi::Function func = DefineClass(env, "Spino", {
 			InstanceMethod("save", &SpinoWrapper::save),
 			InstanceMethod("load", &SpinoWrapper::load),
@@ -279,7 +265,6 @@ SpinoWrapper::SpinoWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Sp
 
 Napi::Value SpinoWrapper::load(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if (  info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -292,7 +277,6 @@ Napi::Value SpinoWrapper::load(const Napi::CallbackInfo& info) {
 
 Napi::Value SpinoWrapper::save(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if (  info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -305,7 +289,6 @@ Napi::Value SpinoWrapper::save(const Napi::CallbackInfo& info) {
 
 Napi::Value SpinoWrapper::add_collection(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -319,7 +302,6 @@ Napi::Value SpinoWrapper::add_collection(const Napi::CallbackInfo& info) {
 
 Napi::Value SpinoWrapper::get_collection(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -338,7 +320,6 @@ Napi::Value SpinoWrapper::get_collection(const Napi::CallbackInfo& info) {
 
 Napi::Value SpinoWrapper::drop_collection(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
 
 	if(info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
