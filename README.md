@@ -2,27 +2,46 @@
 
 *work in progress*
 
-*currently still a mish-mash of spaghetti code and ideas - actively being worked on, will be stable soon*
+*feels like its ready, lets call it 'beta' stage*
 
-*probably definitely full of bugs*
+SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is NodeJS addon written in C++ and is intended to be used with NodeJS for both web and desktop applications.
 
-SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is NodeJS addon written in C++ and is intended to be used with NodeJS for both web applications and desktop applications that require either the performance of an in-memory database or the ease of distribution that comes with using a self-contained database. It may also be used as a fast cache to complement a traditional database.
 
-SpinoDB is designed for speed. It can parse a database file at ~100MB/s. A findOne() query on an indexed field will typically return a result in ~50us. 
+### When To Use It
 
-The maximum amount of data that SpinoDB can store depends on your systems available RAM. Generally SpinoDB is suitable for managing up to a few GB of data.
+##### Web Services
 
-**Design**
+SpinoDB integrates nicely with Node & Express. By switching from an enterprise grade solution to SpinoDB, small/medium websites might notice improvements in website responsiveness and lower server CPU useage. 
+
+Bots and online services that require fast document retrieval may find SpinoDB a more appropriate solution than a fully fledged enterprise system. 
+
+SpinoDB may also be used as a fast cache to complement a traditional database.
+
+##### Desktop Applications
+
+Electron applications can use SpinoDB as an alternative to creating an ad-hoc format for application specific data.
+
+##### Limitations
+
+The practical limits are determined by 
+- how much RAM your system has. It is an in memory database. 
+- loading / saving time. If your system is reasonably spec'd you could budget ~100MB/s to load and save the database to a file.
+
+As a rule of thumb, if the size of your data is greater than 50% of your available RAM, or if the save time is unmanageable, then this isn't for you. 
+
+### Installation
+
+    npm install spinodb
+    
+
+### Design
 
 A SpinoDB contains 'collections'. A collection is roughly analogous to a table in an SQL database, except that instead of containing one dimensional rows, each entry in a collection contains a JSON document. The documents are not required to be consistent.
 
 Documents are JSON strings. To convert to/from Javascript objects you must use JSON.stringify() and JSON.parse().
 
-**Installation**
 
-    npm install spinodb
-
-**Example**
+### Example
 
 	const spino = require('spinodb');
     var db = new spino.Spino(); // create the db instance
@@ -33,25 +52,30 @@ Documents are JSON strings. To convert to/from Javascript objects you must use J
         userColl = db.addCollection('users');
     }
     
-    var result = userColl.findOne('{ name: "Dave" }); // retrieve a user called Dave
+    // retrieve a user called Dave
+    var result = userColl.findOne('{ name: "Dave" });
     console.log(result); 
 
-    userColl.update('{ name: "Dave" }', '{"score": 50}'); // update Dave's score to 50. if the score field does not exist, it is created. 
+	// update Dave's score to 50. if the score field does not exist, it is created. 
+    userColl.update('{ name: "Dave" }', '{"score": 50}'); 
 
 
-**Collections**
+### Collections
 
 db.getCollection(<collection_name>) will return either the collection or undefined if it does not exist.
 
     var col = db.getCollection("users");
+
 db.addCollection(<collection_name>) will add a collection to the database.
 
     var col = db.addCollection("users");
+
 db.dropCollection(<collection_name>) will remove a collection from the database.
 
     db.dropCollection("users"); //destroy all user data
 
-**Adding Documents**
+
+### Adding Documents
 
 append() will add a JSON document to a collection.
 
@@ -68,7 +92,7 @@ append() will also accept a Javascript object, however it is about 15% faster to
 
 append() returns the ID string of the newly created document.
 
-**Find Queries**
+### Find Queries
 
 findOne() will retrieve exactly one document from the collection. The result is either a string of JSON data, or undefined if the query does not match any documents.
 
@@ -98,7 +122,7 @@ Creating an array from a cursor can be done like this
 The array is in string format ready to send over the web, or can be parsed into a javascript array with JSON.parse()
     
     
-**Updating Documents**
+### Updating Documents
 
 update() will merge a JSON document into existing documents that match the search query. Existing fields will be overwritten and fields that do not exist will be created.
 
@@ -106,7 +130,7 @@ update() will merge a JSON document into existing documents that match the searc
 
 It isn't possible to delete a field with update(). To remove fields from a document, you must use find() to get a copy of the document, drop() to remove the document and then append() to insert a new document with the required format.
 
-**Deleting Documents**
+### Deleting Documents
 
 dropOne() will delete exactly one document from the collection that matches the search query.
 
@@ -116,7 +140,7 @@ drop() will drop all documents that match the query.
 
     collection.drop(<query>);
 
-**Query Format**
+### Query Format
 
 SpinoDB has it's own query language. It is similar to the MongoDB query language, but it is not the same. 
 Queries look like JSON strings or Javascript objects but they are not - they are strings in SpinoDB query language.
@@ -152,7 +176,7 @@ $type - Checks if a field is of a type. The type parameter can be either*number,
 
     {name: {$type: string}}
 
-**Logical Expressions**
+### Logical Expressions
 
 $and - can be used to check multiple attributes of the document. All sub expressions must be true for the document to match.
 
@@ -170,7 +194,7 @@ $not - inverts the result of an expression
     {$not: {name: "Dave"}}
 Matches documents where the name is not Dave.
 
-**Sub Object Field Names**
+### Sub Object Field Names
 
 Field names are the basis of query operations and are used to identify data in a JSON document. JSON documents can contain objects inside of objects.
 
@@ -185,18 +209,18 @@ To query the field of a sub object, the following syntax can be used
 
     { steamProfile.steamId: "7656112598325978325" }
 
-**_id Field**
+### _id Field
 
 When documents are first added to the database, they are given a unique ID. The ID encodes the document creation time which is used to optimize searching operations. For best performance, use the ByID functions.
 
-updateById(id_string, newDocument);
+	updateById(<id_string>, <newDocument>);
 
-findOneById(id_string);
+	findOneById(<id_string>);
 
-dropById(id_string);
+	dropById(<id_string>);
 
 
-**Indexing**
+### Indexing
 
 Collections can be indexed. Indexing yields huge performance increases because the database can search for results far more efficiently. Note that indexed fields are not saved to disk and must be created in the application each time it runs.
 
@@ -205,7 +229,7 @@ col.createIndex(<field_name>);
 	col.createIndex("steamProfile.steamId");
 
 
-**Performance Tuning**
+### Performance Tuning
 
 When SpinoDB executes a search, it goes through 3 stages
 1. it will look up a cache of previously conducted queries and return a result from that. the cache is purged every time the collection is modified (appended, updated or a document dropped).
@@ -216,29 +240,47 @@ When SpinoDB executes a search, it goes through 3 stages
 * make sure you create indexes for fields you will be using to search for documents
 * use findOne over find if you only expect to get 1 result. 
 
+Prefer drop() over a series of calls to dropOne(). drop() can be used delete many documents but will only reconstruct the index once. 
 
-**Comparison To LokiJS**
+If you have a high rate of data passing through a collection of millions of documents, drop time potentially could become a performance bottleneck. One strategy might be adding a field called pendingDelete to your documents that are ready for deletion. A search query to exclude 'deleted' documents might look like this.
+
+	var cursor = col.find('{$and: [{name: "Dave"}, {pendingDelete: {$exists: false}}]}');
+
+Then at some convenient moment, call 
+	
+    col.drop("{pendingDelete: {$exists: true}}");
+    
+Only bother with this is unless drop time becomes problematic.
+
+### Comparison To LokiJS
 
 LokiJS is a similar in-memory NoSQL database, however it is far more mature and featurefull. It also has the advantage of being a pure javascript solution and can run in browsers. 
 
-Inserting 1 Million Documents (1x index field)
+##### Inserting 1 Million Documents (1x index field)
 
-LokiJS - 1590ms
-SpinoDB - 3400ms
+| LokiJS | SpinoDB |
+|:-------|:--------|
+| 1590ms |  3400ms |
+
 
 LokiJS is over 2x faster at inserting new documents. This is most likely because SpinoDB requires objects to be stringified and reparsed . .. we working on this.
 
-findOne by an indexed field
-LokiJS - 0.459ms
-SpinoDB - 0.049ms
+##### findOne by an indexed field
 
-drop/remove by an indexed field
-LokiJS - 2076ms
-SpinoDB - 404ms
+| LokiJS | SpinoDB |
+|--------|---------|
+| 0.459ms|0.049ms  |
 
-Drop/remove is expensive because the index has to be reconstructed but SpinoDB is 5x faster.
 
-**Persistence**
+##### drop/remove by an indexed field
+
+| LokiJS  | SpinoDB |
+|---------|---------|
+| 2075ms  | 404ms   |
+
+Drop/remove is expensive, probably because the index has to be reconstructed
+
+### Persistence
 
 The database can be loaded and stored to a file.
 db.load(<path_to_file>);
@@ -247,7 +289,7 @@ db.load(<path_to_file>);
 db.save(<path_to_file>);
 
     db.save("data.db");
-Note that these functions are synchronous / blocking functions. Once your database exceeds 100+MB you may start to notice lags during saves. Use them judiciously. 
+Note that these functions are synchronous / blocking functions. Once your database exceeds 100+MB you may start to notice lags during saves. 
 
 For reference, SpinoDB will parse/stringify about 100MB per second from file on my PC with a mediocre SATA SSD, . 
 
