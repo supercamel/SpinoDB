@@ -29,12 +29,12 @@ namespace Spino{
 		id += id_counter_str;
 
 		ValueType _id;
-		_id.SetString(id.c_str(), id.length(), doc.GetAllocator());
+		_id.SetString(id.c_str(), id.length(), d.GetAllocator());
 
-		d.AddMember("_id", _id, doc.GetAllocator());
+		d.AddMember("_id", _id, d.GetAllocator());
 
         auto& arr = doc[name.c_str()];
-		arr.PushBack(d.GetObject(), doc.GetAllocator());
+		arr.PushBack(d.GetObject(), d.GetAllocator());
 
 
 

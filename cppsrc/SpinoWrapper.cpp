@@ -28,7 +28,7 @@ Napi::Value CursorWrapper::next(const Napi::CallbackInfo& info) {
 	}
 }
 
-Napi::Object CollectionWrapper::Create(Napi::Env env, std::shared_ptr<Spino::Collection> ptr) {
+Napi::Object CollectionWrapper::Create(Napi::Env env, Spino::Collection* ptr) {
 	return DefineClass(env, "Collection", {
 			InstanceMethod("getName", &CollectionWrapper::get_name),
 			InstanceMethod("createIndex", &CollectionWrapper::create_index),
@@ -41,7 +41,7 @@ Napi::Object CollectionWrapper::Create(Napi::Env env, std::shared_ptr<Spino::Col
 			InstanceMethod("dropById", &CollectionWrapper::dropById),
 			InstanceMethod("dropOne", &CollectionWrapper::dropOne),
 			InstanceMethod("drop", &CollectionWrapper::drop)
-			}, (void*)&ptr).New({});
+			}, (void*)ptr).New({});
 }
 
 
@@ -273,7 +273,7 @@ Napi::Object SpinoWrapper::Init(Napi::Env env, Napi::Object exports) {
 
 
 SpinoWrapper::SpinoWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<SpinoWrapper>(info)  {
-	sambodb = make_shared<Spino::SpinoDB>();
+	sambodb = new Spino::SpinoDB();
 }
 
 Napi::Value SpinoWrapper::load(const Napi::CallbackInfo& info) {
