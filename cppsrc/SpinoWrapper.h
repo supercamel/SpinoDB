@@ -1,64 +1,76 @@
 #ifndef SPINO_WRAPPER_H
 #define SPINO_WRAPPER_H
 
-#include <napi.h>
+#include <node.h>
+#include <node_object_wrap.h>
 #include "SpinoDB.h"
 
-class CursorWrapper: public Napi::ObjectWrap<CursorWrapper> {
+
+class CursorWrapper: public node::ObjectWrap {
 	public:
-		static void Init(Napi::Env env);
-		static Napi::Object Create(Napi::Env, Spino::BaseCursor* ptr);
-		CursorWrapper(const Napi::CallbackInfo& info);
-        ~CursorWrapper();
+		CursorWrapper(Spino::BaseCursor* cursor) : cursor(cursor) { }
+		~CursorWrapper() { delete cursor; }
 
+		static void Init(v8::Isolate* isolate);
+		static void NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args, Spino::BaseCursor* cur);
 	private:
-		static Napi::FunctionReference constructor;
-		Napi::Value next(const Napi::CallbackInfo& info);
 
-        Spino::BaseCursor* cursor;
+		static void next(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+		static v8::Global<v8::Function> constructor;
+		Spino::BaseCursor* cursor;
 };
 
 
-
-class CollectionWrapper: public Napi::ObjectWrap<CollectionWrapper> {
+class CollectionWrapper: public node::ObjectWrap {
 	public:
-		static void Init(Napi::Env env);
-		static Napi::Object Create(Napi::Env env, Spino::Collection* ptr);
-		CollectionWrapper(const Napi::CallbackInfo& info);
+
+		CollectionWrapper(Spino::Collection* collection) : collection(collection) { }
+
+		static void Init(v8::Isolate* isolate);
+		static void NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args, Spino::Collection* col);
 
 	private:
-		static Napi::FunctionReference constructor;
-		Napi::Value set_name(const Napi::CallbackInfo& info);
-		Napi::Value get_name(const Napi::CallbackInfo& info);
-		Napi::Value create_index(const Napi::CallbackInfo& info);
-		Napi::Value append(const Napi::CallbackInfo& info);
-        Napi::Value updateById(const Napi::CallbackInfo& info);
-		Napi::Value update(const Napi::CallbackInfo& info);
-		Napi::Value findOneById(const Napi::CallbackInfo& info);
-		Napi::Value findOne(const Napi::CallbackInfo& info);
-		Napi::Value find(const Napi::CallbackInfo& info);
-		Napi::Value dropById(const Napi::CallbackInfo& info);
-		Napi::Value dropOne(const Napi::CallbackInfo& info);
-		Napi::Value drop(const Napi::CallbackInfo& info);
+		~CollectionWrapper() { }
 
+		static void getName(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void createIndex(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void append(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void updateById(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void update(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void findOneById(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void findOne(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void find(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void dropById(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void dropOne(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void drop(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void timestampById(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+
+
+
+		static v8::Global<v8::Function> constructor;	
 		Spino::Collection* collection;
 };
 
 
-class SpinoWrapper: public Napi::ObjectWrap<SpinoWrapper> {
+class SpinoWrapper: public node::ObjectWrap {
 	public:
-		static Napi::Object Init(Napi::Env env, Napi::Object exports); 
-		SpinoWrapper(const Napi::CallbackInfo& info); 
-        ~SpinoWrapper() { delete sambodb; }
+		static void Init(v8::Local<v8::Object> exports);
 
 	private:
-		static Napi::FunctionReference constructor; 
-		Napi::Value save(const Napi::CallbackInfo& info); 
-		Napi::Value load(const Napi::CallbackInfo& info); 
-		Napi::Value add_collection(const Napi::CallbackInfo& info);
-		Napi::Value get_collection(const Napi::CallbackInfo& info);
-		Napi::Value drop_collection(const Napi::CallbackInfo& info);
-		Spino::SpinoDB* sambodb; 
+		explicit SpinoWrapper();
+		~SpinoWrapper() { delete spino; }
+
+		static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+		static void save(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void load(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void addCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void getCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void dropCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+		Spino::SpinoDB* spino; 
 };
 
 #endif

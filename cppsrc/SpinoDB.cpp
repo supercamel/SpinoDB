@@ -1,42 +1,15 @@
 #include "SpinoDB.h"
-
 #include <functional>
 
+#include <iostream>
 using namespace std;
 
 namespace Spino{
-	std::string Collection::get_name() const {
+	std::string Collection::getName() const {
 		return name;
 	}
 
-	std::string Collection::append(const char* s) {
-		DocType d;
-		d.Parse(s);
-
-		uint32_t timestamp = std::time(0);
-		std::string id = std::to_string(timestamp);
-		id = std::string(10 - id.length(), '0') + id;
-
-		std::string id_counter_str = std::to_string(id_counter++);
-		id_counter_str = std::string(6 - id_counter_str.length(), '0') + id_counter_str;
-		if(last_append_timestamp - timestamp != 0) {
-			id_counter = 0;
-		}
-
-		last_append_timestamp = timestamp;
-
-		id += id_counter_str;
-
-		ValueType _id;
-		_id.SetString(id.c_str(), id.length(), d.GetAllocator());
-
-		d.AddMember("_id", _id, d.GetAllocator());
-
-		auto& arr = doc[name.c_str()];
-		arr.PushBack(d.GetObject(), d.GetAllocator());
-
-
-
+	void Collection::indexNewDoc() {
 		ValueType& newdoc = arr[arr.Size()-1];
 
 		for(auto& idx : indices) {
@@ -55,7 +28,53 @@ namespace Spino{
 				}
 			}
 		}
-		return id;
+	}
+
+
+	void Collection::append(ValueType& d) {
+		uint32_t timestamp = std::time(0);
+
+		char idstr[16];
+		idstr[15] = 0;
+		char* idstr_ts = &idstr[10];
+		while(idstr_ts >= idstr) {
+			*--idstr_ts = char(timestamp%10 + '0');
+			timestamp /= 10;	
+		}	
+
+		uint32_t tmp_idcounter = id_counter++;
+		idstr_ts = &idstr[16];
+		while(idstr_ts >= (&idstr[11])) {
+			*--idstr_ts = (tmp_idcounter%10) + '0';
+			tmp_idcounter /= 10;	
+		}
+
+		if(last_append_timestamp - timestamp != 0) {
+			id_counter = 0;
+		}
+		last_append_timestamp = timestamp;
+
+		ValueType _id;
+		_id.SetString(idstr, 16, doc.GetAllocator());
+
+		d.AddMember("_id", _id, doc.GetAllocator());
+
+		arr.PushBack(d.GetObject(), doc.GetAllocator());
+
+		indexNewDoc();
+	}
+
+	void Collection::append(const char* s) {
+		/*
+		DomBuilder dombuilder(&doc.GetAllocator());
+		Reader reader;
+		StringStream ss(s);
+		reader.Parse(ss, dombuilder);
+		append(dombuilder.get_result());
+		*/
+		DocType d;
+		d.Parse(s);
+		append(d.GetObject());
 	}
 
 	void Collection::updateById(const char* id_cstr, const char* update) {
@@ -64,7 +83,6 @@ namespace Spino{
 			DocType j;
 			j.Parse(update);
 
-			auto& arr = doc[name.c_str()];
 			mergeObjects(arr[domIdx], j.GetObject());
 			hashmap.clear();
 		}
@@ -78,7 +96,6 @@ namespace Spino{
 		auto block = parser.parse_expression();
 
 
-		auto& arr = doc[name.c_str()];
 		for (ValueType::ValueIterator itr = arr.Begin();
 				itr != arr.End(); ++itr) {
 			Spino::QueryExecutor exec(&(*itr));
@@ -91,7 +108,7 @@ namespace Spino{
 		hashmap.clear();
 	}
 
-	void Collection::create_index(const char* s) {
+	void Collection::createIndex(const char* s) {
 		auto idx = new Collection::Index();
 		idx->field_name = s;
 		stringstream ss(s);
@@ -147,8 +164,8 @@ namespace Spino{
 	}
 
 	bool Collection::domIndexFromId(const char* id_cstr, uint32_t& domIdx) const {
-		uint32_t tsc = fast_atoi_len(id_cstr, 10);
-		uint32_t countc = fast_atoi_len(&id_cstr[10], 6);
+		uint64_t tsc = fast_atoi_len(id_cstr, 10);
+		uint64_t countc = fast_atoi_len(&id_cstr[10], 6);
 
 		auto& list = doc[name.c_str()];
 		auto n = list.Size();
@@ -158,7 +175,7 @@ namespace Spino{
 			auto m = (L+R)/2;
 
 			const char* id_to_test = list[m].GetObject()["_id"].GetString();
-			uint32_t timestamp = fast_atoi_len(id_to_test, 10);
+			uint64_t timestamp = fast_atoi_len(id_to_test, 10);
 
 			if(timestamp < tsc) {
 				L = m+1;
@@ -167,7 +184,7 @@ namespace Spino{
 				R = m-1;
 			}
 			else {
-				uint32_t count = fast_atoi_len(&id_to_test[10], 6);
+				uint64_t count = fast_atoi_len(&id_to_test[10], 6);
 				if(count < countc) {
 					L = m+1;
 				} 
@@ -292,7 +309,6 @@ namespace Spino{
 		if(domIndexFromId(s, domIdx)) {
 			removeDomIdxFromIndex(domIdx);
 
-			auto& arr = doc[name.c_str()];
 			auto iter = arr.Begin();
 			iter += domIdx;
 
@@ -314,7 +330,6 @@ namespace Spino{
 		Spino::QueryParser parser(j);
 		auto block = parser.parse_expression();
 
-		auto& arr = doc[name.c_str()];
 		bool document_dropped = false;
 		uint32_t count = 0;
 		for (ValueType::ConstValueIterator itr = arr.Begin();
@@ -388,7 +403,7 @@ namespace Spino{
 
 	Collection* SpinoDB::add_collection(std::string name) {
 		for(auto i : collections) {
-			if(i->get_name() == name) {
+			if(i->getName() == name) {
 				return nullptr;
 			}
 		}
@@ -405,17 +420,23 @@ namespace Spino{
 
 	Collection* SpinoDB::get_collection(std::string name) const {
 		for(auto c : collections) {
-			if(c->get_name() == name) {
+			if(c->getName() == name) {
 				return c;
 			}
 		}
 		return nullptr;
 	}
 
+	uint64_t Collection::timestampById(const char* s) {
+		return fast_atoi_len(s, 10)*1000;
+	}
+
 	void SpinoDB::drop_collection(std::string name) {
+		// **BUG**
+		// TODO remove collection from DOM
 		for(auto it = collections.begin(); it != collections.end(); ) {
 			auto c = *it;
-			if(c->get_name() == name) {
+			if(c->getName() == name) {
 				delete c;
 				collections.erase(it);
 			} else {

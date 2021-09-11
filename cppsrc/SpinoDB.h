@@ -1,7 +1,6 @@
 #ifndef SPINODB_INCLUDED
 #define SPINODB_INCLUDED
 
-#include <napi.h>
 #include <vector>
 #include <list>
 #include <ctime>
@@ -98,7 +97,7 @@ namespace Spino {
 
 	class Collection {
 		public:
-			Collection(DocType& doc, std::string name) : name(name), doc(doc) {
+			Collection(DocType& doc, std::string name) : name(name), doc(doc), arr(doc[name.c_str()])  {
 				id_counter = 0;	
 			}
 
@@ -108,11 +107,12 @@ namespace Spino {
                 }
             }
 
-			std::string get_name() const;
+			std::string getName() const;
 
-			void create_index(const char* field);
+			void createIndex(const char* field);
 
-			std::string append(const char* s);
+			void append(ValueType& d);
+			void append(const char* s);
 
 			void updateById(const char* id, const char* update);
 			void update(const char* search, const char* update);
@@ -125,6 +125,8 @@ namespace Spino {
 			void dropOne(const char* s);
 			void drop(const char* s, bool onlyOne = false);
 
+			static uint64_t timestampById(const char* id);
+
 		private:
 			class Index {
 				public:
@@ -134,15 +136,16 @@ namespace Spino {
 			};
 
 
+			void indexNewDoc();
 			void removeDomIdxFromIndex(uint32_t domIdx);
 			bool domIndexFromId(const char* s, uint32_t& domIdx) const;
 			std::vector<Index*> indices;
 			bool mergeObjects(ValueType& dstObject, ValueType& srcObject);
 
 			uint32_t fnv1a_hash(std::string& s);
-			uint32_t fast_atoi_len(const char * str, uint32_t len) const
+			static uint64_t fast_atoi_len(const char * str, uint32_t len)
 			{
-				uint32_t val = 0;
+				uint64_t val = 0;
 				uint32_t count = 0;
 				while(count++ < len) {
 					val = val*10 + (*str++ - '0');
@@ -153,11 +156,12 @@ namespace Spino {
 			uint32_t id_counter;
 			std::string name;
 			DocType& doc;
+			ValueType& arr;
 			std::map<uint32_t, std::string> hashmap;
 
 			const uint32_t FNV_PRIME = 16777619u;
 			const uint32_t OFFSET_BASIS = 2166136261u;
-			uint32_t last_append_timestamp = 0;
+			uint64_t last_append_timestamp = 0;
 	};
 
 

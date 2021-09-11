@@ -1,13 +1,17 @@
-/* cppsrc/main.cpp */
+#include <node.h>
 #include "SpinoWrapper.h"
-#include <napi.h>
 
-Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
-	SpinoWrapper::Init(env, exports);
-	CollectionWrapper::Init(env);
-	CursorWrapper::Init(env);
-	return exports;
+namespace SpinoDB {
+
+	using v8::Local;
+	using v8::Object;
+
+	void InitAll(Local<Object> exports) {
+		CursorWrapper::Init(exports->GetIsolate());
+		CollectionWrapper::Init(exports->GetIsolate());
+		SpinoWrapper::Init(exports);
+	}
+
+	NODE_MODULE(NODE_GYP_MODULE_NAME, InitAll)
+
 }
-
-NODE_API_MODULE(NODE_GYP_MODULE_NAME, InitAll)
-

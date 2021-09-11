@@ -1,358 +1,368 @@
 #include "SpinoWrapper.h"
 
-Napi::FunctionReference CollectionWrapper::constructor;
-Napi::FunctionReference SpinoWrapper::constructor;
-Napi::FunctionReference CursorWrapper::constructor;
+#include <iostream>
+using namespace std;
 
 
-void CursorWrapper::Init(Napi::Env env) {
-	Napi::HandleScope scope(env);
-	Napi::Function func = DefineClass(env, "Cursor", {
-			InstanceMethod("next", &CursorWrapper::next)
-			});
-	constructor = Napi::Persistent(func);
+using node::AddEnvironmentCleanupHook;
+using v8::Context;
+using v8::Function;
+using v8::FunctionCallbackInfo;
+using v8::FunctionTemplate;
+using v8::Isolate;
+using v8::Local;
+using v8::Number;
+using v8::Object;
+using v8::ObjectTemplate;
+using v8::String;
+using v8::Value;
+using v8::Array;
 
-}
+v8::Global<Function> CursorWrapper::constructor;
+v8::Global<Function> CollectionWrapper::constructor;
 
-Napi::Object CursorWrapper::Create(Napi::Env env, Spino::BaseCursor* ptr) {
-	auto ret = constructor.Value().New({});
-	Unwrap(ret)->cursor = ptr;
-	return ret;
 
-}
+static void rapidjsonDocFromV8(Isolate* isolate, Local<Object>& obj, Spino::ValueType& doc, auto allocator) {
+	Local<v8::Context> context = isolate->GetCurrentContext();
+	auto property_names = obj->GetOwnPropertyNames(context).ToLocalChecked();
 
-CursorWrapper::CursorWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<CursorWrapper>(info)  {
-	cursor = static_cast<Spino::BaseCursor*>(info.Data());
-}
+	auto rjsonObj = doc.GetObject();
 
-CursorWrapper::~CursorWrapper() {
+	Spino::ValueType skey;
+	Spino::ValueType sval;
 
-	delete cursor;
-}
+	auto length = property_names->Length();
+	for (uint32_t i = 0; i < length; ++i) {
+		auto key = property_names->Get(context, i).ToLocalChecked();
+		auto value = obj->Get(context, key).ToLocalChecked();
 
-Napi::Value CursorWrapper::next(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
+		if(value->IsString()) {
+			/*
+			   String::Utf8Value utf8_key(isolate, key);
+			   String::Utf8Value utf8_value(isolate, value);
 
-	std::string n = cursor->next();
-	if(n.length() > 0) {
-		return Napi::String::New(env, n.c_str());	
+			   Spino::ValueType skey;
+			   Spino::ValueType sval;
+
+			   skey.SetString(*utf8_key, utf8_key.length(), allocator);
+			   sval.SetString(*utf8_value, utf8_value.length(), allocator);
+
+			   rjsonObj.AddMember(skey, sval, allocator);
+			   */
+		}
+		else if(value->IsNumber()) {
+			String::Utf8Value utf8_key(isolate, key);
+
+			sval = Spino::ValueType(value->ToNumber(context).ToLocalChecked()->Value());
+			skey.SetString(*utf8_key, utf8_key.length(), allocator);
+
+			rjsonObj.AddMember(skey, sval, allocator);
+		}
 	}
-	else {
-		return Napi::Value();
+}
+
+
+void CursorWrapper::Init(Isolate* isolate){
+	// Prepare constructor template
+	Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate);
+	tpl->SetClassName(String::NewFromUtf8(isolate, "Cursor").ToLocalChecked());
+	tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+	// Prototype
+	NODE_SET_PROTOTYPE_METHOD(tpl, "next", next);
+
+	Local<Context> context = isolate->GetCurrentContext();
+	constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
+
+	AddEnvironmentCleanupHook(isolate, [](void*) {
+			constructor.Reset();
+			}, nullptr);
+
+}
+
+void CursorWrapper::NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args, Spino::BaseCursor* cur) {
+	Isolate* isolate = args.GetIsolate();
+
+	auto cons = Local<Function>::New(isolate, constructor);
+	auto context = isolate->GetCurrentContext();
+	auto instance = cons->NewInstance(context).ToLocalChecked();
+	auto curwrapper = new CursorWrapper(cur);
+	curwrapper->Wrap(instance);
+	args.GetReturnValue().Set(instance);
+}
+
+void CursorWrapper::next(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.Holder());
+	auto next = curwrap->cursor->next();
+	if(next != "") {
+		args.GetReturnValue().Set(String::NewFromUtf8(isolate, next.c_str()).ToLocalChecked());
 	}
 }
 
-void CollectionWrapper::Init(Napi::Env env) {
-	Napi::HandleScope scope(env);
+void CollectionWrapper::Init(Isolate* isolate){
+	// Prepare constructor template
+	Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate);
+	tpl->SetClassName(String::NewFromUtf8(isolate, "Collection").ToLocalChecked());
+	tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-	Napi::Function func = DefineClass(env, "Collection", {
-			InstanceMethod("getName", &CollectionWrapper::get_name),
-			InstanceMethod("createIndex", &CollectionWrapper::create_index),
-			InstanceMethod("append", &CollectionWrapper::append),
-			InstanceMethod("updateById", &CollectionWrapper::updateById),
-			InstanceMethod("update", &CollectionWrapper::update),
-			InstanceMethod("findOneById", &CollectionWrapper::findOneById),
-			InstanceMethod("findOne", &CollectionWrapper::findOne),
-			InstanceMethod("find", &CollectionWrapper::find),
-			InstanceMethod("dropById", &CollectionWrapper::dropById),
-			InstanceMethod("dropOne", &CollectionWrapper::dropOne),
-			InstanceMethod("drop", &CollectionWrapper::drop)
-			});
+	// Prototype
+	NODE_SET_PROTOTYPE_METHOD(tpl, "getName", getName);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "createIndex", createIndex);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "append", append);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "updateById", updateById);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "update", update);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "findOneById", findOneById);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "findOne", findOne);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "find", find);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "dropById", dropById);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "dropOne", dropOne);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "drop", drop);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "timestampById", timestampById);
 
-	constructor = Napi::Persistent(func);
+	Local<Context> context = isolate->GetCurrentContext();
+	constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
+
+	AddEnvironmentCleanupHook(isolate, [](void*) {
+			constructor.Reset();
+			}, nullptr);
+
 }
 
+void CollectionWrapper::NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args, Spino::Collection* col) {
+	Isolate* isolate = args.GetIsolate();
 
-Napi::Object CollectionWrapper::Create(Napi::Env env, Spino::Collection* ptr) {
-	auto ret = constructor.Value().New({});
-	Unwrap(ret)->collection = ptr;
-	return ret;
+	auto cons = Local<Function>::New(isolate, constructor);
+	auto context = isolate->GetCurrentContext();
+	auto instance = cons->NewInstance(context).ToLocalChecked();
+	auto colwrapper = new CollectionWrapper(col);
+	colwrapper->Wrap(instance);
+	args.GetReturnValue().Set(instance);
 }
 
-
-CollectionWrapper::CollectionWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<CollectionWrapper>(info)  {
-	collection = static_cast<Spino::Collection*>(info.Data());
+void CollectionWrapper::getName(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	CollectionWrapper* collectionwrap = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	auto name = collectionwrap->collection->getName();
+	args.GetReturnValue().Set(String::NewFromUtf8(isolate, name.c_str()).ToLocalChecked());
 }
 
-Napi::Value CollectionWrapper::get_name(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-	return Napi::String::New(env, collection->get_name());
+void CollectionWrapper::createIndex(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
+
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+
+	obj->collection->createIndex(*str);
 }
 
+void CollectionWrapper::append(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-Napi::Value CollectionWrapper::create_index(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
+	/*
+	if(args[0]->IsString()) {
+		v8::String::Utf8Value str(isolate, args[0]);
 
-	if(info.Length() != 1) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
-	if(info[0].IsString()) {
-		collection->create_index(info[0].As<Napi::String>().Utf8Value().c_str());
+		auto idstr = obj->collection->append(*str);
+		args.GetReturnValue().Set(String::NewFromUtf8(isolate, idstr.c_str()).ToLocalChecked());
 	} 
-	else {
-		Napi::TypeError::New(env, "Argument must be a string").ThrowAsJavaScriptException();
-	}
+	else if(args[0]->IsObject()) {
+	*/
+		auto handle = args[0].As<v8::Object>();
 
-	return Napi::Value();
+		/*
+		rapidjsonDocFromV8(isolate, handle, obj->collection->add_stub(), obj->collection->get_allocator());
+		auto idstr = obj->collection->indexNewDoc();
+		*/
+		auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
+		v8::String::Utf8Value s(isolate, jsonobj);
+		obj->collection->append(*s);
+		
+//	}
 }
 
-Napi::Value CollectionWrapper::append(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
+void CollectionWrapper::updateById(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value idstr(isolate, args[0]);
+	v8::String::Utf8Value update(isolate, args[1]);
 
-	if(info.Length() != 1) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
-	if(info[0].IsString()) {
-		auto id = collection->append(info[0].As<Napi::String>().Utf8Value().c_str());
-		return Napi::String::New(env, id.c_str());
-	} 
-	else if(info[0].IsObject()) {
-		Napi::Object json_object = info[0].As<Napi::Object>();
-		Napi::Object json = env.Global().Get("JSON").As<Napi::Object>();
-		Napi::Function stringify = json.Get("stringify").As<Napi::Function>();
-		auto str = stringify.Call(json, { json_object }).As<Napi::String>();
-		auto id = collection->append(str.Utf8Value().c_str());
-		return Napi::String::New(env, id.c_str());
-	} 
-	else {
-		Napi::TypeError::New(env, "Argument can be either a string or an object").ThrowAsJavaScriptException();
-	}
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-	return Napi::Value();
+	obj->collection->updateById(*idstr, *update);
 }
 
-Napi::Value CollectionWrapper::updateById(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
+void CollectionWrapper::update(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value findstr(isolate, args[0]);
+	v8::String::Utf8Value update(isolate, args[1]);
 
-	if(info.Length() != 2 || !info[0].IsString() || !info[1].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-
-	try {
-		collection->updateById(
-				info[0].As<Napi::String>().Utf8Value().c_str(),
-				info[1].As<Napi::String>().Utf8Value().c_str()
-				);
-	} catch(Spino::parse_error& e) {
-		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
-	}
-	return Napi::Value();
+	obj->collection->update(*findstr, *update);
 }
 
+void CollectionWrapper::findOneById(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value idstr(isolate, args[0]);
 
-Napi::Value CollectionWrapper::update(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-
-	if(info.Length() != 2 || !info[0].IsString() || !info[1].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
-
-
-	try {
-		collection->update(
-				info[0].As<Napi::String>().Utf8Value().c_str(),
-				info[1].As<Napi::String>().Utf8Value().c_str()
-				);
-	} catch(Spino::parse_error& e) {
-		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
-	}
-	return Napi::Value();
-}
-
-Napi::Value CollectionWrapper::findOneById(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-
-	if(info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
-
-	std::string result;
-	try {
-		result = collection->findOneById(info[0].As<Napi::String>().Utf8Value().c_str());
-	} catch(Spino::parse_error& e) {
-		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
-	}
-	if(result.length() > 0) {
-		return Napi::String::New(env, result.c_str());	
-	} 
-	else {
-		return Napi::Value();
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	auto f = obj->collection->findOneById(*idstr);
+	if(f != "") {
+		args.GetReturnValue().Set(String::NewFromUtf8(isolate, f.c_str()).ToLocalChecked());
 	}
 }
 
+void CollectionWrapper::findOne(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-
-Napi::Value CollectionWrapper::findOne(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-
-	if(info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
-
-	std::string result;
-	try {
-		result = collection->findOne(info[0].As<Napi::String>().Utf8Value().c_str());
-	} catch(Spino::parse_error& e) {
-		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
-	}
-	if(result.length() > 0) {
-		return Napi::String::New(env, result.c_str());	
-	} 
-	else {
-		return Napi::Value();
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	auto f = obj->collection->findOne(*str);
+	if(f != "") {
+		args.GetReturnValue().Set(String::NewFromUtf8(isolate, f.c_str()).ToLocalChecked());
 	}
 }
 
-Napi::Value CollectionWrapper::find(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
+void CollectionWrapper::find(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-	if(info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	auto cursor = obj->collection->find(*str);
+	CursorWrapper::NewInstance(args, cursor);
+}
 
-	auto cur = collection->find(info[0].As<Napi::String>().Utf8Value().c_str());
-	if(cur == nullptr) {
-		return Napi::Value();
+void CollectionWrapper::dropById(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value findstr(isolate, args[0]);
+
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+
+	obj->collection->dropById(*findstr);
+}
+
+void CollectionWrapper::dropOne(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value findstr(isolate, args[0]);
+
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+
+	obj->collection->dropOne(*findstr);
+}
+
+void CollectionWrapper::drop(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value findstr(isolate, args[0]);
+
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+
+	obj->collection->drop(*findstr);
+}
+
+void CollectionWrapper::timestampById(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value findstr(isolate, args[0]);
+
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+
+	uint64_t ts = obj->collection->timestampById(*findstr);
+	args.GetReturnValue().Set(v8::Date::New(isolate->GetCurrentContext(), ts).ToLocalChecked());
+}
+
+
+
+SpinoWrapper::SpinoWrapper() {
+	spino = new Spino::SpinoDB();	
+}
+
+void SpinoWrapper::Init(Local<Object> exports) {
+	Isolate* isolate = exports->GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
+
+	Local<ObjectTemplate> addon_data_tpl = ObjectTemplate::New(isolate);
+	addon_data_tpl->SetInternalFieldCount(1);  
+	Local<Object> addon_data = addon_data_tpl->NewInstance(context).ToLocalChecked();
+
+	Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New, addon_data);
+	tpl->SetClassName(String::NewFromUtf8(isolate, "Spino").ToLocalChecked());
+	tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+	NODE_SET_PROTOTYPE_METHOD(tpl, "save", save);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "load", load);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "addCollection", addCollection);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "getCollection", getCollection);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "dropCollection", dropCollection);
+
+	Local<Function> constructor = tpl->GetFunction(context).ToLocalChecked();
+	addon_data->SetInternalField(0, constructor);
+	exports->Set(context, String::NewFromUtf8(
+				isolate, "Spino").ToLocalChecked(),
+			constructor).FromJust();
+}
+
+void SpinoWrapper::New(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
+
+	if (args.IsConstructCall()) {
+		SpinoWrapper* obj = new SpinoWrapper();
+		obj->Wrap(args.This());
+		args.GetReturnValue().Set(args.This());
 	} else {
-		auto curwrapper = Napi::Persistent(CursorWrapper::Create(info.Env(), cur));
-		return curwrapper.Value();
+		Local<Function> cons =
+			args.Data().As<Object>()->GetInternalField(0).As<Function>();
+		Local<Object> result =
+			cons->NewInstance(context).ToLocalChecked();
+		args.GetReturnValue().Set(result);
 	}
 }
 
-Napi::Value CollectionWrapper::dropById(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
+void SpinoWrapper::save(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-	if(info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
+	SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-	try {
-		collection->dropById(info[0].As<Napi::String>().Utf8Value().c_str());
-	} catch(Spino::parse_error& e) {
-		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
-	}
-	return Napi::Value();
-
+	obj->spino->save(*str);
 }
 
-Napi::Value CollectionWrapper::dropOne(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
+void SpinoWrapper::load(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-	if(info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
+	SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-	try {
-		collection->dropOne(info[0].As<Napi::String>().Utf8Value().c_str());
-	} catch(Spino::parse_error& e) {
-		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
-	}
-	return Napi::Value();
+	obj->spino->load(*str);
 }
 
-Napi::Value CollectionWrapper::drop(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
+void SpinoWrapper::addCollection(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-	if(info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
+	SpinoWrapper* spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-	try {
-		collection->drop(info[0].As<Napi::String>().Utf8Value().c_str());
-	} catch(Spino::parse_error& e) {
-		Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
-	}
-	return Napi::Value();
+	auto col = spinowrap->spino->add_collection(*str);
+	CollectionWrapper::NewInstance(args, col);
 }
 
-Napi::Object SpinoWrapper::Init(Napi::Env env, Napi::Object exports) {
-	Napi::HandleScope scope(env);
+void SpinoWrapper::getCollection(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-	Napi::Function func = DefineClass(env, "Spino", {
-			InstanceMethod("save", &SpinoWrapper::save),
-			InstanceMethod("load", &SpinoWrapper::load),
-			InstanceMethod("addCollection", &SpinoWrapper::add_collection),
-			InstanceMethod("getCollection", &SpinoWrapper::get_collection),
-			InstanceMethod("dropCollection", &SpinoWrapper::drop_collection)
-			});
+	SpinoWrapper* spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-	constructor = Napi::Persistent(func);
-	constructor.SuppressDestruct();
-
-	exports.Set("Spino", func);
-	return exports;
+	auto col = spinowrap->spino->get_collection(*str);
+	CollectionWrapper::NewInstance(args, col);
 }
 
 
-SpinoWrapper::SpinoWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<SpinoWrapper>(info)  {
-	sambodb = new Spino::SpinoDB();
-}
+void SpinoWrapper::dropCollection(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-Napi::Value SpinoWrapper::load(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-	Napi::HandleScope scope(env);
+	SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-	if (  info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
-
-	std::string path = info[0].As<Napi::String>().Utf8Value();
-	sambodb->load(path);
-	return Napi::Value();
-}
-
-Napi::Value SpinoWrapper::save(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-
-	if (  info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
-
-	std::string path = info[0].As<Napi::String>().Utf8Value();
-	sambodb->save(path);
-	return Napi::Value();
-}
-
-Napi::Value SpinoWrapper::add_collection(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-
-	if(info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
-
-	std::string name = info[0].As<Napi::String>().Utf8Value();
-	auto col = sambodb->add_collection(name);
-	auto colwrapper = Napi::Persistent(CollectionWrapper::Create(info.Env(), col));
-	return colwrapper.Value();
-}
-
-Napi::Value SpinoWrapper::get_collection(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-
-	if(info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
-
-	std::string name = info[0].As<Napi::String>().Utf8Value();
-	auto col = sambodb->get_collection(name);
-	if(col == nullptr) {
-		return Napi::Value();
-	} 
-	else {
-		return Napi::Persistent(CollectionWrapper::Create(info.Env(), col)).Value();
-	}
-}
-
-Napi::Value SpinoWrapper::drop_collection(const Napi::CallbackInfo& info) {
-	Napi::Env env = info.Env();
-
-	if(info.Length() != 1 || !info[0].IsString()) {
-		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
-	}
-
-	std::string name = info[0].As<Napi::String>().Utf8Value();
-	sambodb->drop_collection(name);
-	return Napi::Value();
+	obj->spino->drop_collection(*str);
 }
 

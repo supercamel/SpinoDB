@@ -1,48 +1,38 @@
 const spino = require('./build/Release/spinodb.node');
 
-function delay(delayInms) {
-	return new Promise(resolve => {
-		setTimeout(() => {
-			resolve(2);
-		}, delayInms);
+var db = new spino.Spino();
+
+//db.load("test.db");
+
+var col = db.addCollection('test');
+
+col.createIndex("number");
+
+/*
+col.append(JSON.stringify({
+	test: 1
+}));
+
+var one = JSON.parse(col.findOne("{test: 1}"));
+
+console.log(col.timestampById(one._id));
+
+*/
+
+console.time("Adding documents");
+for(var i = 0; i < 1000000; i++) {
+	col.append({
+		number: i,
+		text: "Hello world"
 	});
 }
 
-
-async function main() {
-	var db = new spino.Spino();
-
-	//db.load("test.db");
-
-	var col = db.addCollection('test');
-	for(let i = 0; i < 10000000; i++) {
-		col.append(JSON.stringify({
-			test: 123
-		}));
-	}
-
-}
-main();
-
-
-
-/*
-console.time("Adding documents");
-for(var i = 0; i < 1000000; i++) {
-	col.append(JSON.stringify({
-		number: i,
-		text: "Test string",
-		subobject: {
-			field: "A field",
-			bool: true,
-			num: i
-		}
-	}));
-}
+console.log(col.findOne("{number: 10}"));
 
 //db.save("test.db");
 console.timeEnd("Adding documents");
 
+/*
 console.time("$eq");
 var doc_str = col.findOne("{number: 999999}");
 console.timeEnd("$eq");
@@ -74,11 +64,13 @@ console.timeEnd("drop by id");
 
 console.time("drop unindexed");
 col.drop("{subobject.num: 1000}");
-console.time("drop unindexed");
+console.timeEnd("drop unindexed");
 
 console.log(col.findOne("{number: 5}"));
 
 console.time("$and");
 col.findOne("{$and: [{number: 900000}, {subobject.bool: true}]}");
 console.timeEnd("$and");
+
 */
+

@@ -5,10 +5,15 @@
 	"main": "./build/Release/spinodb.node",
 	"gypfile": true,
 	"dependencies": {
+		"@mapbox/node-pre-gyp": "^1.0.5",
 		"node-addon-api": "^4.1.0",
-		"node-gyp": "^8.2.0"
+		"node-gyp": "^8.2.0",
+		"node-pre-gyp": "^0.17.0",
+		"nopt": "^5.0.0"
 	},
-	"engines": { "node": ">= 14.0.0" },
+	"engines": {
+		"node": ">= 14.0.0"
+	},
 	"keywords": [
 		"NoSQL",
 		"database",
@@ -16,18 +21,18 @@
 		"in-memory",
 		"cache",
 		"datastore"
-  ],
-  "devDependencies": {},
-  "scripts": {
-	  "test": "node test.js",
-	  "build": "node-gyp rebuild",
-	  "clean": "node-gyp clean",
-	  "install": "node-gyp rebuild"
-  },
-  "author": "Sam Cowen",
-  "license": "MIT",
-  "repository": {
-	  "type": "git",
-	  "url": "https://github.com/supercamel/SpinoDB.git"
-  }
+	],
+	"devDependencies": {},
+	"scripts": {
+		"test": "node test.js",
+		"build": "node-gyp rebuild",
+		"clean": "node-gyp clean",
+		"install": "node-gyp rebuild"
+	},
+	"author": "Sam Cowen",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/supercamel/SpinoDB.git"
+	}
 }
