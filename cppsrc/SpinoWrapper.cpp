@@ -1,9 +1,24 @@
 #include "SpinoWrapper.h"
 
-Napi::Object CursorWrapper::Create(Napi::Env env, Spino::BaseCursor* ptr) {
-	return DefineClass(env, "Cursor", {
+Napi::FunctionReference CollectionWrapper::constructor;
+Napi::FunctionReference SpinoWrapper::constructor;
+Napi::FunctionReference CursorWrapper::constructor;
+
+
+void CursorWrapper::Init(Napi::Env env) {
+	Napi::HandleScope scope(env);
+	Napi::Function func = DefineClass(env, "Cursor", {
 			InstanceMethod("next", &CursorWrapper::next)
-			}, (void*)ptr).New({});
+			});
+	constructor = Napi::Persistent(func);
+
+}
+
+Napi::Object CursorWrapper::Create(Napi::Env env, Spino::BaseCursor* ptr) {
+	auto ret = constructor.Value().New({});
+	Unwrap(ret)->cursor = ptr;
+	return ret;
+
 }
 
 CursorWrapper::CursorWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<CursorWrapper>(info)  {
@@ -12,7 +27,7 @@ CursorWrapper::CursorWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<
 
 CursorWrapper::~CursorWrapper() {
 
-    delete cursor;
+	delete cursor;
 }
 
 Napi::Value CursorWrapper::next(const Napi::CallbackInfo& info) {
@@ -27,12 +42,14 @@ Napi::Value CursorWrapper::next(const Napi::CallbackInfo& info) {
 	}
 }
 
-Napi::Object CollectionWrapper::Create(Napi::Env env, Spino::Collection* ptr) {
-	return DefineClass(env, "Collection", {
+void CollectionWrapper::Init(Napi::Env env) {
+	Napi::HandleScope scope(env);
+
+	Napi::Function func = DefineClass(env, "Collection", {
 			InstanceMethod("getName", &CollectionWrapper::get_name),
 			InstanceMethod("createIndex", &CollectionWrapper::create_index),
 			InstanceMethod("append", &CollectionWrapper::append),
-            InstanceMethod("updateById", &CollectionWrapper::updateById),
+			InstanceMethod("updateById", &CollectionWrapper::updateById),
 			InstanceMethod("update", &CollectionWrapper::update),
 			InstanceMethod("findOneById", &CollectionWrapper::findOneById),
 			InstanceMethod("findOne", &CollectionWrapper::findOne),
@@ -40,7 +57,16 @@ Napi::Object CollectionWrapper::Create(Napi::Env env, Spino::Collection* ptr) {
 			InstanceMethod("dropById", &CollectionWrapper::dropById),
 			InstanceMethod("dropOne", &CollectionWrapper::dropOne),
 			InstanceMethod("drop", &CollectionWrapper::drop)
-			}, (void*)ptr).New({});
+			});
+
+	constructor = Napi::Persistent(func);
+}
+
+
+Napi::Object CollectionWrapper::Create(Napi::Env env, Spino::Collection* ptr) {
+	auto ret = constructor.Value().New({});
+	Unwrap(ret)->collection = ptr;
+	return ret;
 }
 
 
@@ -240,9 +266,9 @@ Napi::Value CollectionWrapper::drop(const Napi::CallbackInfo& info) {
 	return Napi::Value();
 }
 
-Napi::FunctionReference SpinoWrapper::constructor;
-
 Napi::Object SpinoWrapper::Init(Napi::Env env, Napi::Object exports) {
+	Napi::HandleScope scope(env);
+
 	Napi::Function func = DefineClass(env, "Spino", {
 			InstanceMethod("save", &SpinoWrapper::save),
 			InstanceMethod("load", &SpinoWrapper::load),
@@ -265,6 +291,7 @@ SpinoWrapper::SpinoWrapper(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Sp
 
 Napi::Value SpinoWrapper::load(const Napi::CallbackInfo& info) {
 	Napi::Env env = info.Env();
+	Napi::HandleScope scope(env);
 
 	if (  info.Length() != 1 || !info[0].IsString()) {
 		Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
@@ -313,8 +340,7 @@ Napi::Value SpinoWrapper::get_collection(const Napi::CallbackInfo& info) {
 		return Napi::Value();
 	} 
 	else {
-		auto colwrapper = Napi::Persistent(CollectionWrapper::Create(info.Env(), col));
-		return colwrapper.Value();
+		return Napi::Persistent(CollectionWrapper::Create(info.Env(), col)).Value();
 	}
 }
 

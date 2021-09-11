@@ -3,7 +3,9 @@
 #include <napi.h>
 
 Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
-	SpinoWrapper::Init(env, exports);	
+	SpinoWrapper::Init(env, exports);
+	CollectionWrapper::Init(env);
+	CursorWrapper::Init(env);
 	return exports;
 }
 

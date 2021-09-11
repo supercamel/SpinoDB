@@ -10,7 +10,7 @@ namespace Spino{
 	}
 
 	std::string Collection::append(const char* s) {
-        DocType d;
+		DocType d;
 		d.Parse(s);
 
 		uint32_t timestamp = std::time(0);
@@ -32,7 +32,7 @@ namespace Spino{
 
 		d.AddMember("_id", _id, d.GetAllocator());
 
-        auto& arr = doc[name.c_str()];
+		auto& arr = doc[name.c_str()];
 		arr.PushBack(d.GetObject(), d.GetAllocator());
 
 
@@ -109,20 +109,22 @@ namespace Spino{
 			ValueType& doc = list[i].GetObject();
 			auto v = idx->field.Get(doc);
 
-			// only add string and number values to the index
-			if(v->IsString()) {
-				Value val;
-				val.type = TYPE_STRING;
-				val.str = v->GetString();
-				idx->index.insert({val, i});
-			}
-			else if(v->IsNumber()) {
-				Value val;
-				val.type = TYPE_NUMERIC;
-				val.numeric = v->GetDouble();
-				idx->index.insert({val, i});
-			} else {
-				// can't index objects or arrays, etc
+			if(v != nullptr) {
+				// only add string and number values to the index
+				if(v->IsString()) {
+					Value val;
+					val.type = TYPE_STRING;
+					val.str = v->GetString();
+					idx->index.insert({val, i});
+				}
+				else if(v->IsNumber()) {
+					Value val;
+					val.type = TYPE_NUMERIC;
+					val.numeric = v->GetDouble();
+					idx->index.insert({val, i});
+				} else {
+					// can't index objects or arrays, etc
+				}
 			}
 		}
 
@@ -414,7 +416,7 @@ namespace Spino{
 		for(auto it = collections.begin(); it != collections.end(); ) {
 			auto c = *it;
 			if(c->get_name() == name) {
-                delete c;
+				delete c;
 				collections.erase(it);
 			} else {
 				it++;

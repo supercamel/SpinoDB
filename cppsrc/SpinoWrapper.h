@@ -6,11 +6,13 @@
 
 class CursorWrapper: public Napi::ObjectWrap<CursorWrapper> {
 	public:
+		static void Init(Napi::Env env);
 		static Napi::Object Create(Napi::Env, Spino::BaseCursor* ptr);
 		CursorWrapper(const Napi::CallbackInfo& info);
         ~CursorWrapper();
 
 	private:
+		static Napi::FunctionReference constructor;
 		Napi::Value next(const Napi::CallbackInfo& info);
 
         Spino::BaseCursor* cursor;
@@ -20,6 +22,7 @@ class CursorWrapper: public Napi::ObjectWrap<CursorWrapper> {
 
 class CollectionWrapper: public Napi::ObjectWrap<CollectionWrapper> {
 	public:
+		static void Init(Napi::Env env);
 		static Napi::Object Create(Napi::Env env, Spino::Collection* ptr);
 		CollectionWrapper(const Napi::CallbackInfo& info);
 

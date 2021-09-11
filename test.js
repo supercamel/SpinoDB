@@ -1,4 +1,4 @@
-const spino = require('./build/Debug/spinodb.node');
+const spino = require('./build/Release/spinodb.node');
 
 function delay(delayInms) {
 	return new Promise(resolve => {
@@ -8,31 +8,25 @@ function delay(delayInms) {
 	});
 }
 
+
 async function main() {
 	var db = new spino.Spino();
 
 	//db.load("test.db");
 
 	var col = db.addCollection('test');
-
-	col.createIndex("number");
-
-	for(var i = 0; i < 10; i++) {
-		var id = col.append(JSON.stringify({
-			number: i,
-			text: "test"
+	for(let i = 0; i < 10000000; i++) {
+		col.append(JSON.stringify({
+			test: 123
 		}));
-
-		col.dropById(id);
 	}
 
-	let delayres = await delay(3000);
 }
 main();
 
 
 
-	/*
+/*
 console.time("Adding documents");
 for(var i = 0; i < 1000000; i++) {
 	col.append(JSON.stringify({
