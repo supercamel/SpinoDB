@@ -23,7 +23,12 @@ console.time("Adding documents");
 for(var i = 0; i < 1000000; i++) {
 	col.append({
 		number: i,
-		text: "Hello world"
+		text: "Test string",
+		subobject: {
+			field: "A field",
+			bool: true,
+			num: i
+		}
 	});
 }
 
