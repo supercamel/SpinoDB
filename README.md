@@ -260,10 +260,10 @@ LokiJS is a similar in-memory NoSQL database, however it is far more mature and 
 
 | LokiJS | SpinoDB |
 |:-------|:--------|
-| 1590ms |  3400ms |
+| 1148ms |  2100ms |
 
 
-LokiJS is over 2x faster at inserting new documents. This is most likely because SpinoDB requires objects to be stringified and reparsed . .. we working on this.
+LokiJS is about 2x faster at inserting new documents. This is most likely because SpinoDB requires objects to be stringified and reparsed . .. we working on this.
 
 ##### findOne by an indexed field
 

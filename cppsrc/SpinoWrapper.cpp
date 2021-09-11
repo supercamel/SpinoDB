@@ -163,8 +163,7 @@ void CollectionWrapper::append(const FunctionCallbackInfo<Value>& args) {
 	if(args[0]->IsString()) {
 		v8::String::Utf8Value str(isolate, args[0]);
 
-		auto idstr = obj->collection->append(*str);
-		args.GetReturnValue().Set(String::NewFromUtf8(isolate, idstr.c_str()).ToLocalChecked());
+		obj->collection->append(*str);
 	} 
 	else if(args[0]->IsObject()) {
 		auto handle = args[0].As<v8::Object>();
@@ -176,7 +175,6 @@ void CollectionWrapper::append(const FunctionCallbackInfo<Value>& args) {
 		auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
 		v8::String::Utf8Value s(isolate, jsonobj);
 		obj->collection->append(*s);
-		
 	}
 }
 
