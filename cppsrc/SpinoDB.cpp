@@ -369,15 +369,17 @@ namespace Spino{
 
 		uint32_t count = 0;
 		for (ValueType::ConstValueIterator itr = arr.Begin();
-				itr != arr.End(); ++itr) {
+				itr != arr.End(); ) {
 			Spino::QueryExecutor exec(&(*itr));
 			if(exec.resolve(block)) {
 				count++;
-				arr.Erase(itr);
+				itr = arr.Erase(itr);
 				if(count >= limit) {
 					break;
 				} 
-			} 
+			} else {
+				itr++;
+			}
 		}
 
 		if(count > 0) {
