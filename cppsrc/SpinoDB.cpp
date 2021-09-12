@@ -344,10 +344,10 @@ namespace Spino{
 
 
 	void Collection::dropOne(const char* j) {
-		drop(j, true);
+		drop(j, 1);
 	}
 
-	uint32_t Collection::drop(const char* j, bool onlyOne) {
+	uint32_t Collection::drop(const char* j, uint32_t limit) {
 		// TODO
 		// do an index search first
 		//
@@ -362,8 +362,7 @@ namespace Spino{
 			if(exec.resolve(block)) {
 				count++;
 				arr.Erase(itr);
-				if(onlyOne) {
-					removeDomIdxFromIndex(count);
+				if(count >= limit) {
 					break;
 				} 
 			} 
@@ -371,8 +370,6 @@ namespace Spino{
 
 		if(count > 0) {
 			hashmap.clear();
-		}
-		if(count > 1) {
 			reconstructIndices();
 		}
 
@@ -730,7 +727,16 @@ namespace Spino{
 					return make_reply(false, "id must be a string");
 				}
 
-				auto r = col->drop(queryValue.GetString());
+				uint32_t limit = UINT32_MAX;
+				if(d.HasMember("limit")) {
+					auto& limitValue = d["limit"];
+					if(!limitValue.IsNumber()) {
+						return make_reply(false, "limit must be a number");
+					}
+					limit = limitValue.GetInt();
+				}
+
+				auto r = col->drop(queryValue.GetString(), limit);
 				std::string reply = std::to_string(r) + " Documents dropped";
 				return make_reply(true, reply);
 			}

@@ -123,7 +123,7 @@ namespace Spino {
 
 			void dropById(const char* s);
 			void dropOne(const char* s);
-			uint32_t drop(const char* s, bool onlyOne = false);
+			uint32_t drop(const char* s, uint32_t limit = UINT32_MAX);
 
 			static uint64_t timestampById(const char* id);
 

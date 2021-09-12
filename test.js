@@ -30,7 +30,7 @@ console.log(db.execute({
 
 
 console.time("Adding documents");
-for(var i = 0; i < 1000; i++) {
+for(var i = 0; i < 1000000; i++) {
 	db.execute({
 		cmd: "append",
 		collection: "test",
@@ -57,13 +57,11 @@ console.log(db.execute({
 	query: "{$and: [{number: {$gt:10}}, {number: {$lt:15}}]}"
 }));
 
-/*
 console.log(col.findOne("{number: 10}"));
 
 //db.save("test.db");
 console.timeEnd("Adding documents");
 
-/*
 console.time("$eq");
 var doc_str = col.findOne("{number: 999999}");
 console.timeEnd("$eq");
@@ -103,5 +101,4 @@ console.time("$and");
 col.findOne("{$and: [{number: 900000}, {subobject.bool: true}]}");
 console.timeEnd("$and");
 
-*/
 

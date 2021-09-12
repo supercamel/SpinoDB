@@ -22,46 +22,6 @@ v8::Global<Function> CursorWrapper::constructor;
 v8::Global<Function> CollectionWrapper::constructor;
 
 
-static void rapidjsonDocFromV8(Isolate* isolate, Local<Object>& obj, Spino::ValueType& doc, auto allocator) {
-	Local<v8::Context> context = isolate->GetCurrentContext();
-	auto property_names = obj->GetOwnPropertyNames(context).ToLocalChecked();
-
-	auto rjsonObj = doc.GetObject();
-
-	Spino::ValueType skey;
-	Spino::ValueType sval;
-
-	auto length = property_names->Length();
-	for (uint32_t i = 0; i < length; ++i) {
-		auto key = property_names->Get(context, i).ToLocalChecked();
-		auto value = obj->Get(context, key).ToLocalChecked();
-
-		if(value->IsString()) {
-			/*
-			   String::Utf8Value utf8_key(isolate, key);
-			   String::Utf8Value utf8_value(isolate, value);
-
-			   Spino::ValueType skey;
-			   Spino::ValueType sval;
-
-			   skey.SetString(*utf8_key, utf8_key.length(), allocator);
-			   sval.SetString(*utf8_value, utf8_value.length(), allocator);
-
-			   rjsonObj.AddMember(skey, sval, allocator);
-			   */
-		}
-		else if(value->IsNumber()) {
-			String::Utf8Value utf8_key(isolate, key);
-
-			sval = Spino::ValueType(value->ToNumber(context).ToLocalChecked()->Value());
-			skey.SetString(*utf8_key, utf8_key.length(), allocator);
-
-			rjsonObj.AddMember(skey, sval, allocator);
-		}
-	}
-}
-
-
 void CursorWrapper::Init(Isolate* isolate){
 	// Prepare constructor template
 	Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate);
@@ -250,10 +210,15 @@ void CollectionWrapper::dropOne(const FunctionCallbackInfo<Value>& args) {
 void CollectionWrapper::drop(const FunctionCallbackInfo<Value>& args) {
 	Isolate* isolate = args.GetIsolate();
 	v8::String::Utf8Value findstr(isolate, args[0]);
+	uint32_t limit = UINT32_MAX;
+	if(args.Length() >= 2) {
+		limit = args[1].As<Number>()->Value();
+	}
 
 	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-	obj->collection->drop(*findstr);
+	auto n_dropped = obj->collection->drop(*findstr, limit);
+	args.GetReturnValue().Set(v8::Number::New(isolate, n_dropped));
 }
 
 void CollectionWrapper::timestampById(const FunctionCallbackInfo<Value>& args) {
@@ -330,7 +295,18 @@ void SpinoWrapper::execute(const FunctionCallbackInfo<Value>& args) {
 
 		auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
 		v8::String::Utf8Value str(isolate, jsonobj);
-		auto response = obj->spino->execute(*str);
+		std::string response = "";
+		try {
+			response = obj->spino->execute(*str);
+		}
+		catch(Spino::parse_error& err) {
+			response = "Query parse error: ";
+			response += err.what();
+		}
+		catch(...) {
+			response = "";
+		}
+
 		if(response != "") {
 			auto v8str = v8::String::NewFromUtf8(isolate, response.c_str());
 			if(!v8str.IsEmpty()) {
