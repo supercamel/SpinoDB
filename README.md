@@ -120,6 +120,15 @@ Creating an array from a cursor can be done like this
 	array += ']';
 
 The array is in string format ready to send over the web, or can be parsed into a javascript array with JSON.parse()
+
+A cheeky alternative to using cursors is to use the command execution interface to make SpinoDB collate the results into an array for you.
+
+	var array = db.execute({
+		cmd: "find",
+		collection: "collectionName",
+		query: <query>
+	});
+
     
     
 ### Updating Documents
