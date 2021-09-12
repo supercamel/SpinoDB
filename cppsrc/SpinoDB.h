@@ -143,6 +143,8 @@ namespace Spino {
 			void indexNewDoc();
 			void removeDomIdxFromIndex(uint32_t domIdx);
 			bool domIndexFromId(const char* s, uint32_t& domIdx) const;
+			void reconstructIndices();
+
 			std::vector<Index*> indices;
 			bool mergeObjects(ValueType& dstObject, ValueType& srcObject);
 

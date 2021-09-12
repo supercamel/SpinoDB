@@ -113,11 +113,10 @@ namespace Spino{
 		}
 		idx->field = PointerType(ptr.c_str());
 
-		auto& list = doc[name.c_str()];
-		auto n = list.Size();
+		auto n = arr.Size();
 
 		for(uint32_t i = 0; i < n; i++) {
-			ValueType& doc = list[i].GetObject();
+			ValueType& doc = arr[i].GetObject();
 			auto v = idx->field.Get(doc);
 
 			if(v != nullptr) {
@@ -301,6 +300,35 @@ namespace Spino{
 		}
 	}
 
+	void Collection::reconstructIndices() {
+		auto n = arr.Size();
+
+		for(auto& idx : indices) {
+			idx->index.clear();
+
+			for(uint32_t i = 0; i < n; i++) {
+				ValueType& doc = arr[i].GetObject();
+				auto v = idx->field.Get(doc);
+
+				if(v != nullptr) {
+					// only add string and number values to the index
+					if(v->IsString()) {
+						Value val;
+						val.type = TYPE_STRING;
+						val.str = v->GetString();
+						idx->index.insert({val, i});
+					}
+					else if(v->IsNumber()) {
+						Value val;
+						val.type = TYPE_NUMERIC;
+						val.numeric = v->GetDouble();
+						idx->index.insert({val, i});
+					} 
+				}
+			}
+		}
+	}
+
 	void Collection::dropById(const char* s) {
 		uint32_t domIdx;
 		if(domIndexFromId(s, domIdx)) {
@@ -327,25 +355,25 @@ namespace Spino{
 		Spino::QueryParser parser(j);
 		auto block = parser.parse_expression();
 
-		bool document_dropped = false;
 		uint32_t count = 0;
 		for (ValueType::ConstValueIterator itr = arr.Begin();
 				itr != arr.End(); ++itr) {
 			Spino::QueryExecutor exec(&(*itr));
 			if(exec.resolve(block)) {
-				removeDomIdxFromIndex(count);
-				arr.Erase(itr);
-				document_dropped = true;
-
 				count++;
+				arr.Erase(itr);
 				if(onlyOne) {
+					removeDomIdxFromIndex(count);
 					break;
-				}
+				} 
 			} 
 		}
 
-		if(document_dropped) {
+		if(count > 0) {
 			hashmap.clear();
+		}
+		if(count > 1) {
+			reconstructIndices();
 		}
 
 		return count;
