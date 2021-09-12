@@ -667,7 +667,9 @@ namespace Spino{
                     response += ",";
                     docstr = cursor->next();
                 }
-                response.pop_back();
+                if(response.size() > 1) {
+                    response.pop_back();
+                }
                 response += "]";
 
                 delete cursor;
