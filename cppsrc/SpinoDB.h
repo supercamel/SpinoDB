@@ -110,6 +110,7 @@ namespace Spino {
 			std::string getName() const;
 
 			void createIndex(const char* field);
+			void dropIndex(const char* field);
 
 			void append(ValueType& d);
 			void append(const char* s);

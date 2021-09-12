@@ -35,6 +35,7 @@ class CollectionWrapper: public node::ObjectWrap {
 
 		static void getName(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void createIndex(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void dropIndex(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void append(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void updateById(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void update(const v8::FunctionCallbackInfo<v8::Value>& args);

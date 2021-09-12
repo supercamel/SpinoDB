@@ -116,6 +116,15 @@ void CollectionWrapper::createIndex(const FunctionCallbackInfo<Value>& args) {
 	obj->collection->createIndex(*str);
 }
 
+void CollectionWrapper::dropIndex(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
+
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+
+	obj->collection->dropIndex(*str);
+}
+
 void CollectionWrapper::append(const FunctionCallbackInfo<Value>& args) {
 	Isolate* isolate = args.GetIsolate();
 	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());

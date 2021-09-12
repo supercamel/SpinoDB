@@ -141,6 +141,18 @@ namespace Spino{
 		indices.push_back(idx);
 	}
 
+	void Collection::dropIndex(const char* s) {
+		for(auto itr = indices.begin(); itr != indices.end(); ) {
+			auto index = *itr;
+			if(index->field_name == s) {
+				delete index;	
+				indices.erase(itr);
+				return;
+			}
+			itr++;
+		}
+	}
+
 	/**
 	 * The _id field is gauranteed to be ordered so we can do a binary search
 	 */
@@ -538,6 +550,22 @@ namespace Spino{
 
 				col->createIndex(fieldValue.GetString());
 				return make_reply(true, "Index created");
+			}
+			else {
+				return check;
+			}
+		}
+
+		else if(cmdString == "dropIndex") {
+			auto check = require_fields(d, {"collection", "field"});
+			if(check == "") {
+				auto& fieldValue = d["field"];
+				if(!fieldValue.IsString()) {
+					return make_reply(false, "Field is not a string");
+				}
+
+				col->createIndex(fieldValue.GetString());
+				return make_reply(true, "Index dropped");
 			}
 			else {
 				return check;
