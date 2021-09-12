@@ -69,6 +69,7 @@ void CollectionWrapper::Init(Isolate* isolate){
 	// Prototype
 	NODE_SET_PROTOTYPE_METHOD(tpl, "getName", getName);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "createIndex", createIndex);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "dropIndex", dropIndex);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "append", append);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "updateById", updateById);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "update", update);
@@ -78,6 +79,7 @@ void CollectionWrapper::Init(Isolate* isolate){
 	NODE_SET_PROTOTYPE_METHOD(tpl, "dropById", dropById);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "dropOne", dropOne);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "drop", drop);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "dropOlderThan", dropOlderThan);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "timestampById", timestampById);
 
 	Local<Context> context = isolate->GetCurrentContext();
@@ -136,11 +138,6 @@ void CollectionWrapper::append(const FunctionCallbackInfo<Value>& args) {
 	} 
 	else if(args[0]->IsObject()) {
 		auto handle = args[0].As<v8::Object>();
-
-		/*
-		   rapidjsonDocFromV8(isolate, handle, obj->collection->add_stub(), obj->collection->get_allocator());
-		   auto idstr = obj->collection->indexNewDoc();
-		   */
 		auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
 		v8::String::Utf8Value s(isolate, jsonobj);
 		obj->collection->append(*s);
@@ -227,6 +224,14 @@ void CollectionWrapper::drop(const FunctionCallbackInfo<Value>& args) {
 	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
 	auto n_dropped = obj->collection->drop(*findstr, limit);
+	args.GetReturnValue().Set(v8::Number::New(isolate, n_dropped));
+}
+
+void CollectionWrapper::dropOlderThan(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+
+	auto n_dropped = obj->collection->dropOlderThan(args[0].As<Number>()->Value());
 	args.GetReturnValue().Set(v8::Number::New(isolate, n_dropped));
 }
 

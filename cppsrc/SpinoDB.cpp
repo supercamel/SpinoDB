@@ -390,6 +390,39 @@ namespace Spino{
 		return count;
 	}
 
+	uint32_t Collection::dropOlderThan(uint64_t timestamp) {
+		timestamp /= 1000; // convert to seconds since epoch
+
+		uint64_t tsc = fast_atoi_len(id_cstr, 10);
+		uint64_t countc = fast_atoi_len(&id_cstr[10], 6);
+
+		uint32_t n = arr.Size();
+		uint32_t R = n-1;
+		uint32_t L = 0;
+		uint32_t m;
+		while(L <= R) {
+			m = (L+R)/2;
+
+			if(m > arr.Size()-1) {
+				return 0;
+			}
+
+			const char* id_to_test = arr[m].GetObject()["_id"].GetString();
+			uint64_t id_timestamp = fast_atoi_len(id_to_test, 10);
+
+			if(id_timestamp < tsc) {
+				L = m+1;
+			}
+			else if(id_timestamp > tsc) {
+				R = m-1;
+			}
+		}
+
+
+		return m;
+
+	}
+
 	bool Collection::mergeObjects(ValueType& dstObject, ValueType& srcObject)
 	{
 		for (auto srcIt = srcObject.MemberBegin(); srcIt != srcObject.MemberEnd(); ++srcIt)
@@ -747,11 +780,6 @@ namespace Spino{
 		else if(cmdString == "drop") {
 			auto check = require_fields(d, {"collection", "query"});
 			if(check == "") {
-				auto& collectionValue = d["collection"];
-				if(!collectionValue.IsString()) {
-					return make_reply(false, "Collection field is not a string");
-				}
-
 				auto& queryValue = d["query"];
 				if(!queryValue.IsString()) {
 					return make_reply(false, "id must be a string");
@@ -767,7 +795,24 @@ namespace Spino{
 				}
 
 				auto r = col->drop(queryValue.GetString(), limit);
-				std::string reply = std::to_string(r) + " Documents dropped";
+				std::string reply = std::to_string(r) + " documents dropped";
+				return make_reply(true, reply);
+			}
+			else {
+				return check;
+			}
+		}
+
+		else if(cmdString == "dropOlderThan") {
+			auto check = require_fields(d, {"collection", "timestamp"});
+			if(check == "") {
+				auto& timestampValue = d["timestamp"];
+				if(!timestampValue.IsNumber()) {
+					return make_reply(false, "timestamp must be a number");
+				}
+
+				auto r = col->drop(timestampValue.GetDouble());
+				std::string reply = std::to_string(r) + " documents dropped";
 				return make_reply(true, reply);
 			}
 			else {

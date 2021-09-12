@@ -45,6 +45,7 @@ class CollectionWrapper: public node::ObjectWrap {
 		static void dropById(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void dropOne(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void drop(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void dropOlderThan(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void timestampById(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 

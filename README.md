@@ -36,9 +36,7 @@ As a rule of thumb, if the size of your data is greater than 50% of your availab
 
 ### Design
 
-A SpinoDB contains 'collections'. A collection is roughly analogous to a table in an SQL database, except that instead of containing one dimensional rows, each entry in a collection contains a JSON document. The documents are not required to be consistent.
-
-Documents are JSON strings. To convert to/from Javascript objects you must use JSON.stringify() and JSON.parse().
+A SpinoDB contains 'collections'. A collection is roughly analogous to a table in an SQL database, except that instead of containing one dimensional rows, each entry in a collection contains a JSON document / Javascript object. The documents are not required to be consistent.
 
 
 ### Example
@@ -79,18 +77,16 @@ db.dropCollection(<collection_name>) will remove a collection from the database.
 
 append() will add a JSON document to a collection.
 
-    col.append(JSON.stringify({
+    col.append({
         name: "Dave",
         score: 50,
         subdoc: {
 	        item: "An item in a subdocument"
 	        }
 	     array: [ 1, 2, 3, 4]
-        }));
+        });
 
-append() will also accept a Javascript object, however it is about 15% faster to call JSON.stringify() on the object to convert it to a string. Note that append is quite slow because it requires memory allocation and the JSON object must be reparsed into the internal DOM structure. This is a target for future optimisation, however at present SpinoDB can append approximately 150k simple documents per second. 
-
-append() returns the ID string of the newly created document.
+append() will accept either a Javascript object or JSON string.
 
 ### Find Queries
 
@@ -148,6 +144,17 @@ dropOne() will delete exactly one document from the collection that matches the 
 drop() will drop all documents that match the query.
 
     collection.drop(<query>);
+
+
+dropOlderThan() will drop all documents older than a timestamp.
+
+	collection.dropOlderThan(<time value>);
+
+e.g. dropping all documents more than 2 weeks old
+
+	let now = new Date().getTime();
+	let twoWeeksAgo = now - (1000*60*60*24*14);	//2 weeks in milliseconds
+	let nDocumentsDropped = collection.dropOlderThan(twoWeeksAgo);
 
 ### Query Format
 

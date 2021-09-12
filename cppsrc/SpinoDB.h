@@ -125,6 +125,7 @@ namespace Spino {
 			void dropById(const char* s);
 			void dropOne(const char* s);
 			uint32_t drop(const char* s, uint32_t limit = UINT32_MAX);
+			uint32_t dropOlderThan(uint32_t timestamp); //milliseconds since 1970 epoch
 
 			static uint64_t timestampById(const char* id);
 
@@ -196,7 +197,12 @@ namespace Spino {
 		private:
 			static std::string make_reply(bool success, std::string msg) {
 				std::stringstream ss;
-				ss << "{\"r\":" << success << ",\"msg\":\"" << msg << "\"}";
+				if(success) {
+					ss << "{\"msg\":\"" << msg << "\"}";
+				}
+				else {
+					ss << "{\"error\":\"" << msg << "\"}";
+				}
 				return ss.str();
 			}
 
