@@ -229,6 +229,67 @@ col.createIndex(<field_name>);
 	col.createIndex("steamProfile.steamId");
 
 
+### Command Execution
+
+A database administrator will, from time to time, have a requirement to run arbitrary queries on the data. SpinoDB does not follow the usual client-server model that would allow an administrator to simply login and run queries.
+
+As an alternative, SpinoDB offers a command execution interface. This simplifies the creation of some kind of remote access because all the application needs to do is pass JSON objects or strings to the db.execute() function. A web server might have a secure URL end point that can be used to run queries with POSTman. 
+
+Commands can be either JSON strings or Javascript objects. 
+
+	var resultStr = db.execute(<string>);
+
+	var resultObj = db.execute(<object>);
+
+
+Examples:
+
+	var result = db.execute({
+		cmd: "createIndex",
+		collection: "testCollection",
+		field: "number"
+	});
+
+	var document = db.execute({
+		cmd: "findById",
+		collection: "testCollection",
+		id: idString
+	});
+
+	var documentArray = db.execute({
+		cmd: "find",
+		collection: "testCollection",
+		query: "{$and: [{number: {$gt: 10}}, {number: {$lt: 20}}]}"
+	});
+
+	var result = db.execute({
+		cmd: "append",
+		collection: "testCollection",
+		document: JSON.stringify({
+			number: 10,
+			text: "a test object"
+		})
+	});
+
+	var result = db.execute({
+		cmd: "dropOne",
+		collection: "testCollection",
+		query: "{number: 10}"
+	});
+
+	var result = db.execute({
+		cmd: "drop",
+		collection: "testCollection",
+		query: "{number: {$gt: 10}}"
+	});
+
+	var result = db.execute({
+		cmd: "save",
+		path: "data.db"
+	});
+
+The db.load() function does not have a corresponding command because loading should only occur once at start up. There should be no need to load from disk again even durnig long running execution.
+	
 ### Performance Tuning
 
 When SpinoDB executes a search, it goes through 3 stages

@@ -118,7 +118,7 @@ Token QueryParser::lex() {
 			return Token(TOK_FIELD_NAME, ident);
 		}
 		// if it's a number
-		else if(isdigit(curc())) {
+		else if(isdigit(curc()) || (curc() == '-')) {
 			// read a numeric literal
 			return Token(TOK_NUMERIC_LITERAL, read_numeric_literal());
 		}
@@ -181,6 +181,14 @@ std::string QueryParser::read_string_literal() {
 std::string QueryParser::read_numeric_literal() {
 	std::string s;
 	bool period_spotted = false;
+	if(curc() == '-') {
+		s = "-";
+		next();
+		if(!isdigit(curc())) {
+			throw parse_error("Expected '-' character");
+		}
+	}
+
 	while(curc() != '\0') {
 		char c = curc();
 		if(!isdigit(curc())) {

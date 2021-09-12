@@ -169,9 +169,9 @@ void CollectionWrapper::append(const FunctionCallbackInfo<Value>& args) {
 		auto handle = args[0].As<v8::Object>();
 
 		/*
-		rapidjsonDocFromV8(isolate, handle, obj->collection->add_stub(), obj->collection->get_allocator());
-		auto idstr = obj->collection->indexNewDoc();
-		*/
+		   rapidjsonDocFromV8(isolate, handle, obj->collection->add_stub(), obj->collection->get_allocator());
+		   auto idstr = obj->collection->indexNewDoc();
+		   */
 		auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
 		v8::String::Utf8Value s(isolate, jsonobj);
 		obj->collection->append(*s);
@@ -284,6 +284,7 @@ void SpinoWrapper::Init(Local<Object> exports) {
 	tpl->SetClassName(String::NewFromUtf8(isolate, "Spino").ToLocalChecked());
 	tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
+	NODE_SET_PROTOTYPE_METHOD(tpl, "execute", execute);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "save", save);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "load", load);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "addCollection", addCollection);
@@ -314,6 +315,35 @@ void SpinoWrapper::New(const FunctionCallbackInfo<Value>& args) {
 	}
 }
 
+void SpinoWrapper::execute(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+
+	if(args[0]->IsString()) {
+		v8::String::Utf8Value str(isolate, args[0]);
+
+		auto response = obj->spino->execute(*str);
+		args.GetReturnValue().Set(String::NewFromUtf8(isolate, response.c_str()).ToLocalChecked());
+	} 
+	else if(args[0]->IsObject()) {
+		auto handle = args[0].As<v8::Object>();
+
+		auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
+		v8::String::Utf8Value str(isolate, jsonobj);
+		auto response = obj->spino->execute(*str);
+		if(response != "") {
+			auto v8str = v8::String::NewFromUtf8(isolate, response.c_str());
+			if(!v8str.IsEmpty()) {
+				auto v8strlocal = v8str.ToLocalChecked();
+				auto jsonobj = v8::JSON::Parse(isolate->GetCurrentContext(), v8strlocal);
+				if(!jsonobj.IsEmpty()) {
+					args.GetReturnValue().Set(jsonobj.ToLocalChecked());
+				}
+			}
+		}
+	}
+}
+
 void SpinoWrapper::save(const FunctionCallbackInfo<Value>& args) {
 	Isolate* isolate = args.GetIsolate();
 	v8::String::Utf8Value str(isolate, args[0]);
@@ -338,7 +368,7 @@ void SpinoWrapper::addCollection(const FunctionCallbackInfo<Value>& args) {
 
 	SpinoWrapper* spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-	auto col = spinowrap->spino->add_collection(*str);
+	auto col = spinowrap->spino->addCollection(*str);
 	CollectionWrapper::NewInstance(args, col);
 }
 
@@ -348,7 +378,7 @@ void SpinoWrapper::getCollection(const FunctionCallbackInfo<Value>& args) {
 
 	SpinoWrapper* spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-	auto col = spinowrap->spino->get_collection(*str);
+	auto col = spinowrap->spino->getCollection(*str);
 	CollectionWrapper::NewInstance(args, col);
 }
 

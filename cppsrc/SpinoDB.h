@@ -123,9 +123,13 @@ namespace Spino {
 
 			void dropById(const char* s);
 			void dropOne(const char* s);
-			void drop(const char* s, bool onlyOne = false);
+			uint32_t drop(const char* s, bool onlyOne = false);
 
 			static uint64_t timestampById(const char* id);
+
+			uint32_t size() {
+				return arr.Size();
+			}
 
 		private:
 			class Index {
@@ -177,14 +181,31 @@ namespace Spino {
                 }
             }
 
-			Collection* add_collection(std::string name);
-			Collection* get_collection(std::string name) const;
+			std::string execute(const char* command);
+
+			Collection* addCollection(std::string name);
+			Collection* getCollection(std::string name) const;
 			void drop_collection(std::string name);
 
 			void save(std::string path) const;
 			void load(std::string path);
 
 		private:
+			static std::string make_reply(bool success, std::string msg) {
+				std::stringstream ss;
+				ss << "{\"r\":" << success << ",\"msg\":\"" << msg << "\"}";
+				return ss.str();
+			}
+
+			std::string require_fields(DocType& d, std::vector<std::string> fields) {
+				for(auto f : fields) {
+					if(!d.HasMember(f.c_str())) {
+						return make_reply(false, "Missing field " + f);
+					}
+				}	
+				return "";
+			}
+
 			std::vector<Collection*> collections;
 			DocType doc;
 	};

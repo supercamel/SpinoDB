@@ -6,7 +6,11 @@ var db = new spino.Spino();
 
 var col = db.addCollection('test');
 
-col.createIndex("number");
+console.log(db.execute({
+	cmd: "createIndex",
+	collection: "test",
+	field: "number"
+}));
 
 /*
 col.append(JSON.stringify({
@@ -19,19 +23,41 @@ console.log(col.timestampById(one._id));
 
 */
 
+console.log(db.execute({
+	cmd: "count"
+}));
+
+
+
 console.time("Adding documents");
-for(var i = 0; i < 1000000; i++) {
-	col.append({
-		number: i,
-		text: "Test string",
-		subobject: {
-			field: "A field",
-			bool: true,
-			num: i
-		}
+for(var i = 0; i < 1000; i++) {
+	db.execute({
+		cmd: "append",
+		collection: "test",
+		document: JSON.stringify({
+			number: i,
+			text: "Test string",
+			subobject: {
+				field: "A field",
+				bool: true,
+				num: i
+			}
+		})
 	});
 }
 
+console.log(db.execute({
+	cmd: "count",
+	collection: "test"
+}));
+
+console.log(db.execute({
+	cmd: "find",
+	collection: "test",
+	query: "{$and: [{number: {$gt:10}}, {number: {$lt:15}}]}"
+}));
+
+/*
 console.log(col.findOne("{number: 10}"));
 
 //db.save("test.db");
