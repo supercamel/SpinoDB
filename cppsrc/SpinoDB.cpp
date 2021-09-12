@@ -564,7 +564,7 @@ namespace Spino{
 					return make_reply(false, "Field is not a string");
 				}
 
-				col->createIndex(fieldValue.GetString());
+				col->dropIndex(fieldValue.GetString());
 				return make_reply(true, "Index dropped");
 			}
 			else {
