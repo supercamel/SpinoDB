@@ -329,6 +329,8 @@ Then at some convenient moment, call
     
 Only bother with this is unless drop time becomes problematic.
 
+dropOlderThan() is very fast. Delete old documents using this where possible.
+
 ### Comparison To LokiJS
 
 LokiJS is a similar in-memory NoSQL database, however it is far more mature and featurefull. It also has the advantage of being a pure javascript solution and can run in browsers. 
