@@ -393,9 +393,6 @@ namespace Spino{
 	uint32_t Collection::dropOlderThan(uint64_t timestamp) {
 		timestamp /= 1000; // convert to seconds since epoch
 
-		uint64_t tsc = fast_atoi_len(id_cstr, 10);
-		uint64_t countc = fast_atoi_len(&id_cstr[10], 6);
-
 		uint32_t n = arr.Size();
 		uint32_t R = n-1;
 		uint32_t L = 0;
@@ -410,10 +407,10 @@ namespace Spino{
 			const char* id_to_test = arr[m].GetObject()["_id"].GetString();
 			uint64_t id_timestamp = fast_atoi_len(id_to_test, 10);
 
-			if(id_timestamp < tsc) {
+			if(id_timestamp < timestamp) {
 				L = m+1;
 			}
-			else if(id_timestamp > tsc) {
+			else if(id_timestamp > timestamp) {
 				R = m-1;
 			}
 		}
@@ -811,7 +808,7 @@ namespace Spino{
 					return make_reply(false, "timestamp must be a number");
 				}
 
-				auto r = col->drop(timestampValue.GetDouble());
+				auto r = col->dropOlderThan(timestampValue.GetDouble());
 				std::string reply = std::to_string(r) + " documents dropped";
 				return make_reply(true, reply);
 			}

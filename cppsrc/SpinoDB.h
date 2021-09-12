@@ -125,7 +125,7 @@ namespace Spino {
 			void dropById(const char* s);
 			void dropOne(const char* s);
 			uint32_t drop(const char* s, uint32_t limit = UINT32_MAX);
-			uint32_t dropOlderThan(uint32_t timestamp); //milliseconds since 1970 epoch
+			uint32_t dropOlderThan(uint64_t timestamp); //milliseconds since 1970 epoch
 
 			static uint64_t timestampById(const char* id);
 
