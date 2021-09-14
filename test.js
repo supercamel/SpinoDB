@@ -6,6 +6,7 @@ var db = new spino.Spino();
 
 var col = db.addCollection('test');
 
+col.createIndex("num");
 
 for(var i = 0; i < 1000000; i++) {
 	col.append({
@@ -14,6 +15,10 @@ for(var i = 0; i < 1000000; i++) {
 }
 
 console.log(col.find(`{}`, 10).toArray());
+
+console.time("count");
+console.log(col.find('{num: {$gt: 0}}').count());
+console.timeEnd("count");
 
 /*
 console.log(db.execute({

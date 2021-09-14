@@ -55,6 +55,7 @@ void CursorWrapper::Init(Isolate* isolate){
 	// Prototype
 	NODE_SET_PROTOTYPE_METHOD(tpl, "next", next);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "toArray", toArray);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "count", count);
 
 	Local<Context> context = isolate->GetCurrentContext();
 	constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
@@ -110,6 +111,14 @@ void CursorWrapper::next(const v8::FunctionCallbackInfo<v8::Value>& args) {
 		args.GetReturnValue().Set(String::NewFromUtf8(isolate, next.c_str()).ToLocalChecked());
 	}
 }
+
+void CursorWrapper::count(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.Holder());
+
+	args.GetReturnValue().Set(v8::Number::New(isolate, curwrap->cursor->count()));
+}
+
 
 void CollectionWrapper::Init(Isolate* isolate){
 	// Prepare constructor template

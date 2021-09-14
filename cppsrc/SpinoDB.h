@@ -44,6 +44,7 @@ namespace Spino {
 		public:
 			virtual ~BaseCursor() { };
 			virtual std::string next() = 0;
+			virtual uint32_t count() = 0;
 	};
 
 
@@ -58,7 +59,7 @@ namespace Spino {
 			~LinearCursor() { }
 
 			std::string next() {
-				if(count < limit) {
+				if(counter < limit) {
 					while(iter != list.End()) {
 						exec.set_json(&(*iter));	
 						if(exec.resolve(head)) {
@@ -66,7 +67,7 @@ namespace Spino {
 							rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
 							iter->Accept(writer);
 							iter++;
-							count++;
+							counter++;
 							return sb.GetString();
 						}
 						iter++;
@@ -75,13 +76,27 @@ namespace Spino {
 				return "";
 			}
 
+			uint32_t count() {
+				uint32_t r = 0;
+				auto itr = list.Begin();
+				while(itr != list.End()) {
+					itr++;
+					exec.set_json(&(*itr));
+					if(exec.resolve(head)) {
+						r++;
+					}
+				}
+
+				return r;
+			}
+
 		private:
 			ValueType& list;
 			QueryExecutor exec;
 			ValueType::ConstValueIterator iter;
 			std::shared_ptr<QueryNode> head;
 			uint32_t limit;
-			uint32_t count = 0;
+			uint32_t counter = 0;
 	};
 
 	// typedef so you can breath while reading this
@@ -105,17 +120,27 @@ namespace Spino {
 			~IndexCursor() { }
 
 			std::string next() {
-				if(count < limit) {
+				if(counter < limit) {
 					if(iter != iter_range.second) {
 						rapidjson::StringBuffer sb;
 						rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
 						collection_dom[iter->second].Accept(writer);
 						iter++;
-						count++;
+						counter++;
 						return sb.GetString();
 					} 
 				}
 				return "";
+			}
+
+			uint32_t count() {
+				uint32_t r = 0;
+				auto itr = iter_range.first;
+				while(itr != iter_range.second) {
+					itr++;
+					r++;
+				}	
+				return r;
 			}
 
 		private:
@@ -123,7 +148,7 @@ namespace Spino {
 			IndexIteratorRange iter_range;
 			std::multimap<Spino::Value, uint32_t>::iterator iter;
 			uint32_t limit;
-			uint32_t count = 0;
+			uint32_t counter = 0;
 	};
 
 

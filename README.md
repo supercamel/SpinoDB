@@ -117,6 +117,11 @@ The find() function can accept a limit on the number of results returned as the 
 
 	collection.find(<query>, 100); // will only return the first 100 results
 
+A cursor can also count the number of documents that it the query matches.
+
+	collection.find(<query>).count();
+
+
 An alternative to using cursors is to use the command execution interface to make SpinoDB collate the results into a string for you.
 
 	var array = db.execute({
