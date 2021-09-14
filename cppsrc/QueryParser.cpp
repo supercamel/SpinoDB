@@ -123,7 +123,7 @@ Token QueryParser::lex() {
 					return Token(TOK_TYPE, op);
 				}
 				else if(op == "$startsWith") {
-					return Token(TOK_TYPE, op);
+					return Token(TOK_STARTS_WITH, op);
 				}
 				else {
 					throw parse_error("Unknown $ operator");
@@ -402,7 +402,8 @@ std::shared_ptr<Operator> QueryParser::parse_operator_expression() {
 		if((tok.token == TOK_EQUAL) ||
 				(tok.token == TOK_NE) ||
 				(tok.token == TOK_GREATER_THAN) ||
-				(tok.token == TOK_LESS_THAN)) {
+				(tok.token == TOK_LESS_THAN) ||
+                (tok.token == TOK_STARTS_WITH)) {
 			ret->op = tok.token;
 
 			tok = lex();

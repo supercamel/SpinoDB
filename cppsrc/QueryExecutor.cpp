@@ -180,7 +180,7 @@ namespace Spino {
 					if((a.type == TYPE_STRING) && (b.type == TYPE_STRING)) {
 						Value& v = stack[stack_ptr++];
 						v.type = TYPE_BOOLEAN;
-						v.boolean = (b.rfind(a, 0) == 0);
+						v.boolean = (b.str.rfind(a.str, 0) == 0);
 					}
 					else {
 						Value& v = stack[stack_ptr++];

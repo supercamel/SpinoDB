@@ -6,11 +6,21 @@ var db = new spino.Spino();
 
 var col = db.addCollection('test');
 
+
+col.append({
+    test: "Hello world"
+});
+
+
+console.log(col.findOne('{test: {$startsWith: "Hello"}}'));
+
+/*
 console.log(db.execute({
-	cmd: "createIndex",
+	cmd: "find",
 	collection: "test",
-	field: "number"
+    query: '{test: {$startsWith: "Hello"}}'
 }));
+
 
 /*
 col.append(JSON.stringify({
@@ -21,7 +31,6 @@ var one = JSON.parse(col.findOne("{test: 1}"));
 
 console.log(col.timestampById(one._id));
 
-*/
 
 console.log(db.execute({
 	cmd: "count"
@@ -101,4 +110,7 @@ console.time("$and");
 col.findOne("{$and: [{number: 900000}, {subobject.bool: true}]}");
 console.timeEnd("$and");
 
+
+/*
+ * */
 
