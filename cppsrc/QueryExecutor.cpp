@@ -172,6 +172,23 @@ namespace Spino {
 					v.boolean = boolean;
 				}
 				break;
+			case TOK_STARTS_WITH:
+				{
+					auto& b = stack[--stack_ptr];
+					auto& a = stack[--stack_ptr];
+
+					if((a.type == TYPE_STRING) && (b.type == TYPE_STRING)) {
+						Value& v = stack[stack_ptr++];
+						v.type = TYPE_BOOLEAN;
+						v.boolean = (b.rfind(a, 0) == 0);
+					}
+					else {
+						Value& v = stack[stack_ptr++];
+						v.type = TYPE_BOOLEAN;
+						v.boolean = false;
+					}
+				}
+				break;
 			case TOK_IN:
 				{
 					bool result = false;

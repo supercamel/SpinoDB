@@ -331,6 +331,17 @@ Only bother with this is unless drop time becomes problematic.
 
 dropOlderThan() is very fast. Delete old documents using this where possible.
 
+
+
+##### Use zram on Linux
+
+Linux systems can use zram to compress RAM. This is especially useful on small embedded IoT type devices and virtual private servers where RAM isn't free. 
+
+zram can be used to create a RAM disk with on the fly compression. A swap file can be created on the zram disk. With default settings, the system will begin to compress RAM using lzo compression once it reaches ~50% useage. 
+This can help to eek out some extra memory space at the expense of CPU usage. 
+
+Interestingly, most other common operating systems will begin to use RAM compression as memory begins to run out, but Linux does not do this by default. It must be set up by the user. 
+
 ### Comparison To LokiJS
 
 LokiJS is a similar in-memory NoSQL database, however it is far more mature and featurefull. It also has the advantage of being a pure javascript solution and can run in browsers. 

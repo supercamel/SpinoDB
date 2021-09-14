@@ -27,7 +27,6 @@
 #include <exception>
 
 #include "QueryNodes.h"
-#include "QueryWalker.h"
 using namespace std;
 
 namespace Spino {
@@ -70,6 +69,7 @@ enum TOKEN {
 	TOK_NE,
 	TOK_GREATER_THAN,
 	TOK_LESS_THAN,
+	TOK_STARTS_WITH,
 	TOK_FIELD_NAME,
 	TOK_STRING_LITERAL,
 	TOK_NUMERIC_LITERAL,

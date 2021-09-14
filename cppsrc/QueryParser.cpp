@@ -122,6 +122,9 @@ Token QueryParser::lex() {
 				else if(op == "$type") {
 					return Token(TOK_TYPE, op);
 				}
+				else if(op == "$startsWith") {
+					return Token(TOK_TYPE, op);
+				}
 				else {
 					throw parse_error("Unknown $ operator");
 				}
