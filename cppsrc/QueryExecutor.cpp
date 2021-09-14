@@ -22,6 +22,10 @@
 #include "QueryExecutor.h"
 #include "QueryParser.h"
 
+#include <regex>
+
+#include <iostream>
+using namespace std;
 
 namespace Spino {
 	void QueryExecutor::Visit(NumericValue* f) {
@@ -180,7 +184,7 @@ namespace Spino {
 					if((a.type == TYPE_STRING) && (b.type == TYPE_STRING)) {
 						Value& v = stack[stack_ptr++];
 						v.type = TYPE_BOOLEAN;
-						v.boolean = (b.str.rfind(a.str, 0) == 0);
+						v.boolean = (a.str.rfind(b.str, 0) == 0);
 					}
 					else {
 						Value& v = stack[stack_ptr++];
@@ -318,6 +322,19 @@ namespace Spino {
 				break;
 
 		}
+	}
+
+	void QueryExecutor::Visit(RegexNode* rn) {
+		Value& v = stack[stack_ptr-1];
+		if(v.type == TYPE_STRING) {
+			std::smatch base_match;
+			v.boolean = std::regex_match(v.str, base_match, rn->base_regex);
+		}
+		else {
+			v.boolean = false;
+		}
+		v.type = TYPE_BOOLEAN;
+
 	}
 
 	void QueryExecutor::Visit(BasicFieldComparison* b) {

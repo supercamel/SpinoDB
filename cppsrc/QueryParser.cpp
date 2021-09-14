@@ -125,6 +125,9 @@ Token QueryParser::lex() {
 				else if(op == "$startsWith") {
 					return Token(TOK_STARTS_WITH, op);
 				}
+				else if(op == "$regex") {
+					return Token(TOK_REGEX, op);
+				}
 				else {
 					throw parse_error("Unknown $ operator");
 				}
@@ -412,6 +415,42 @@ std::shared_ptr<Operator> QueryParser::parse_operator_expression() {
 			}
 
 			ret->cmp = parse_literal();
+
+			tok = lex();
+			if(tok.token != TOK_RH_BRACE) {
+				throw parse_error("Missing closing brace 2");
+			}
+		}
+		else if(tok.token == TOK_REGEX) {
+			ret->op = tok.token;
+
+			tok = lex();
+			if(tok.token != TOK_COLON) {
+				throw parse_error("Expected : after " + tok.raw);
+			}
+
+			tok = lex();
+			if(tok.token != TOK_STRING_LITERAL) {
+				throw parse_error("Expected string as regex parameter");
+			}
+
+			auto rn = make_shared<RegexNode>();
+
+			try {
+				if(tok.raw.rfind("(?i)", 0) == 0) {
+					rn->base_regex = std::regex(tok.raw.substr(4, std::string::npos), std::regex_constants::icase);
+				} 
+				else {
+					rn->base_regex = std::regex(tok.raw);
+				}
+			}
+			catch(std::regex_error& err) {
+				std::string errmsg = "Invalid regex: ";
+				errmsg += err.what();
+				throw parse_error(errmsg);
+			}
+
+			ret->cmp = rn;
 
 			tok = lex();
 			if(tok.token != TOK_RH_BRACE) {

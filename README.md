@@ -192,6 +192,17 @@ $type - Checks if a field is of a type. The type parameter can be either*number,
 
     {name: {$type: string}}
 
+$startsWith - will get documents with a string field that starts with the characters specified. Case sensitive.
+
+	{name: {$startsWith: "D"}}
+
+$regex - will match a string field against a regex query. The regex flavour is ECMAScript, not PCRE. ECMAScript does not allow for case insensitive searching, so SpinoDB has borrowed the "(?i)" modifier to do this. Any regex query that begins with (?i) will make the search case insensitive. 
+
+	{name: {$regex: "^D.*"}}
+
+	{name: {$regex: "(?i)d"}}
+
+ 
 ### Logical Expressions
 
 $and - can be used to check multiple attributes of the document. All sub expressions must be true for the document to match.
