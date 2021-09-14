@@ -64,7 +64,7 @@ namespace Spino{
             tmp_timestamp /= 10;	
         }	
 
-        uint32_t tmp_idcounter = id_counter++;
+        uint32_t tmp_idcounter = ++id_counter;
         idstr_ts = &idstr[16];
         while(idstr_ts >= (&idstr[11])) {
             *--idstr_ts = (tmp_idcounter%10) + '0';
@@ -264,7 +264,7 @@ namespace Spino{
 
         //if it's not an index search, do a linear search using a cursor
         if(v == "") {
-            auto cursor = LinearCursor(doc[name.c_str()], s);
+            auto cursor = LinearCursor(doc[name.c_str()], s, 1);
             v = cursor.next();
         }
 
@@ -291,7 +291,7 @@ namespace Spino{
         return hash;
     }
 
-    BaseCursor* Collection::find(const char* s) const {
+    BaseCursor* Collection::find(const char* s, uint32_t limit) const {
         //check if it's an index search
         QueryParser parser(s);
         std::shared_ptr<BasicFieldComparison> bfc = nullptr;
@@ -301,12 +301,12 @@ namespace Spino{
             for(auto& idx : indices) {
                 if(idx->field_name == bfc->field_name) {
                     auto range = idx->index.equal_range(bfc->v);
-                    return new IndexCursor(range, doc[name.c_str()]);
+                    return new IndexCursor(range, doc[name.c_str()], limit);
                 }
             }
         }
 
-        return new LinearCursor(doc[name.c_str()], s);
+        return new LinearCursor(doc[name.c_str()], s, limit);
     }
 
     void Collection::removeDomIdxFromIndex(uint32_t domIdx) {
@@ -679,7 +679,16 @@ namespace Spino{
                     return make_reply(false, "Query field is not a string");
                 }
 
-                auto cursor = col->find(queryValue.GetString());
+				uint32_t limit = UINT32_MAX;
+				if(d.HasMember("limit")) {
+					auto& limitValue = d["limit"];
+					if(limitValue.IsNumber()) {
+						limit = limitValue.GetInt();
+					}
+				}
+
+
+                auto cursor = col->find(queryValue.GetString(), limit);
                 std::string response = "[";
 
                 std::string docstr = cursor->next();

@@ -5,11 +5,7 @@
 	"main": "./build/Release/spinodb.node",
 	"gypfile": true,
 	"dependencies": {
-		"@mapbox/node-pre-gyp": "^1.0.5",
-		"node-addon-api": "^4.1.0",
-		"node-gyp": "^8.2.0",
-		"node-pre-gyp": "^0.17.0",
-		"nopt": "^5.0.0"
+		"node-gyp": "^8.2.0"
 	},
 	"keywords": [
 		"NoSQL",
@@ -19,7 +15,6 @@
 		"cache",
 		"datastore"
 	],
-	"devDependencies": {},
 	"scripts": {
 		"test": "node test.js",
 		"build": "node-gyp rebuild",

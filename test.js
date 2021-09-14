@@ -6,27 +6,20 @@ var db = new spino.Spino();
 
 var col = db.addCollection('test');
 
-<<<<<<< HEAD
 
-col.append({
-    test: "Hello world"
-});
+for(var i = 0; i < 1000000; i++) {
+	col.append({
+		num: i
+	});
+}
 
-
-console.log(col.findOne('{test: {$startsWith: "Hello"}}'));
-=======
-col.append(JSON.stringify({
-	test: "hello world"
-}));
-
-console.log(col.findOne(`{test: {$regex: \"HELLO WORLD/i\"}}`));
->>>>>>> e5d4c1624d9effe684e4ab53730399ee0a31677b
+console.log(col.find(`{}`, 10).toArray());
 
 /*
 console.log(db.execute({
 	cmd: "find",
 	collection: "test",
-    query: '{test: {$startsWith: "Hello"}}'
+	query: '{test: {$startsWith: "Hello"}}'
 }));
 
 
@@ -115,11 +108,4 @@ console.time("$and");
 col.findOne("{$and: [{number: 900000}, {subobject.bool: true}]}");
 console.timeEnd("$and");
 
-
-<<<<<<< HEAD
-/*
- * */
-
-=======
 */
->>>>>>> e5d4c1624d9effe684e4ab53730399ee0a31677b

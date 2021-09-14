@@ -42,33 +42,36 @@ namespace Spino {
 
 	class BaseCursor {
 		public:
-            virtual ~BaseCursor() { };
+			virtual ~BaseCursor() { };
 			virtual std::string next() = 0;
 	};
 
 
 	class LinearCursor : public BaseCursor {
 		public:
-			LinearCursor(ValueType& list, const char* query) : list(list) { 
+			LinearCursor(ValueType& list, const char* query, uint32_t limit) : list(list), limit(limit) { 
 				Spino::QueryParser parser(query);
 				head = parser.parse_expression();
 				iter = list.Begin();
 			}
 
-            ~LinearCursor() { }
+			~LinearCursor() { }
 
 			std::string next() {
-				while(iter != list.End()) {
-					exec.set_json(&(*iter));	
-					if(exec.resolve(head)) {
-						rapidjson::StringBuffer sb;
-						rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-						iter->Accept(writer);
+				if(count < limit) {
+					while(iter != list.End()) {
+						exec.set_json(&(*iter));	
+						if(exec.resolve(head)) {
+							rapidjson::StringBuffer sb;
+							rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+							iter->Accept(writer);
+							iter++;
+							count++;
+							return sb.GetString();
+						}
 						iter++;
-						return sb.GetString();
-					}
-					iter++;
-				} 
+					} 
+				}
 				return "";
 			}
 
@@ -77,6 +80,8 @@ namespace Spino {
 			QueryExecutor exec;
 			ValueType::ConstValueIterator iter;
 			std::shared_ptr<QueryNode> head;
+			uint32_t limit;
+			uint32_t count = 0;
 	};
 
 	// typedef so you can breath while reading this
@@ -89,23 +94,27 @@ namespace Spino {
 
 	class IndexCursor : public BaseCursor {
 		public:
-			IndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom) : 
+			IndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom, uint32_t limit) : 
 				collection_dom(collection_dom),
-				iter_range(iter_range)
-			{
-				iter = iter_range.first;
-			}
+				iter_range(iter_range),
+				limit(limit)
+		{
+			iter = iter_range.first;
+		}
 
-            ~IndexCursor() { }
+			~IndexCursor() { }
 
 			std::string next() {
-				if(iter != iter_range.second) {
-					rapidjson::StringBuffer sb;
-					rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-					collection_dom[iter->second].Accept(writer);
-					iter++;
-					return sb.GetString();
-				} 
+				if(count < limit) {
+					if(iter != iter_range.second) {
+						rapidjson::StringBuffer sb;
+						rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+						collection_dom[iter->second].Accept(writer);
+						iter++;
+						count++;
+						return sb.GetString();
+					} 
+				}
 				return "";
 			}
 
@@ -113,6 +122,8 @@ namespace Spino {
 			ValueType& collection_dom;
 			IndexIteratorRange iter_range;
 			std::multimap<Spino::Value, uint32_t>::iterator iter;
+			uint32_t limit;
+			uint32_t count = 0;
 	};
 
 
@@ -120,13 +131,14 @@ namespace Spino {
 		public:
 			Collection(DocType& doc, std::string name) : name(name), doc(doc), arr(doc[name.c_str()])  {
 				id_counter = 0;	
+				last_append_timestamp = std::time(0); 
 			}
 
-            ~Collection() {
-                for(auto i : indices) {
-                    delete i;
-                }
-            }
+			~Collection() {
+				for(auto i : indices) {
+					delete i;
+				}
+			}
 
 			std::string getName() const;
 
@@ -141,7 +153,7 @@ namespace Spino {
 
 			std::string findOneById(const char* id) const;
 			std::string findOne(const char* s);
-			BaseCursor* find(const char* s) const;
+			BaseCursor* find(const char* s, uint32_t limit = UINT32_MAX) const;
 
 			void dropById(const char* s);
 			void dropOne(const char* s);
@@ -200,11 +212,11 @@ namespace Spino {
 				doc.SetObject();
 			}
 
-            ~SpinoDB() {
-                for(auto c : collections) {
-                    delete c;
-                }
-            }
+			~SpinoDB() {
+				for(auto c : collections) {
+					delete c;
+				}
+			}
 
 			std::string execute(const char* command);
 

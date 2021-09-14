@@ -47,428 +47,459 @@ v8::Global<Function> CollectionWrapper::constructor;
 
 
 void CursorWrapper::Init(Isolate* isolate){
-    // Prepare constructor template
-    Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate);
-    tpl->SetClassName(String::NewFromUtf8(isolate, "Cursor").ToLocalChecked());
-    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+	// Prepare constructor template
+	Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate);
+	tpl->SetClassName(String::NewFromUtf8(isolate, "Cursor").ToLocalChecked());
+	tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-    // Prototype
-    NODE_SET_PROTOTYPE_METHOD(tpl, "next", next);
+	// Prototype
+	NODE_SET_PROTOTYPE_METHOD(tpl, "next", next);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "toArray", toArray);
 
-    Local<Context> context = isolate->GetCurrentContext();
-    constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
+	Local<Context> context = isolate->GetCurrentContext();
+	constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
 
-    AddEnvironmentCleanupHook(isolate, [](void*) {
-            constructor.Reset();
-            }, nullptr);
+	AddEnvironmentCleanupHook(isolate, [](void*) {
+			constructor.Reset();
+			}, nullptr);
 
 }
 
 void CursorWrapper::NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args, Spino::BaseCursor* cur) {
-    Isolate* isolate = args.GetIsolate();
+	Isolate* isolate = args.GetIsolate();
 
-    auto cons = Local<Function>::New(isolate, constructor);
-    auto context = isolate->GetCurrentContext();
-    auto instance = cons->NewInstance(context).ToLocalChecked();
-    auto curwrapper = new CursorWrapper(cur);
-    curwrapper->Wrap(instance);
-    args.GetReturnValue().Set(instance);
+	auto cons = Local<Function>::New(isolate, constructor);
+	auto context = isolate->GetCurrentContext();
+	auto instance = cons->NewInstance(context).ToLocalChecked();
+	auto curwrapper = new CursorWrapper(cur);
+	curwrapper->Wrap(instance);
+	args.GetReturnValue().Set(instance);
+}
+
+void CursorWrapper::toArray(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+	CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.Holder());
+	Local<Array> nodes = Array::New(isolate);
+
+	auto txt = curwrap->cursor->next();
+	uint32_t count = 0;
+	while(txt != "") {
+		auto v8str = v8::String::NewFromUtf8(isolate, txt.c_str());
+		if(!v8str.IsEmpty()) {
+			auto v8strlocal = v8str.ToLocalChecked();
+			auto jsonobj = v8::JSON::Parse(isolate->GetCurrentContext(), v8strlocal);
+			if(!jsonobj.IsEmpty()) {
+				nodes->Set(isolate->GetCurrentContext(), count++, jsonobj.ToLocalChecked());
+			}
+		}	
+		else {
+			return;
+		}
+
+		txt = curwrap->cursor->next();
+	}
+
+	args.GetReturnValue().Set(nodes);
 }
 
 void CursorWrapper::next(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.Holder());
-    auto next = curwrap->cursor->next();
-    if(next != "") {
-        args.GetReturnValue().Set(String::NewFromUtf8(isolate, next.c_str()).ToLocalChecked());
-    }
+	Isolate* isolate = args.GetIsolate();
+	CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.Holder());
+	auto next = curwrap->cursor->next();
+	if(next != "") {
+		args.GetReturnValue().Set(String::NewFromUtf8(isolate, next.c_str()).ToLocalChecked());
+	}
 }
 
 void CollectionWrapper::Init(Isolate* isolate){
-    // Prepare constructor template
-    Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate);
-    tpl->SetClassName(String::NewFromUtf8(isolate, "Collection").ToLocalChecked());
-    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+	// Prepare constructor template
+	Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate);
+	tpl->SetClassName(String::NewFromUtf8(isolate, "Collection").ToLocalChecked());
+	tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-    // Prototype
-    NODE_SET_PROTOTYPE_METHOD(tpl, "getName", getName);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "createIndex", createIndex);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "dropIndex", dropIndex);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "append", append);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "updateById", updateById);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "update", update);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "findOneById", findOneById);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "findOne", findOne);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "find", find);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "dropById", dropById);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "dropOne", dropOne);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "drop", drop);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "dropOlderThan", dropOlderThan);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "timestampById", timestampById);
+	// Prototype
+	NODE_SET_PROTOTYPE_METHOD(tpl, "getName", getName);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "createIndex", createIndex);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "dropIndex", dropIndex);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "append", append);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "updateById", updateById);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "update", update);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "findOneById", findOneById);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "findOne", findOne);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "find", find);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "dropById", dropById);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "dropOne", dropOne);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "drop", drop);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "dropOlderThan", dropOlderThan);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "timestampById", timestampById);
 
-    Local<Context> context = isolate->GetCurrentContext();
-    constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
+	Local<Context> context = isolate->GetCurrentContext();
+	constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
 
-    AddEnvironmentCleanupHook(isolate, [](void*) {
-            constructor.Reset();
-            }, nullptr);
+	AddEnvironmentCleanupHook(isolate, [](void*) {
+			constructor.Reset();
+			}, nullptr);
 
 }
 
 void CollectionWrapper::NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args, Spino::Collection* col) {
-    Isolate* isolate = args.GetIsolate();
+	Isolate* isolate = args.GetIsolate();
 
-    auto cons = Local<Function>::New(isolate, constructor);
-    auto context = isolate->GetCurrentContext();
-    auto instance = cons->NewInstance(context).ToLocalChecked();
-    auto colwrapper = new CollectionWrapper(col);
-    colwrapper->Wrap(instance);
-    args.GetReturnValue().Set(instance);
+	auto cons = Local<Function>::New(isolate, constructor);
+	auto context = isolate->GetCurrentContext();
+	auto instance = cons->NewInstance(context).ToLocalChecked();
+	auto colwrapper = new CollectionWrapper(col);
+	colwrapper->Wrap(instance);
+	args.GetReturnValue().Set(instance);
 }
 
 void CollectionWrapper::getName(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    CollectionWrapper* collectionwrap = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
-    auto name = collectionwrap->collection->getName();
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, name.c_str()).ToLocalChecked());
+	Isolate* isolate = args.GetIsolate();
+	CollectionWrapper* collectionwrap = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	auto name = collectionwrap->collection->getName();
+	args.GetReturnValue().Set(String::NewFromUtf8(isolate, name.c_str()).ToLocalChecked());
 }
 
 void CollectionWrapper::createIndex(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value str(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-    obj->collection->createIndex(*str);
+	obj->collection->createIndex(*str);
 }
 
 void CollectionWrapper::dropIndex(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value str(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-    obj->collection->dropIndex(*str);
+	obj->collection->dropIndex(*str);
 }
 
 void CollectionWrapper::append(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	Isolate* isolate = args.GetIsolate();
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-    if(args[0]->IsString()) {
-        v8::String::Utf8Value str(isolate, args[0]);
+	if(args[0]->IsString()) {
+		v8::String::Utf8Value str(isolate, args[0]);
 
-        obj->collection->append(*str);
-    } 
-    else if(args[0]->IsObject()) {
-        auto handle = args[0].As<v8::Object>();
-        auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
-        v8::String::Utf8Value s(isolate, jsonobj);
-        obj->collection->append(*s);
-    }
+		obj->collection->append(*str);
+	} 
+	else if(args[0]->IsObject()) {
+		auto handle = args[0].As<v8::Object>();
+		auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
+		v8::String::Utf8Value s(isolate, jsonobj);
+		obj->collection->append(*s);
+	}
 }
 
 void CollectionWrapper::updateById(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value idstr(isolate, args[0]);
-    v8::String::Utf8Value update(isolate, args[1]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value idstr(isolate, args[0]);
+	v8::String::Utf8Value update(isolate, args[1]);
 
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-    obj->collection->updateById(*idstr, *update);
+	obj->collection->updateById(*idstr, *update);
 }
 
 void CollectionWrapper::update(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value findstr(isolate, args[0]);
-    v8::String::Utf8Value update(isolate, args[1]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value findstr(isolate, args[0]);
+	v8::String::Utf8Value update(isolate, args[1]);
 
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-    try {
-        obj->collection->update(*findstr, *update);
-    }
-    catch(Spino::parse_error& err){
-        isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                        err.what()).ToLocalChecked()));
-    }
-    catch(std::regex_error& err) {
-        isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                        err.what()).ToLocalChecked()));
-    }
-    catch(...) {
-        isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                        "Unknown exception caught during update query").ToLocalChecked()));
-    }
+	try {
+		obj->collection->update(*findstr, *update);
+	}
+	catch(Spino::parse_error& err){
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(std::regex_error& err) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(...) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						"Unknown exception caught during update query").ToLocalChecked()));
+	}
 
 }
 
 void CollectionWrapper::findOneById(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value idstr(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value idstr(isolate, args[0]);
 
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
-    auto f = obj->collection->findOneById(*idstr);
-    if(f != "") {
-        args.GetReturnValue().Set(String::NewFromUtf8(isolate, f.c_str()).ToLocalChecked());
-    }
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	auto f = obj->collection->findOneById(*idstr);
+	if(f != "") {
+		args.GetReturnValue().Set(String::NewFromUtf8(isolate, f.c_str()).ToLocalChecked());
+	}
 }
 
 void CollectionWrapper::findOne(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value str(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-    std::string f;
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
-    try {
-        f = obj->collection->findOne(*str);
-    }
-    catch(Spino::parse_error& err){
-        isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                        err.what()).ToLocalChecked()));
-    }
-    catch(std::regex_error& err) {
-        isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                        err.what()).ToLocalChecked()));
-    }
-    catch(...) {
-        isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                        "Unknown exception caught during find query").ToLocalChecked()));
-    }
-    if(f != "") {
-        args.GetReturnValue().Set(String::NewFromUtf8(isolate, f.c_str()).ToLocalChecked());
-    }
+	std::string f;
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	try {
+		f = obj->collection->findOne(*str);
+	}
+	catch(Spino::parse_error& err){
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(std::regex_error& err) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(...) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						"Unknown exception caught during find query").ToLocalChecked()));
+	}
+	if(f != "") {
+		args.GetReturnValue().Set(String::NewFromUtf8(isolate, f.c_str()).ToLocalChecked());
+	}
 }
 
 void CollectionWrapper::find(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value str(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
+	uint32_t limit = UINT32_MAX;
+	if(args.Length() >= 2) {
+		limit = args[1].As<Number>()->Value();
+	}
 
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
-    try {
-        auto cursor = obj->collection->find(*str);
-        CursorWrapper::NewInstance(args, cursor);
-    }
-    catch(Spino::parse_error& err){
-        isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                        err.what()).ToLocalChecked()));
-    }
-    catch(std::regex_error& err) {
-        isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                        err.what()).ToLocalChecked()));
-    }
-    catch(...) {
-        isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                        "Unknown exception caught during find query").ToLocalChecked()));
-    }
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	try {
+		auto cursor = obj->collection->find(*str, limit);
+		CursorWrapper::NewInstance(args, cursor);
+	}
+	catch(Spino::parse_error& err){
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(std::regex_error& err) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(...) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						"Unknown exception caught during find query").ToLocalChecked()));
+	}
 
 }
 
 void CollectionWrapper::dropById(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value findstr(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value findstr(isolate, args[0]);
 
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-    obj->collection->dropById(*findstr);
+	obj->collection->dropById(*findstr);
 }
 
 void CollectionWrapper::dropOne(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value findstr(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value findstr(isolate, args[0]);
 
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-    obj->collection->dropOne(*findstr);
+	obj->collection->dropOne(*findstr);
 }
 
 void CollectionWrapper::drop(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value findstr(isolate, args[0]);
-    uint32_t limit = UINT32_MAX;
-    if(args.Length() >= 2) {
-        limit = args[1].As<Number>()->Value();
-    }
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value findstr(isolate, args[0]);
+	uint32_t limit = UINT32_MAX;
+	if(args.Length() >= 2) {
+		limit = args[1].As<Number>()->Value();
+	}
 
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-    auto n_dropped = obj->collection->drop(*findstr, limit);
-    args.GetReturnValue().Set(v8::Number::New(isolate, n_dropped));
+	auto n_dropped = obj->collection->drop(*findstr, limit);
+	args.GetReturnValue().Set(v8::Number::New(isolate, n_dropped));
 }
 
 void CollectionWrapper::dropOlderThan(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	Isolate* isolate = args.GetIsolate();
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-    auto n_dropped = obj->collection->dropOlderThan(args[0].As<Number>()->Value());
-    args.GetReturnValue().Set(v8::Number::New(isolate, n_dropped));
+	auto n_dropped = obj->collection->dropOlderThan(args[0].As<Number>()->Value());
+	args.GetReturnValue().Set(v8::Number::New(isolate, n_dropped));
 }
 
 void CollectionWrapper::timestampById(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value findstr(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value findstr(isolate, args[0]);
 
-    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-    uint64_t ts = obj->collection->timestampById(*findstr);
-    args.GetReturnValue().Set(v8::Date::New(isolate->GetCurrentContext(), ts).ToLocalChecked());
+	uint64_t ts = obj->collection->timestampById(*findstr);
+	args.GetReturnValue().Set(v8::Date::New(isolate->GetCurrentContext(), ts).ToLocalChecked());
 }
 
 
 
 SpinoWrapper::SpinoWrapper() {
-    spino = new Spino::SpinoDB();	
+	spino = new Spino::SpinoDB();	
 }
 
 void SpinoWrapper::Init(Local<Object> exports) {
-    Isolate* isolate = exports->GetIsolate();
-    Local<Context> context = isolate->GetCurrentContext();
+	Isolate* isolate = exports->GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
 
-    Local<ObjectTemplate> addon_data_tpl = ObjectTemplate::New(isolate);
-    addon_data_tpl->SetInternalFieldCount(1);  
-    Local<Object> addon_data = addon_data_tpl->NewInstance(context).ToLocalChecked();
+	Local<ObjectTemplate> addon_data_tpl = ObjectTemplate::New(isolate);
+	addon_data_tpl->SetInternalFieldCount(1);  
+	Local<Object> addon_data = addon_data_tpl->NewInstance(context).ToLocalChecked();
 
-    Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New, addon_data);
-    tpl->SetClassName(String::NewFromUtf8(isolate, "Spino").ToLocalChecked());
-    tpl->InstanceTemplate()->SetInternalFieldCount(1);
+	Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New, addon_data);
+	tpl->SetClassName(String::NewFromUtf8(isolate, "Spino").ToLocalChecked());
+	tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-    NODE_SET_PROTOTYPE_METHOD(tpl, "execute", execute);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "save", save);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "load", load);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "addCollection", addCollection);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "getCollection", getCollection);
-    NODE_SET_PROTOTYPE_METHOD(tpl, "dropCollection", dropCollection);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "execute", execute);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "save", save);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "load", load);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "addCollection", addCollection);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "getCollection", getCollection);
+	NODE_SET_PROTOTYPE_METHOD(tpl, "dropCollection", dropCollection);
 
-    Local<Function> constructor = tpl->GetFunction(context).ToLocalChecked();
-    addon_data->SetInternalField(0, constructor);
-    exports->Set(context, String::NewFromUtf8(
-                isolate, "Spino").ToLocalChecked(),
-            constructor).FromJust();
+	Local<Function> constructor = tpl->GetFunction(context).ToLocalChecked();
+	addon_data->SetInternalField(0, constructor);
+	exports->Set(context, String::NewFromUtf8(
+				isolate, "Spino").ToLocalChecked(),
+			constructor).FromJust();
 }
 
 void SpinoWrapper::New(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    Local<Context> context = isolate->GetCurrentContext();
+	Isolate* isolate = args.GetIsolate();
+	Local<Context> context = isolate->GetCurrentContext();
 
-    if (args.IsConstructCall()) {
-        SpinoWrapper* obj = new SpinoWrapper();
-        obj->Wrap(args.This());
-        args.GetReturnValue().Set(args.This());
-    } else {
-        Local<Function> cons =
-            args.Data().As<Object>()->GetInternalField(0).As<Function>();
-        Local<Object> result =
-            cons->NewInstance(context).ToLocalChecked();
-        args.GetReturnValue().Set(result);
-    }
+	if (args.IsConstructCall()) {
+		SpinoWrapper* obj = new SpinoWrapper();
+		obj->Wrap(args.This());
+		args.GetReturnValue().Set(args.This());
+	} else {
+		Local<Function> cons =
+			args.Data().As<Object>()->GetInternalField(0).As<Function>();
+		Local<Object> result =
+			cons->NewInstance(context).ToLocalChecked();
+		args.GetReturnValue().Set(result);
+	}
 }
 
 void SpinoWrapper::execute(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+	Isolate* isolate = args.GetIsolate();
+	SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-    if(args[0]->IsString()) {
-        v8::String::Utf8Value str(isolate, args[0]);
+	if(args[0]->IsString()) {
+		v8::String::Utf8Value str(isolate, args[0]);
 
-        auto response = obj->spino->execute(*str);
-        args.GetReturnValue().Set(String::NewFromUtf8(isolate, response.c_str()).ToLocalChecked());
-    } 
-    else if(args[0]->IsObject()) {
-        auto handle = args[0].As<v8::Object>();
+		auto response = obj->spino->execute(*str);
+		args.GetReturnValue().Set(String::NewFromUtf8(isolate, response.c_str()).ToLocalChecked());
+	} 
+	else if(args[0]->IsObject()) {
+		auto handle = args[0].As<v8::Object>();
 
-        auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
-        v8::String::Utf8Value str(isolate, jsonobj);
-        std::string response = "";
-        try {
-            response = obj->spino->execute(*str);
-        }
-        catch(Spino::parse_error& err) {
-            response = "Query parse error: ";
-            response += err.what();
-        }
-        catch(std::regex_error& err) {
-            response = "Bad regex: ";
-            response += err.what();
-        }
-        catch(...) {
-            response = "Unknown exception caught during query";
-        }
+		auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
+		v8::String::Utf8Value str(isolate, jsonobj);
+		std::string response = "";
+		try {
+			response = obj->spino->execute(*str);
+		}
+		catch(Spino::parse_error& err) {
+			response = "Query parse error: ";
+			response += err.what();
+		}
+		catch(std::regex_error& err) {
+			response = "Bad regex: ";
+			response += err.what();
+		}
+		catch(...) {
+			response = "Unknown exception caught during query";
+		}
 
-        if(response != "") {
-            auto v8str = v8::String::NewFromUtf8(isolate, response.c_str());
-            if(!v8str.IsEmpty()) {
-                auto v8strlocal = v8str.ToLocalChecked();
-                auto jsonobj = v8::JSON::Parse(isolate->GetCurrentContext(), v8strlocal);
-                if(!jsonobj.IsEmpty()) {
-                    args.GetReturnValue().Set(jsonobj.ToLocalChecked());
-                }
-            }
-        }
-    }
+		if(response != "") {
+			auto v8str = v8::String::NewFromUtf8(isolate, response.c_str());
+			if(!v8str.IsEmpty()) {
+				auto v8strlocal = v8str.ToLocalChecked();
+				auto jsonobj = v8::JSON::Parse(isolate->GetCurrentContext(), v8strlocal);
+				if(!jsonobj.IsEmpty()) {
+					args.GetReturnValue().Set(jsonobj.ToLocalChecked());
+				}
+			}
+		}
+	}
 }
 
 void SpinoWrapper::save(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value str(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+	SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-    obj->spino->save(*str);
+	obj->spino->save(*str);
 }
 
 void SpinoWrapper::load(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value str(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+	SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-    obj->spino->load(*str);
+	obj->spino->load(*str);
 }
 
 void SpinoWrapper::addCollection(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value str(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-    SpinoWrapper* spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+	SpinoWrapper* spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-    auto col = spinowrap->spino->addCollection(*str);
-    CollectionWrapper::NewInstance(args, col);
+	auto col = spinowrap->spino->addCollection(*str);
+	CollectionWrapper::NewInstance(args, col);
 }
 
 void SpinoWrapper::getCollection(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value str(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-    SpinoWrapper* spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+	SpinoWrapper* spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-    auto col = spinowrap->spino->getCollection(*str);
-    if(col == nullptr) {
-        isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                        "Collection doesn't exist").ToLocalChecked()));
+	auto col = spinowrap->spino->getCollection(*str);
+	if(col == nullptr) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						"Collection doesn't exist").ToLocalChecked()));
 
-    }
-    else {
-        CollectionWrapper::NewInstance(args, col);
-    }
+	}
+	else {
+		CollectionWrapper::NewInstance(args, col);
+	}
 }
 
 
 void SpinoWrapper::dropCollection(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = args.GetIsolate();
-    v8::String::Utf8Value str(isolate, args[0]);
+	Isolate* isolate = args.GetIsolate();
+	v8::String::Utf8Value str(isolate, args[0]);
 
-    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+	SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-    obj->spino->drop_collection(*str);
+	obj->spino->drop_collection(*str);
 }
 

@@ -37,6 +37,8 @@ class CursorWrapper: public node::ObjectWrap {
 	private:
 
 		static void next(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void toArray(const v8::FunctionCallbackInfo<v8::Value>& args);
+
 
 		static v8::Global<v8::Function> constructor;
 		Spino::BaseCursor* cursor;

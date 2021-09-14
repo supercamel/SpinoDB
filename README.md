@@ -105,24 +105,25 @@ find() will return a Cursor that can be used to iterate over the results.
     
 Creating an array from a cursor can be done like this
   
+	var arr = cursor.toArray();
 
-    var json_array = '[';
-    var val;
-    while((val = cursor.next()) !== undefined) {
-	    json_array += val;
-	    json_array += ',';
-	}
-	array = array.slice(0, -1);
-	array += ']';
+or as a one liner
+	
+	var arr = collection.find(<query>).toArray();
 
-The array is in string format ready to send over the web, or can be parsed into a javascript array with JSON.parse()
+The array will contain all of the results as Javascript objects.
 
-A cheeky alternative to using cursors is to use the command execution interface to make SpinoDB collate the results into an array for you.
+The find() function can accept a limit on the number of results returned as the second parameter.
+
+	collection.find(<query>, 100); // will only return the first 100 results
+
+An alternative to using cursors is to use the command execution interface to make SpinoDB collate the results into a string for you.
 
 	var array = db.execute({
 		cmd: "find",
 		collection: "collectionName",
-		query: <query>
+		query: <query>,
+		limit: 100
 	});
 
     
