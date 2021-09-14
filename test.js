@@ -10,7 +10,7 @@ col.append(JSON.stringify({
 	test: "hello world"
 }));
 
-console.log(col.findOne(`{test: {$regex: \"(?i)H.<>(**)LO WORLD\"}}`));
+console.log(col.findOne(`{test: {$regex: \"HELLO WORLD/i\"}}`));
 
 /*
 console.log(db.execute({
