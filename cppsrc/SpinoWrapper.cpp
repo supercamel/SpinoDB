@@ -21,11 +21,14 @@
 
 #include "SpinoWrapper.h"
 
+#include <regex>
+
 #include <iostream>
 using namespace std;
 
 
 using node::AddEnvironmentCleanupHook;
+using v8::Exception;
 using v8::Context;
 using v8::Function;
 using v8::FunctionCallbackInfo;
@@ -182,7 +185,25 @@ void CollectionWrapper::update(const FunctionCallbackInfo<Value>& args) {
 
 	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
 
-	obj->collection->update(*findstr, *update);
+	try {
+		obj->collection->update(*findstr, *update);
+	}
+	catch(Spino::parse_error& err){
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(std::regex_error& err) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(...) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						"Unknown exception caught during update query").ToLocalChecked()));
+	}
+
 }
 
 void CollectionWrapper::findOneById(const FunctionCallbackInfo<Value>& args) {
@@ -200,8 +221,26 @@ void CollectionWrapper::findOne(const FunctionCallbackInfo<Value>& args) {
 	Isolate* isolate = args.GetIsolate();
 	v8::String::Utf8Value str(isolate, args[0]);
 
+	std::string f;
 	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
-	auto f = obj->collection->findOne(*str);
+	try {
+		f = obj->collection->findOne(*str);
+	}
+	catch(Spino::parse_error& err){
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(std::regex_error& err) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(...) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						"Unknown exception caught during find query").ToLocalChecked()));
+	}
 	if(f != "") {
 		args.GetReturnValue().Set(String::NewFromUtf8(isolate, f.c_str()).ToLocalChecked());
 	}
@@ -212,8 +251,26 @@ void CollectionWrapper::find(const FunctionCallbackInfo<Value>& args) {
 	v8::String::Utf8Value str(isolate, args[0]);
 
 	CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
-	auto cursor = obj->collection->find(*str);
-	CursorWrapper::NewInstance(args, cursor);
+	try {
+		auto cursor = obj->collection->find(*str);
+		CursorWrapper::NewInstance(args, cursor);
+	}
+	catch(Spino::parse_error& err){
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(std::regex_error& err) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						err.what()).ToLocalChecked()));
+	}
+	catch(...) {
+		isolate->ThrowException(Exception::TypeError(
+					String::NewFromUtf8(isolate,
+						"Unknown exception caught during find query").ToLocalChecked()));
+	}
+
 }
 
 void CollectionWrapper::dropById(const FunctionCallbackInfo<Value>& args) {
@@ -338,8 +395,12 @@ void SpinoWrapper::execute(const FunctionCallbackInfo<Value>& args) {
 			response = "Query parse error: ";
 			response += err.what();
 		}
+		catch(std::regex_error& err) {
+			response = "Bad regex: ";
+			response += err.what();
+		}
 		catch(...) {
-			response = "";
+			response = "Unknown exception caught during query";
 		}
 
 		if(response != "") {

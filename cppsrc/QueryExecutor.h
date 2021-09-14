@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <regex>
 #include <cmath>
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/pointer.h"
@@ -143,6 +144,7 @@ namespace Spino {
 			void Visit(class NumericValue* f);
 			void Visit(class StringValue* s);
 			void Visit(class BoolValue* b);
+			void Visit(class RegexNode* rn);
 			void Visit(class Field* f);
 			void Visit(class LogicalExpression* l);
 			void Visit(class List* l);

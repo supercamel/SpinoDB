@@ -39,6 +39,16 @@ namespace Spino {
 	};
 
 
+	class RegexNode: public QueryNode {
+		public:
+			std::regex base_regex;
+
+			virtual void Accept(QueryExecutor* t) {
+				t->Visit(this);
+			}
+	};
+
+
 	// contains a json pointer to the field and the operation to perform on it
 	// example: field -> operation (equal) -> numericValue (10)
 	// loads the field, checks if it is equal to 10

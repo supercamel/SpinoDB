@@ -192,6 +192,11 @@ $type - Checks if a field is of a type. The type parameter can be either*number,
 
     {name: {$type: string}}
 
+$startsWith - will get documents with a string field that starts with the characters specified. Case sensitive.
+
+	{name: {$startsWith: "D"}}
+
+
 ### Logical Expressions
 
 $and - can be used to check multiple attributes of the document. All sub expressions must be true for the document to match.
