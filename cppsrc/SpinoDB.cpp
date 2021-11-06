@@ -415,6 +415,10 @@ namespace Spino{
         timestamp /= 1000; // convert to seconds since epoch
 
         uint32_t n = arr.Size();
+        if(n == 0) {
+            return 0;
+        }
+
         uint32_t R = n-1;
         uint32_t L = 0;
         uint32_t m;
@@ -523,13 +527,14 @@ namespace Spino{
         return c;
     }
 
-    Collection* SpinoDB::getCollection(std::string name) const {
+    Collection* SpinoDB::getCollection(std::string name) {
         for(auto c : collections) {
             if(c->getName() == name) {
                 return c;
             }
         }
-        return nullptr;
+
+        return addCollection(name);
     }
 
     uint64_t Collection::timestampById(const char* s) {
