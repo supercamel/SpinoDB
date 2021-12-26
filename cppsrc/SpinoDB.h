@@ -45,6 +45,7 @@ namespace Spino {
         public:
             virtual ~BaseCursor() { };
             virtual std::string next() = 0;
+            virtual bool hasNext() = 0;
             virtual uint32_t count() = 0;
     };
 
@@ -55,11 +56,18 @@ namespace Spino {
                 Spino::QueryParser parser(query);
                 head = parser.parse_expression();
                 iter = list.Begin();
+                next();
             }
 
             ~LinearCursor() { }
 
+            bool hasNext() {
+                return nextdoc != "";
+            }
+
             std::string next() {
+                string ret = nextdoc;
+                nextdoc = "";
                 if(counter < limit) {
                     while(iter != list.End()) {
                         exec.set_json(&(*iter));	
@@ -69,12 +77,13 @@ namespace Spino {
                             iter->Accept(writer);
                             iter++;
                             counter++;
-                            return sb.GetString();
+                            nextdoc = sb.GetString();
+                            break;
                         }
                         iter++;
                     } 
                 }
-                return "";
+                return ret;
             }
 
             uint32_t count() {
@@ -98,6 +107,7 @@ namespace Spino {
             std::shared_ptr<QueryNode> head;
             uint32_t limit;
             uint32_t counter = 0;
+            string nextdoc;
     };
 
     // typedef so you can breath while reading this
@@ -116,11 +126,18 @@ namespace Spino {
                 limit(limit)
         {
             iter = iter_range.first;
+            next();
         }
 
             ~IndexCursor() { }
 
+            bool hasNext() {
+                return nextdoc != "";
+            }
+
             std::string next() {
+                string ret = nextdoc;
+                nextdoc = "";
                 if(counter < limit) {
                     if(iter != iter_range.second) {
                         rapidjson::StringBuffer sb;
@@ -128,10 +145,10 @@ namespace Spino {
                         collection_dom[iter->second].Accept(writer);
                         iter++;
                         counter++;
-                        return sb.GetString();
+                        nextdoc = sb.GetString();
                     } 
                 }
-                return "";
+                return ret;
             }
 
             uint32_t count() {
@@ -150,6 +167,7 @@ namespace Spino {
             std::multimap<Spino::Value, uint32_t>::iterator iter;
             uint32_t limit;
             uint32_t counter = 0;
+            string nextdoc;
     };
 
 

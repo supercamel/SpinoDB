@@ -40,7 +40,7 @@ As a rule of thumb, if the size of your data is greater than 50% of your availab
 
 ## GObject
 
-    meson builddir
+    meson --prefix=/usr builddir
     ninja -C builddir
     cd builddir && sudo meson install
 

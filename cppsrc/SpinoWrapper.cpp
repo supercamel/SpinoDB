@@ -53,6 +53,7 @@ void CursorWrapper::Init(Isolate* isolate){
 	tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
 	// Prototype
+    NODE_SET_PROTOTYPE_METHOD(tpl, "hasNext", hasNext);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "next", next);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "toArray", toArray);
 	NODE_SET_PROTOTYPE_METHOD(tpl, "count", count);
@@ -101,6 +102,13 @@ void CursorWrapper::toArray(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	}
 
 	args.GetReturnValue().Set(nodes);
+}
+
+void CursorWrapper::hasNext(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.Holder());
+    bool hasnext = curwrap->cursor->hasNext();
+    args.GetReturnValue().Set(v8::Boolean::New(isolate, hasnext));
 }
 
 void CursorWrapper::next(const v8::FunctionCallbackInfo<v8::Value>& args) {

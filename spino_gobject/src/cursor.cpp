@@ -45,6 +45,10 @@ guint spino_cursor_count(SpinoCursor* self)
     return self->priv->count();
 }
 
+gboolean spino_cursor_has_next(SpinoCursor* self) 
+{
+    return self->priv->hasNext();
+}
 
 
 G_END_DECLS
