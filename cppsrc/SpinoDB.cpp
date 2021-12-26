@@ -31,6 +31,7 @@ namespace Spino{
     }
 
     void Collection::indexNewDoc() {
+        auto& arr = doc[name.c_str()];
         ValueType& newdoc = arr[arr.Size()-1];
 
         for(auto& idx : indices) {
@@ -53,6 +54,7 @@ namespace Spino{
 
 
     void Collection::append(ValueType& d) {
+        auto& arr = doc[name.c_str()];
         uint32_t timestamp = std::time(0);
         uint32_t tmp_timestamp = timestamp;
 
@@ -93,6 +95,7 @@ namespace Spino{
     }
 
     void Collection::updateById(const char* id_cstr, const char* update) {
+        auto& arr = doc[name.c_str()];
         uint32_t domIdx;
         if(domIndexFromId(id_cstr, domIdx)) {
             DocType j;
@@ -100,10 +103,12 @@ namespace Spino{
 
             mergeObjects(arr[domIdx], j.GetObject());
             hashmap.clear();
+        } else {
         }
     }
 
     void Collection::update(const char* search, const char* update) {
+        auto& arr = doc[name.c_str()];
         DocType j;
         j.Parse(update);
 
@@ -111,19 +116,25 @@ namespace Spino{
         auto block = parser.parse_expression();
 
 
-        for (ValueType::ValueIterator itr = arr.Begin();
-                itr != arr.End(); ++itr) {
-            Spino::QueryExecutor exec(&(*itr));
-            if(exec.resolve(block)) {
-                mergeObjects(*itr, j.GetObject());
-            } else {
-                ++itr;
+        if(arr.IsArray()) {
+            for (ValueType::ValueIterator itr = arr.Begin();
+                    itr != arr.End(); ++itr) {
+                Spino::QueryExecutor exec(&(*itr));
+                if(exec.resolve(block)) {
+                    mergeObjects(*itr, j.GetObject());
+                } 
             }
         }
+        else {
+            cout << "ERROR: collection "
+                << name << " is not an array. DOM corrupted." << endl;
+        }
+
         hashmap.clear();
     }
 
     void Collection::createIndex(const char* s) {
+        auto& arr = doc[name.c_str()];
         auto idx = new Collection::Index();
         idx->field_name = s;
         stringstream ss(s);
@@ -190,6 +201,7 @@ namespace Spino{
     }
 
     bool Collection::domIndexFromId(const char* id_cstr, uint32_t& domIdx) const {
+        auto& arr = doc[name.c_str()];
         uint64_t tsc = fast_atoi_len(id_cstr, 10);
         uint64_t countc = fast_atoi_len(&id_cstr[10], 6);
 
@@ -334,6 +346,7 @@ namespace Spino{
     }
 
     void Collection::reconstructIndices() {
+        auto& arr = doc[name.c_str()];
         auto n = arr.Size();
 
         for(auto& idx : indices) {
@@ -363,6 +376,7 @@ namespace Spino{
     }
 
     void Collection::dropById(const char* s) {
+        auto& arr = doc[name.c_str()];
         uint32_t domIdx;
         if(domIndexFromId(s, domIdx)) {
             removeDomIdxFromIndex(domIdx);
@@ -384,7 +398,7 @@ namespace Spino{
         // TODO
         // do an index search first
         //
-
+        auto& arr = doc[name.c_str()];
         Spino::QueryParser parser(j);
         auto block = parser.parse_expression();
 
@@ -412,6 +426,7 @@ namespace Spino{
     }
 
     uint32_t Collection::dropOlderThan(uint64_t timestamp) {
+        auto& arr = doc[name.c_str()];
         timestamp /= 1000; // convert to seconds since epoch
 
         uint32_t n = arr.Size();
@@ -476,8 +491,10 @@ namespace Spino{
 
                 dstName.CopyFrom(srcIt->name, doc.GetAllocator());
                 dstIt = dstObject.FindMember(dstName);
-                if (dstIt == dstObject.MemberEnd())
+
+                if (dstIt == dstObject.MemberEnd()) {
                     return false ;
+                }
             }
             else
             {
@@ -518,8 +535,7 @@ namespace Spino{
         }
 
         ValueType v(rapidjson::kArrayType);
-        ValueType index;
-        index.SetString(name.c_str(), name.size(), doc.GetAllocator());
+        ValueType index(name.c_str(), doc.GetAllocator());
         doc.AddMember(index, v, doc.GetAllocator());
 
         auto c = new Collection(doc, name);
@@ -684,13 +700,13 @@ namespace Spino{
                     return make_reply(false, "Query field is not a string");
                 }
 
-				uint32_t limit = UINT32_MAX;
-				if(d.HasMember("limit")) {
-					auto& limitValue = d["limit"];
-					if(limitValue.IsNumber()) {
-						limit = limitValue.GetInt();
-					}
-				}
+                uint32_t limit = UINT32_MAX;
+                if(d.HasMember("limit")) {
+                    auto& limitValue = d["limit"];
+                    if(limitValue.IsNumber()) {
+                        limit = limitValue.GetInt();
+                    }
+                }
 
 
                 auto cursor = col->find(queryValue.GetString(), limit);
