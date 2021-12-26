@@ -4,7 +4,7 @@
 
 *feels like its ready, lets call it 'beta' stage*
 
-SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is NodeJS addon written in C++ and is intended to be used with NodeJS for both web and desktop applications.
+SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is written in C++ and has bindings for both NodeJS and GObjects (meaning it magically works with Vala, Python and every language supported by Gobject-introspection). 
 
 
 ### When To Use It
@@ -19,7 +19,10 @@ SpinoDB may also be used as a fast cache to complement a traditional database.
 
 ##### Desktop Applications
 
-Electron applications can use SpinoDB as an alternative to creating an ad-hoc format for application specific data.
+Desktop applications can use SpinoDB as an alternative to creating an ad-hoc format for application specific data. 
+- application settings
+- data logging
+- application specific data
 
 ##### Limitations
 
@@ -31,7 +34,17 @@ As a rule of thumb, if the size of your data is greater than 50% of your availab
 
 ### Installation
 
+## NodeJS 
+
     npm install spinodb
+
+## GObject
+
+    meson builddir
+    ninja -C builddir
+    cd builddir && sudo meson install
+
+This will build and install the libary along with pkg-config, gir, vapi and typelib files.
     
 
 ### Design
@@ -86,7 +99,7 @@ append() will add a JSON document to a collection.
 	     array: [ 1, 2, 3, 4]
         });
 
-append() will accept either a Javascript object or JSON string.
+append() will accept either a Javascript object or JSON string. The GObject bindings use strings only to represent documents.
 
 ### Find Queries
 
