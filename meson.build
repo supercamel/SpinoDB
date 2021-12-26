@@ -36,10 +36,12 @@ spinolib= shared_library('spino-1.0',
 		install : true
 )
 
-pkg.generate(spinolib)
+pkg.generate(spinolib,
+        subdirs: 'spino'
+        )
 
 headers = [
-  'spino_gobject/inc/spino.h',
+  'spino_gobject/inc/Spino-1.0.h',
   'spino_gobject/inc/database.h',
   'spino_gobject/inc/collection.h',
   'spino_gobject/inc/cursor.h'
@@ -54,7 +56,7 @@ introspection_sources= [
 	'spino_gobject/inc/cursor.h',
 	'spino_gobject/inc/database.h',
 	'spino_gobject/inc/collection.h',
-	'spino_gobject/inc/spino.h'
+	'spino_gobject/inc/Spino-1.0.h'
 ]
 
 g_ir_compiler = find_program('g-ir-compiler')
