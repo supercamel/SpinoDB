@@ -255,7 +255,7 @@ namespace Spino {
 
             Collection* addCollection(std::string name);
             Collection* getCollection(std::string name);
-            void drop_collection(std::string name);
+            void dropCollection(std::string name);
 
             void save(std::string path) const;
             void load(std::string path);

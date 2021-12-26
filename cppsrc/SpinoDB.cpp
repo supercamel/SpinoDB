@@ -557,7 +557,7 @@ namespace Spino{
         return fast_atoi_len(s, 10)*1000;
     }
 
-    void SpinoDB::drop_collection(std::string name) {
+    void SpinoDB::dropCollection(std::string name) {
         for(auto it = collections.begin(); it != collections.end(); ) {
             auto c = *it;
             if(c->getName() == name) {

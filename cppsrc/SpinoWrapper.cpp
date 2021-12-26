@@ -509,6 +509,6 @@ void SpinoWrapper::dropCollection(const FunctionCallbackInfo<Value>& args) {
 
 	SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-	obj->spino->drop_collection(*str);
+	obj->spino->dropCollection(*str);
 }
 
