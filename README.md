@@ -1,9 +1,5 @@
 # SpinoDB
 
-*work in progress*
-
-*feels like its ready, lets call it 'beta' stage*
-
 SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is written in C++ and has bindings for both NodeJS and GObjects (meaning it magically works with Vala, Python and every language supported by Gobject-introspection). 
 
 
@@ -178,10 +174,9 @@ e.g. dropping all documents more than 2 weeks old
 	let twoWeeksAgo = now - (1000*60*60*24*14);	//2 weeks in milliseconds
 	let nDocumentsDropped = collection.dropOlderThan(twoWeeksAgo);
 
-### Query Format
+### Query Language
 
-SpinoDB has it's own query language. It is similar to the MongoDB query language, but it is not the same. 
-Queries look like JSON strings or Javascript objects but they are not - they are strings in SpinoDB query language.
+SpinoDB has a language for matching documents. Spino queries are **not** JSON. You cannot build a query as a javascript object and stringify it. You must build a string to create the query.
 
 $eq - Equality operator will return documents if a field matches a value. 
 
