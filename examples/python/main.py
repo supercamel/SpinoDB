@@ -13,7 +13,8 @@ doc = { "name": "Camel", "score": 9001 }
 
 col.append(json.dumps(doc))
 
-cursor = col.find("{name: \"Camel\"}", 0)
+cursor = col.find("{name: \"Camel\"}").set_limit(1).set_projection(json.dumps({"name": 1}))
+
 
 while(cursor.has_next()):
     print(cursor.next())

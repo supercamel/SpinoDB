@@ -26,6 +26,18 @@
 using namespace std;
 
 namespace Spino{
+
+    BaseCursor* BaseCursor::setProjection(const char* p) {
+        projection.Parse(p);
+        projection_set = true;
+        return this;
+    }
+
+    BaseCursor* BaseCursor::setLimit(uint32_t limit) {
+        max_results = limit;
+        return this;
+    }
+
     std::string Collection::getName() const {
         return name;
     }
@@ -276,7 +288,7 @@ namespace Spino{
 
         //if it's not an index search, do a linear search using a cursor
         if(v == "") {
-            auto cursor = LinearCursor(doc[name.c_str()], s, 1);
+            LinearCursor cursor(doc[name.c_str()], s);
             v = cursor.next();
         }
 
@@ -303,7 +315,7 @@ namespace Spino{
         return hash;
     }
 
-    BaseCursor* Collection::find(const char* s, uint32_t limit) const {
+    BaseCursor* Collection::find(const char* s) const {
         //check if it's an index search
         QueryParser parser(s);
         std::shared_ptr<BasicFieldComparison> bfc = nullptr;
@@ -313,12 +325,12 @@ namespace Spino{
             for(auto& idx : indices) {
                 if(idx->field_name == bfc->field_name) {
                     auto range = idx->index.equal_range(bfc->v);
-                    return new IndexCursor(range, doc[name.c_str()], limit);
+                    return new IndexCursor(range, doc[name.c_str()]);
                 }
             }
         }
 
-        return new LinearCursor(doc[name.c_str()], s, limit);
+        return new LinearCursor(doc[name.c_str()], s);
     }
 
     void Collection::removeDomIdxFromIndex(uint32_t domIdx) {
@@ -709,7 +721,7 @@ namespace Spino{
                 }
 
 
-                auto cursor = col->find(queryValue.GetString(), limit);
+                auto cursor = col->find(queryValue.GetString())->setLimit(limit);
                 std::string response = "[";
 
                 std::string docstr = cursor->next();

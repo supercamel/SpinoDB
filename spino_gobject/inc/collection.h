@@ -24,10 +24,9 @@ gchar* spino_collection_find_one(SpinoCollection* self, const gchar* query);
  * spino_collection_find:
  * @self: the self
  * @query: the query string
- * @limit: maximum number of results to return, or 0 for no limit
  * Returns: (transfer full):
  */
-SpinoCursor* spino_collection_find(SpinoCollection* self, const gchar* query, uint32_t limit);
+SpinoCursor* spino_collection_find(SpinoCollection* self, const gchar* query);
 
 void spino_collection_drop_by_id(SpinoCollection* self, const gchar* id);
 void spino_collection_drop_one(SpinoCollection* self, const gchar* query);

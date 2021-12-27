@@ -81,14 +81,9 @@ gchar* spino_collection_find_one(SpinoCollection* self, const gchar* query)
 }
 
 SpinoCursor* spino_collection_find(
-        SpinoCollection* self, const gchar* query, uint32_t limit)
+        SpinoCollection* self, const gchar* query)
 {
-    if(limit == 0)
-    {
-        limit = UINT32_MAX;
-    }
-
-    auto* cursor = self->priv->find(query, limit);
+    auto* cursor = self->priv->find(query);
     return spino_cursor_new(cursor);
 }
 

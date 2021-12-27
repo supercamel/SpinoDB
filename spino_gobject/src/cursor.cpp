@@ -50,5 +50,18 @@ gboolean spino_cursor_has_next(SpinoCursor* self)
     return self->priv->hasNext();
 }
 
+SpinoCursor* spino_cursor_set_projection(SpinoCursor* self, const gchar* projection) 
+{
+    self->priv->setProjection(projection);
+    return self;
+}
+
+SpinoCursor* spino_cursor_set_limit(SpinoCursor* self, guint limit)
+{
+    self->priv->setLimit(limit);
+    return self;
+}
+
+
 
 G_END_DECLS

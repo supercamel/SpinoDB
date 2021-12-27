@@ -40,6 +40,8 @@ class CursorWrapper: public node::ObjectWrap {
         static void hasNext(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void toArray(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void count(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void setProjection(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void setLimit(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 
 		static v8::Global<v8::Function> constructor;

@@ -43,46 +43,87 @@ namespace Spino {
 
     class BaseCursor {
         public:
+            BaseCursor() {
+                max_results = UINT32_MAX;
+                projection_set = false;
+            }
+
             virtual ~BaseCursor() { };
             virtual std::string next() = 0;
             virtual bool hasNext() = 0;
             virtual uint32_t count() = 0;
+
+            BaseCursor* setProjection(const char* projection);
+            BaseCursor* setLimit(uint32_t max_results);
+
+        protected: 
+            void apply_projection(
+                    const ValueType& proj, 
+                    const ValueType& source, 
+                    rapidjson::Writer<rapidjson::StringBuffer>& writer) 
+            {
+                writer.StartObject();
+
+                // white list projection only
+                for (ValueType::ConstMemberIterator itr = proj.MemberBegin();
+                        itr != proj.MemberEnd(); ++itr)
+                {
+                    std::string name = itr->name.GetString();
+
+                    auto srcIt = source.GetObject().FindMember(name.c_str()); 
+                    // if the source object has the projection field
+                    if(srcIt != source.MemberEnd()) {
+                        writer.Key(name.c_str());
+                        if(srcIt->value.IsObject() && itr->value.IsObject()) {
+                            apply_projection(
+                                    itr->value.GetObject(), srcIt->value, writer);
+
+                        }
+                        else {
+                            srcIt->value.Accept(writer);
+                        }
+                    }
+                }
+
+                writer.EndObject();
+            }
+
+
+            DocType projection;
+            bool projection_set;
+            uint32_t max_results;
     };
 
 
     class LinearCursor : public BaseCursor {
         public:
-            LinearCursor(ValueType& list, const char* query, uint32_t limit) : list(list), limit(limit) { 
+            LinearCursor(ValueType& list, const char* query) : list(list) { 
                 Spino::QueryParser parser(query);
                 head = parser.parse_expression();
                 iter = list.Begin();
-                next();
+                has_next = true;
+                findNext();
             }
 
             ~LinearCursor() { }
 
             bool hasNext() {
-                return nextdoc != "";
+                return has_next;
             }
 
             std::string next() {
-                string ret = nextdoc;
-                nextdoc = "";
-                if(counter < limit) {
-                    while(iter != list.End()) {
-                        exec.set_json(&(*iter));	
-                        if(exec.resolve(head)) {
-                            rapidjson::StringBuffer sb;
-                            rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-                            iter->Accept(writer);
-                            iter++;
-                            counter++;
-                            nextdoc = sb.GetString();
-                            break;
-                        }
-                        iter++;
-                    } 
+                rapidjson::StringBuffer buffer;
+                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                if(projection_set) {
+                    apply_projection(projection, *iter, writer);
                 }
+                else {
+                    iter->Accept(writer);
+                }
+                std::string ret = buffer.GetString();
+
+                iter++;
+                findNext();
                 return ret;
             }
 
@@ -101,13 +142,30 @@ namespace Spino {
             }
 
         private:
+            void findNext() {
+                has_next = false;
+                if(counter < max_results) {
+                    while(iter != list.End()) {
+                        exec.set_json(&(*iter));	
+                        if(exec.resolve(head)) {
+                            has_next = true;
+                            counter++;
+                            return;
+                        }
+                        else {
+                            iter++;
+                        }
+                    }               
+                }
+            }
+
             ValueType& list;
             QueryExecutor exec;
             ValueType::ConstValueIterator iter;
             std::shared_ptr<QueryNode> head;
             uint32_t limit;
             uint32_t counter = 0;
-            string nextdoc;
+            bool has_next;
     };
 
     // typedef so you can breath while reading this
@@ -120,10 +178,9 @@ namespace Spino {
 
     class IndexCursor : public BaseCursor {
         public:
-            IndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom, uint32_t limit) : 
+            IndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom) : 
                 collection_dom(collection_dom),
-                iter_range(iter_range),
-                limit(limit)
+                iter_range(iter_range)
         {
             iter = iter_range.first;
             next();
@@ -132,23 +189,32 @@ namespace Spino {
             ~IndexCursor() { }
 
             bool hasNext() {
-                return nextdoc != "";
+                if((counter < max_results) && (iter != iter_range.second)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
             }
 
             std::string next() {
-                string ret = nextdoc;
-                nextdoc = "";
-                if(counter < limit) {
+                if(counter < max_results) {
                     if(iter != iter_range.second) {
-                        rapidjson::StringBuffer sb;
-                        rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-                        collection_dom[iter->second].Accept(writer);
+                        rapidjson::StringBuffer buffer;
+                        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                        if(projection_set) {
+                            apply_projection(projection, 
+                                    collection_dom[iter->second], writer);
+                        }
+                        else {
+                            collection_dom[iter->second].Accept(writer);
+                        }
                         iter++;
                         counter++;
-                        nextdoc = sb.GetString();
+                        return buffer.GetString();
                     } 
                 }
-                return ret;
+                return "";
             }
 
             uint32_t count() {
@@ -165,7 +231,6 @@ namespace Spino {
             ValueType& collection_dom;
             IndexIteratorRange iter_range;
             std::multimap<Spino::Value, uint32_t>::iterator iter;
-            uint32_t limit;
             uint32_t counter = 0;
             string nextdoc;
     };
@@ -204,7 +269,7 @@ namespace Spino {
 
             std::string findOneById(const char* id) const;
             std::string findOne(const char* s);
-            BaseCursor* find(const char* s, uint32_t limit = UINT32_MAX) const;
+            BaseCursor* find(const char* s) const;
 
             void dropById(const char* s);
             void dropOne(const char* s);

@@ -51,6 +51,9 @@ This will build and install the libary along with pkg-config, gir, vapi and type
 
 A SpinoDB contains 'collections'. A collection is roughly analogous to a table in an SQL database, except that instead of containing one dimensional rows, each entry in a collection contains a JSON document / Javascript object. The documents are not required to be consistent.
 
+The NodeJS and GObject bindings are almost identical except for these differences.
+- The NodeJS bindings use camel case but GObject bindings use snake case. e.g. getCollection in NodeJS and get_collection for GObject bindings.
+- The NodeJS bindings will convert objects to JSON strings. The GObject bindings strictly use strings to represent JSON documents. 
 
 ### Example
 
@@ -254,6 +257,34 @@ Field names are the basis of query operations and are used to identify data in a
 To query the field of a sub object, the following syntax can be used
 
     { steamProfile.steamId: "7656112598325978325" }
+
+
+### Projections
+
+Projections can be used to retrieve only selected fields of a document. Projections can only be applied to cursors. The projection is a JSON string that has the document fields to return as keys. The values must be 1. 
+
+Example
+
+    var cursor = collection.find("{score: {$gt: 20}}").setProjection("{\"name\": 1}");
+
+This will create a cursor that return documents that only contain the names of players with a score greater than 20.
+
+Projections are a white-list only. If a projection is applied, only the fields set to 1 in the projection JSON string will be retrieved from the document. Fields of sub-objects can be selected like this
+
+    '{ "subobject": { "field": 1 }}'
+
+
+### Limits
+
+A limit can be set on the number of documents that a cursor can return. 
+
+Example
+    var cursor = collection.find("{ score: {$gt: 20}}").setLimit(10);
+
+Projections and limits can be chained together like this
+
+    var cursor = collection.find("<query>").setProjection("<projection>").setLimit(10);
+
 
 ### _id Field
 
