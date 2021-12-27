@@ -57,22 +57,21 @@ The NodeJS and GObject bindings are almost identical except for these difference
     var db = new spino.Spino(); // create the db instance
     db.load('data.db'); // load from disk
     
-    var userColl = db.getCollection("users"); // get the users collection
-    if(userColl === undefined) { // if it does not exist, create it
-        userColl = db.addCollection('users');
-    }
+    // get the users collection
+    // if the collection doesn't exist, it is created
+    var userColl = db.getCollection("users"); 
     
     // retrieve a user called Dave
     var result = userColl.findOne('{ name: "Dave" });
     console.log(result); 
 
-	// update Dave's score to 50. if the score field does not exist, it is created. 
+    // update Dave's score to 50. if the score field does not exist, it is created. 
     userColl.update('{ name: "Dave" }', '{"score": 50}'); 
 
 
 ### Collections
 
-db.getCollection(<collection_name>) will return either the collection or undefined if it does not exist.
+db.getCollection(<collection_name>) will return a collection, or create one if it doesn't exist
 
     var col = db.getCollection("users");
 
@@ -109,11 +108,10 @@ findOne() will retrieve exactly one document from the collection. The result is 
 find() will return a Cursor that can be used to iterate over the results.
 
     var cursor = collection.find(<query>);
-    var doc = cursor.next();
-    while(doc !== undefined) {
-        // do something with the document
-	    doc = cursor.next();
-	 } 
+    while(cursor.hasNext()) {
+	var doc = cursor.next();
+	// do something with the document
+    } 
     
 Creating an array from a cursor can be done like this
   
@@ -125,9 +123,6 @@ or as a one liner
 
 The array will contain all of the results as Javascript objects.
 
-The find() function can accept a limit on the number of results returned as the second parameter.
-
-	collection.find(<query>, 100); // will only return the first 100 results
 
 A cursor can also count the number of documents that it the query matches.
 
