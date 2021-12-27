@@ -279,6 +279,7 @@ Projections are a white-list only. If a projection is applied, only the fields s
 A limit can be set on the number of documents that a cursor can return. 
 
 Example
+
     var cursor = collection.find("{ score: {$gt: 20}}").setLimit(10);
 
 Projections and limits can be chained together like this
