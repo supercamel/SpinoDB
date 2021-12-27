@@ -1,9 +1,5 @@
 # SpinoDB
 
-*work in progress*
-
-*feels like its ready, lets call it 'beta' stage*
-
 SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is written in C++ and has bindings for both NodeJS and GObjects (meaning it magically works with Vala, Python and every language supported by Gobject-introspection). 
 
 
@@ -61,22 +57,21 @@ The NodeJS and GObject bindings are almost identical except for these difference
     var db = new spino.Spino(); // create the db instance
     db.load('data.db'); // load from disk
     
-    var userColl = db.getCollection("users"); // get the users collection
-    if(userColl === undefined) { // if it does not exist, create it
-        userColl = db.addCollection('users');
-    }
+    // get the users collection
+    // if the collection doesn't exist, it is created
+    var userColl = db.getCollection("users"); 
     
     // retrieve a user called Dave
     var result = userColl.findOne('{ name: "Dave" });
     console.log(result); 
 
-	// update Dave's score to 50. if the score field does not exist, it is created. 
+    // update Dave's score to 50. if the score field does not exist, it is created. 
     userColl.update('{ name: "Dave" }', '{"score": 50}'); 
 
 
 ### Collections
 
-db.getCollection(<collection_name>) will return either the collection or undefined if it does not exist.
+db.getCollection(<collection_name>) will return a collection, or create one if it doesn't exist
 
     var col = db.getCollection("users");
 
@@ -113,11 +108,10 @@ findOne() will retrieve exactly one document from the collection. The result is 
 find() will return a Cursor that can be used to iterate over the results.
 
     var cursor = collection.find(<query>);
-    var doc = cursor.next();
-    while(doc !== undefined) {
-        // do something with the document
-	    doc = cursor.next();
-	 } 
+    while(cursor.hasNext()) {
+	var doc = cursor.next();
+	// do something with the document
+    } 
     
 Creating an array from a cursor can be done like this
   
@@ -129,9 +123,6 @@ or as a one liner
 
 The array will contain all of the results as Javascript objects.
 
-The find() function can accept a limit on the number of results returned as the second parameter.
-
-	collection.find(<query>, 100); // will only return the first 100 results
 
 A cursor can also count the number of documents that it the query matches.
 
@@ -178,10 +169,9 @@ e.g. dropping all documents more than 2 weeks old
 	let twoWeeksAgo = now - (1000*60*60*24*14);	//2 weeks in milliseconds
 	let nDocumentsDropped = collection.dropOlderThan(twoWeeksAgo);
 
-### Query Format
+### Query Language
 
-SpinoDB has it's own query language. It is similar to the MongoDB query language, but it is not the same. 
-Queries look like JSON strings or Javascript objects but they are not - they are strings in SpinoDB query language.
+SpinoDB has a language for matching documents. Spino queries are **not** JSON. You cannot build a query as a javascript object and stringify it. You must build a string to create the query.
 
 $eq - Equality operator will return documents if a field matches a value. 
 
@@ -279,6 +269,7 @@ Projections are a white-list only. If a projection is applied, only the fields s
 A limit can be set on the number of documents that a cursor can return. 
 
 Example
+
     var cursor = collection.find("{ score: {$gt: 20}}").setLimit(10);
 
 Projections and limits can be chained together like this
