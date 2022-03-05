@@ -22,17 +22,35 @@
 #include <node.h>
 #include "SpinoWrapper.h"
 
+using v8::FunctionCallbackInfo;
+using v8::Isolate;
+using v8::Local;
+using v8::String;
+using v8::Value;
+
 namespace SpinoDB {
 
-	using v8::Local;
-	using v8::Object;
+    using v8::Local;
+    using v8::Object;
 
-	void InitAll(Local<Object> exports) {
-		CursorWrapper::Init(exports->GetIsolate());
-		CollectionWrapper::Init(exports->GetIsolate());
-		SpinoWrapper::Init(exports);
-	}
+    void escape(const FunctionCallbackInfo<Value>& args) {
+        Isolate* isolate = args.GetIsolate();
+        v8::String::Utf8Value str(isolate, args[0]);
 
-	NODE_MODULE(NODE_GYP_MODULE_NAME, InitAll)
+        std::string escaped = Spino::escape(*str);
+        auto v8str = v8::String::NewFromUtf8(isolate, escaped.c_str());
+        if(!v8str.IsEmpty()) {
+            args.GetReturnValue().Set(v8str.ToLocalChecked());
+        }
+    }
+
+    void InitAll(Local<Object> exports) {
+        CursorWrapper::Init(exports->GetIsolate());
+        CollectionWrapper::Init(exports->GetIsolate());
+        SpinoWrapper::Init(exports);
+        NODE_SET_METHOD(exports, "escape", escape);
+    }
+
+    NODE_MODULE(NODE_GYP_MODULE_NAME, InitAll)
 
 }

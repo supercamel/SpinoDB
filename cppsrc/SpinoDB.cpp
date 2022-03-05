@@ -901,7 +901,7 @@ namespace Spino{
     }
 
 
-    void SpinoDB::save(std::string path) const {
+    void SpinoDB::save(const std::string& path) const {
         std::ofstream out(path);
         rapidjson::OStreamWrapper osw(out);
 
@@ -910,7 +910,7 @@ namespace Spino{
         out.close();
     }
 
-    void SpinoDB::load(std::string path) {
+    void SpinoDB::load(const std::string& path) {
         collections.clear();
 
         std::ifstream in(path);
@@ -923,6 +923,23 @@ namespace Spino{
             collections.push_back(c);
         }
 
+    }
+
+
+    std::string escape(const std::string& str) {
+        std::string result;
+        for(char c : str) {
+            if(c == '"') {
+                result += "\\\"";
+            }
+            else if(c == '\\') {
+                result += "\\\\";
+            }
+            else {
+                result += c;
+            }
+        }
+        return result;
     }
 }
 

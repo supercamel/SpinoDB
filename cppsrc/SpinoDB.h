@@ -340,8 +340,8 @@ namespace Spino {
             Collection* getCollection(std::string name);
             void dropCollection(std::string name);
 
-            void save(std::string path) const;
-            void load(std::string path);
+            void save(const std::string& path) const;
+            void load(const std::string& path);
 
         private:
             static std::string make_reply(bool success, std::string msg) {
@@ -368,6 +368,7 @@ namespace Spino {
             DocType doc;
     };
 
+    std::string escape(const std::string& str);
 
 }
 
