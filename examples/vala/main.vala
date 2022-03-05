@@ -45,7 +45,8 @@ void calculate_grades(Spino.Collection student_collection) {
     var docstr = "";
 
     // while the cursor isn't returning empty strings
-    while((docstr = cursor.next()) != "") {
+    while(cursor.has_next() == true) {
+        docstr = cursor.next();
         // parse the document
         var parser = new Json.Parser ();
         parser.load_from_data(docstr, -1);
