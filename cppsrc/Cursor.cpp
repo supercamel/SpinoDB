@@ -53,7 +53,6 @@ namespace Spino {
         Spino::QueryParser parser(query);
         head = parser.parse_expression();
         iter = list.Begin();
-        has_next = true;
         findNext();
     }
 
@@ -64,19 +63,23 @@ namespace Spino {
     }
 
     std::string LinearCursor::next() {
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        if(projection_set) {
-            apply_projection(projection, *iter, writer);
-        }
-        else {
-            iter->Accept(writer);
-        }
-        std::string ret = buffer.GetString();
+        if(has_next) {
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            if(projection_set) {
+                apply_projection(projection, *iter, writer);
+            }
+            else {
+                iter->Accept(writer);
+            }
+            std::string ret = buffer.GetString();
 
-        iter++;
-        findNext();
-        return ret;
+            iter++;
+            findNext();
+            return ret;
+        }
+        return "";
+
     }
 
     uint32_t LinearCursor::count() {

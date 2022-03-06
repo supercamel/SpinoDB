@@ -27,6 +27,25 @@ using namespace std;
 
 namespace Spino{
 
+    void SpinoDB::clear() {
+        for(auto c : collections) {
+            delete c;
+        }
+        if(keyStore != nullptr) {
+            delete keyStore;
+        }
+
+        doc.SetObject();
+
+        const char* keystoreName = "__SpinoKeyValueStore__";
+        ValueType v(rapidjson::kArrayType);
+        ValueType index(keystoreName, doc.GetAllocator());
+        doc.AddMember(index, v, doc.GetAllocator());
+
+        keyStore = new Collection(doc, keystoreName);
+        keyStore->createIndex("k");
+    }
+
     Collection* SpinoDB::addCollection(std::string name) {
         for(auto i : collections) {
             if(i->getName() == name) {
@@ -512,33 +531,51 @@ namespace Spino{
         out.close();
     }
 
-    void SpinoDB::load(const std::string& path) {
+    bool SpinoDB::load(const std::string& path) {
+        const char* keystoreName = "__SpinoKeyValueStore__";
         // clean up
         for(auto i : collections) {
             delete i;
         }
-        if(keyStore != nullptr) {
-            delete keyStore;
-        }
+        delete keyStore;
+        keyStore = nullptr;
         collections.clear();
+        doc.SetObject(); // clear the whole dom
 
-        // load json from file
-        std::ifstream in(path);
-        rapidjson::IStreamWrapper isw(in);
-        doc.ParseStream(isw);
+        try {
+            // load json from file
+            std::ifstream in(path);
+            rapidjson::IStreamWrapper isw(in);
+            doc.ParseStream(isw);
+        }
+        catch(...) {
+            clear();
+            return false;
+        }
 
         // create the collections & key store collection
         for (auto& m : doc.GetObject()) {
             std::string name = m.name.GetString();
-            if(name != "__SpinoKeyValueStore__") {
+            if(name != keystoreName) {
                 auto c = new Collection(doc, m.name.GetString());
                 collections.push_back(c);
             }
-            else {
-                keyStore = new Collection(doc, m.name.GetString());
-                keyStore->createIndex("k");
-            }
         }
+
+        if(doc.HasMember(keystoreName)) {
+            keyStore = new Collection(doc, keystoreName);
+            keyStore->createIndex("k");
+        }
+        else {
+            ValueType v(rapidjson::kArrayType);
+            ValueType index(keystoreName, doc.GetAllocator());
+            doc.AddMember(index, v, doc.GetAllocator());
+
+            keyStore = new Collection(doc, keystoreName);
+            keyStore->createIndex("k");
+
+        }
+        return true;
     }
 
 

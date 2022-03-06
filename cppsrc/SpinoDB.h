@@ -53,13 +53,17 @@ namespace Spino {
                 doc.AddMember(index, v, doc.GetAllocator());
 
                 keyStore = new Collection(doc, keystoreName);
+                keyStore->createIndex("k");
             }
 
             ~SpinoDB() {
                 for(auto c : collections) {
                     delete c;
                 }
+                delete keyStore;
             }
+
+            void clear();
 
             std::string execute(const char* command);
 
@@ -70,7 +74,7 @@ namespace Spino {
             void set_path();
 
             void save(const std::string& path) const;
-            void load(const std::string& path);
+            bool load(const std::string& path);
 
             void setIntValue(const std::string& key, int value);
             void setUintValue(const std::string& key, unsigned int value);

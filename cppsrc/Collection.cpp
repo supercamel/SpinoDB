@@ -254,7 +254,7 @@ namespace Spino {
         bfc = parser.parse_basic_comparison();
 
         if(bfc != nullptr) {
-            for(auto& idx : indices) {
+            for(auto idx : indices) {
                 if(idx->field_name == bfc->field_name) {
                     auto iter = idx->index.find(bfc->v);
                     if(iter != idx->index.end()) {
