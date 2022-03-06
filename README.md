@@ -1,6 +1,6 @@
 # SpinoDB
 
-SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is written in C++ and has bindings for both NodeJS and GObjects (meaning it magically works with Vala, Python and every language supported by Gobject-introspection). 
+SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is written in C++ and has bindings for both NodeJS and C using GObjects. Bindings for Vala, Python, Java, GJS (Gnome Javascript), Lua and so on are all automatically available through GObject Introspection. 
 
 
 ### When To Use It
@@ -50,6 +50,8 @@ A SpinoDB contains 'collections'. A collection is roughly analogous to a table i
 The NodeJS and GObject bindings are almost identical except for these differences.
 - The NodeJS bindings use camel case but GObject bindings use snake case. e.g. getCollection in NodeJS and get_collection for GObject bindings.
 - The NodeJS bindings will convert objects to JSON strings. The GObject bindings strictly use strings to represent JSON documents. 
+
+SpinoDB also has a key/value store. A value stored in the database using a key. It can be retrieved later using the same key. This is a more elegant method of storing application settings than collections. 
 
 ### Example
 
@@ -383,6 +385,42 @@ Only bother with this is unless drop time becomes problematic.
 
 dropOlderThan() is very fast. Delete old documents using this where possible.
 
+
+### Key/Value Store
+
+The key/value interface is very simple. Values can be stored using the following functions.
+
+db.setIntValue(key name, value)
+db.setUintValue(key name, value)
+db.setDoubleValue(key name, value)
+db.setStringValue(key name, string)
+
+db.getIntValue(key name)
+db.getUintValue(key name)
+db.getDoubleValue(key name)
+db.getStringValue(key name)
+
+db.hasKey(key name)
+
+
+##### NodeJS
+
+```
+var db = new spino.Spino();
+db.setIntValue("My Key Name", 1234);
+if(db.hasKey("My Key Name")) {
+    console.log(db.getIntValue("My Key Name");
+}
+
+```
+##### Python
+
+```
+db = Spino.Database.new()
+db.set_int_value("My Key Name", 1234)
+if(db.has_key("My Key Name") == True):
+    print(db.get_int_value("My Key Name"))
+```
 
 
 ##### Use zram on Linux
