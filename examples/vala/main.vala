@@ -41,7 +41,7 @@ void add_student(Spino.Collection collection) {
 void calculate_grades(Spino.Collection student_collection) {
     // the query {} will resurn every document in the collection
     // we're doing this for every student
-    var cursor = student_collection.find("{}", 0);
+    var cursor = student_collection.find("{}");
     var docstr = "";
 
     // while the cursor isn't returning empty strings
@@ -84,10 +84,10 @@ void calculate_grades(Spino.Collection student_collection) {
         // update the document with the grade
         student_collection.update(
             // this query uses the name as the index
-            "{name: \"%s\"}".printf(name),
+            "{name: \"%s\"}".printf(Spino.escape(name)),
             // this is the document to be merged in
             // (its just the grade)
-            "{\"grade\": \"%s\"}".printf(grade)
+            "{\"grade\": \"%s\"}".printf(Spino.escape(grade))
             );
 
         stdout.printf("\n\n");

@@ -100,6 +100,18 @@ class SpinoWrapper: public node::ObjectWrap {
 		static void getCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void dropCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+        static void setIntValue(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void setUintValue(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void setDoubleValue(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void setStringValue(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+        static void getIntValue(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void getUintValue(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void getDoubleValue(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void getStringValue(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+        static void hasKey(const v8::FunctionCallbackInfo<v8::Value>& args);
+
 		Spino::SpinoDB* spino; 
 };
 

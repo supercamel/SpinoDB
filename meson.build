@@ -21,9 +21,12 @@ spino_sources= [
 	'spino_gobject/src/cursor.cpp',
 	'spino_gobject/src/database.cpp',
 	'spino_gobject/src/collection.cpp',
+    'spino_gobject/src/spino.cpp',
     'cppsrc/QueryExecutor.cpp',
     'cppsrc/QueryParser.cpp',
-    'cppsrc/SpinoDB.cpp'
+    'cppsrc/SpinoDB.cpp',
+    'cppsrc/Cursor.cpp',
+    'cppsrc/Collection.cpp'
 ]
 
 spinolib= shared_library('spino-1.0',
@@ -53,6 +56,7 @@ introspection_sources= [
 	'spino_gobject/src/cursor.cpp',
 	'spino_gobject/src/database.cpp',
 	'spino_gobject/src/collection.cpp',
+    'spino_gobject/src/spino.cpp',
 	'spino_gobject/inc/cursor.h',
 	'spino_gobject/inc/database.h',
 	'spino_gobject/inc/collection.h',

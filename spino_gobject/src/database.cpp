@@ -80,6 +80,49 @@ void spino_database_load(SpinoDatabase* self, const gchar* path)
     self->db->load(path);
 }
 
+void spino_database_set_int_value(SpinoDatabase* self, const gchar* key, gint value)
+{
+    self->db->setIntValue(key, value);
+}
 
+void spino_database_set_uint_value(SpinoDatabase* self, const gchar* key, guint value)
+{
+    self->db->setUintValue(key, value);
+}
+
+void spino_database_set_double_value(SpinoDatabase* self, const gchar* key, double value)
+{
+    self->db->setDoubleValue(key, value);
+}
+
+void spino_database_set_string_value(SpinoDatabase* self, const gchar* key, const gchar* value)
+{
+    self->db->setStringValue(key, value);
+}
+
+gint spino_database_get_int_value(SpinoDatabase* self, const gchar* key)
+{
+    return self->db->getIntValue(key);
+}
+
+guint spino_database_get_uint_value(SpinoDatabase* self, const gchar* key)
+{
+    return self->db->getUintValue(key);
+}
+
+double spino_database_get_double_value(SpinoDatabase* self, const gchar* key)
+{
+    return self->db->getDoubleValue(key);
+}
+
+gchar* spino_database_get_string_value(SpinoDatabase* self, const gchar* key)
+{
+    return g_strdup(self->db->getStringValue(key).c_str());
+}
+
+gboolean spino_database_has_key(SpinoDatabase* self, const gchar* key)
+{
+    return self->db->hasKey(key);
+}
 
 G_END_DECLS

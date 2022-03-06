@@ -431,6 +431,18 @@ void SpinoWrapper::Init(Local<Object> exports) {
     NODE_SET_PROTOTYPE_METHOD(tpl, "getCollection", getCollection);
     NODE_SET_PROTOTYPE_METHOD(tpl, "dropCollection", dropCollection);
 
+    NODE_SET_PROTOTYPE_METHOD(tpl, "setIntValue", setIntValue);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "setUintValue", setUintValue);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "setDoubleValue", setDoubleValue);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "setStringValue", setStringValue);
+
+    NODE_SET_PROTOTYPE_METHOD(tpl, "getIntValue", getIntValue);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "getUintValue", getUintValue);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "getDoubleValue", getDoubleValue);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "getStringValue", getStringValue);
+
+    NODE_SET_PROTOTYPE_METHOD(tpl, "hasKey", hasKey);
+
     Local<Function> constructor = tpl->GetFunction(context).ToLocalChecked();
     addon_data->SetInternalField(0, constructor);
     exports->Set(context, String::NewFromUtf8(
@@ -553,5 +565,87 @@ void SpinoWrapper::dropCollection(const FunctionCallbackInfo<Value>& args) {
     SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
     obj->spino->dropCollection(*str);
+}
+
+void SpinoWrapper::setIntValue(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+
+    obj->spino->setIntValue(*key, args[1].As<Number>()->Value());
+}
+
+void SpinoWrapper::setUintValue(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+
+    obj->spino->setUintValue(*key, args[1].As<Number>()->Value());
+}
+
+void SpinoWrapper::setDoubleValue(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+
+    obj->spino->setDoubleValue(*key, args[1].As<Number>()->Value());
+}
+
+void SpinoWrapper::setStringValue(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+    v8::String::Utf8Value value(isolate, args[1]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+
+    obj->spino->setStringValue(*key, *value);
+}
+
+void SpinoWrapper::getIntValue(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+    int v = obj->spino->getIntValue(*key);
+    args.GetReturnValue().Set(v8::Number::New(isolate, v));
+}
+
+void SpinoWrapper::getUintValue(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+    unsigned int v = obj->spino->getUintValue(*key);
+    args.GetReturnValue().Set(v8::Number::New(isolate, v));
+}
+
+void SpinoWrapper::getDoubleValue(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+    double v = obj->spino->getDoubleValue(*key);
+    args.GetReturnValue().Set(v8::Number::New(isolate, v));
+}
+
+void SpinoWrapper::getStringValue(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+    std::string v = obj->spino->getStringValue(*key);
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, v.c_str()).ToLocalChecked());
+}
+
+void SpinoWrapper::hasKey(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+    bool v = obj->spino->hasKey(*key);
+    args.GetReturnValue().Set(v8::Boolean::New(isolate, v));
 }
 

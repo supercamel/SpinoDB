@@ -5,6 +5,17 @@
 #include "collection.h"
 #include "database.h"
 
+G_BEGIN_DECLS
+
+/**
+ * spino_escape:
+ * @str: a string to escape
+ * Returns: (transfer full):
+ */
+gchar* spino_escape(const gchar* str);
+
+
+G_END_DECLS
 
 #endif
 

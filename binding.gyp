@@ -7,7 +7,9 @@
 			"cppsrc/SpinoWrapper.cpp",
 			"cppsrc/SpinoDB.cpp",
 			"cppsrc/QueryParser.cpp",
-			"cppsrc/QueryExecutor.cpp"
+			"cppsrc/QueryExecutor.cpp",
+            "cppsrc/Cursor.cpp",
+            "cppsrc/Collection.cpp"
 			],
 		"cflags!": [ "-fno-exceptions" ],
 		"cflags_cc!": [ "-fno-exceptions" ],

@@ -53,6 +53,76 @@ void spino_database_save(SpinoDatabase* self, const gchar* path);
  */
 void spino_database_load(SpinoDatabase* self, const gchar* path);
 
+/**
+ * spino_database_set_int_value:
+ * @self: the self
+ * @key: the key
+ * @value: the value to set
+ */
+void spino_database_set_int_value(SpinoDatabase* self, const gchar* key, gint value);
+
+/**
+ * spino_database_set_uint_value:
+ * @self: the self
+ * @key: the key
+ * @value: the value to set
+ */
+void spino_database_set_uint_value(SpinoDatabase* self, const gchar* key, guint value);
+
+
+/**
+ * spino_database_set_double_value:
+ * @self: the self
+ * @key: the key
+ * @value: the value to set
+ */
+void spino_database_set_double_value(SpinoDatabase* self, const gchar* key, double value);
+
+
+/**
+ * spino_database_set_string_value:
+ * @self: the self
+ * @key: the key
+ * @value: the value to set
+ */
+void spino_database_set_string_value(SpinoDatabase* self, const gchar* key, const gchar* value);
+
+/**
+ * spino_database_get_int_value:
+ * @self: the self
+ * @key: the key
+ */
+int spino_database_get_int_value(SpinoDatabase* self, const gchar* key);
+
+/**
+ * spino_database_get_uint_value:
+ * @self: the self
+ * @key: the key
+ */
+guint spino_database_get_uint_value(SpinoDatabase* self, const gchar* key);
+
+/**
+ * spino_database_get_double_value:
+ * @self: the self
+ * @key: the key
+ */
+double spino_database_get_double_value(SpinoDatabase* self, const gchar* key);
+
+/**
+ * spino_database_get_string_value:
+ * @self: the self
+ * @key: the key
+ */
+gchar* spino_database_get_string_value(SpinoDatabase* self, const gchar* key);
+
+/**
+ * spino_database_has_key:
+ * @self: the self
+ * @key: the key
+ * Returns: true if the key exists
+ */
+gboolean spino_database_has_key(SpinoDatabase* self, const gchar* key);
+
 
 G_END_DECLS
 
