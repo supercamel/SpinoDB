@@ -101,21 +101,30 @@ namespace Spino{
     }
 
     void SpinoDB::setIntValue(const std::string& key, int value) {
-        keyStore->append(make_key_value_json(key, value).c_str());
+        std::stringstream ss;
+        ss << "{k:\"" << escape(key) << "\"}";
+        keyStore->update(ss.str().c_str(), make_key_value_json(key, value).c_str());
     }
 
     void SpinoDB::setUintValue(const std::string& key, unsigned int value) {
-        keyStore->append(make_key_value_json(key, value).c_str());
+        std::stringstream ss;
+        ss << "{k:\"" << escape(key) << "\"}";
+        keyStore->update(ss.str().c_str(), make_key_value_json(key, value).c_str());
     }
 
     void SpinoDB::setDoubleValue(const std::string& key, double value) {
-        keyStore->append(make_key_value_json(key, value).c_str());
+        std::stringstream ss;
+        ss << "{k:\"" << escape(key) << "\"}";
+        keyStore->update(ss.str().c_str(), make_key_value_json(key, value).c_str());
     }
 
     void SpinoDB::setStringValue(const std::string& key, const std::string& value) {
+        std::stringstream query_ss;
+        query_ss << "{k:\"" << escape(key) << "\"}";
+
         std::stringstream ss;
         ss << "\"" << escape(value) << "\"";
-        keyStore->append(make_key_value_json(key, ss.str()).c_str());
+        keyStore->update(query_ss.str().c_str(), make_key_value_json(key, ss.str()).c_str());
     }
 
     int SpinoDB::getIntValue(const std::string& key) {
