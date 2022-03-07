@@ -56,16 +56,16 @@ namespace Spino {
 
         char idstr[16];
         idstr[15] = 0;
-        char* idstr_ts = &idstr[10];
-        while(idstr_ts >= idstr) {
-            *--idstr_ts = char(tmp_timestamp%10 + '0');
+		int p = 9;
+        while(p >= 0) {
+            idstr[p--] = char(tmp_timestamp%10 + '0');
             tmp_timestamp /= 10;	
         }	
 
         uint32_t tmp_idcounter = ++id_counter;
-        idstr_ts = &idstr[16];
-        while(idstr_ts >= (&idstr[11])) {
-            *--idstr_ts = (tmp_idcounter%10) + '0';
+		p = 15;
+        while(p >= 10) {
+            idstr[p--] = (tmp_idcounter%10) + '0';
             tmp_idcounter /= 10;	
         }
 
