@@ -390,6 +390,7 @@ dropOlderThan() is very fast. Delete old documents using this where possible.
 
 The key/value interface is very simple. Values can be stored using the following functions.
 
+```
 db.setIntValue(key name, value)
 db.setUintValue(key name, value)
 db.setDoubleValue(key name, value)
@@ -401,6 +402,7 @@ db.getDoubleValue(key name)
 db.getStringValue(key name)
 
 db.hasKey(key name)
+```
 
 
 ##### NodeJS
