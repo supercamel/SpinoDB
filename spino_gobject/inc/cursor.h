@@ -29,6 +29,8 @@ SpinoCursor* spino_cursor_set_projection(SpinoCursor* self, const gchar* project
  */
 SpinoCursor* spino_cursor_set_limit(SpinoCursor* self, guint limit);
 
+gchar* spino_cursor_run_script(SpinoCursor* self, const gchar* script);
+
 
 G_END_DECLS
 

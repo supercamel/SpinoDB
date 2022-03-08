@@ -88,6 +88,8 @@ namespace Spino {
 
             bool hasKey(const std::string& key);
 
+            std::string runScript(std::string script);
+
         private:
             static std::string make_reply(bool success, const std::string& msg) {
                 std::stringstream ss;

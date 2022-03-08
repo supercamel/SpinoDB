@@ -63,5 +63,9 @@ SpinoCursor* spino_cursor_set_limit(SpinoCursor* self, guint limit)
 }
 
 
+gchar* spino_cursor_run_script(SpinoCursor* self, const gchar* script)
+{
+    return g_strdup(self->priv->runScript(script).c_str());
+}
 
 G_END_DECLS

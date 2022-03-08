@@ -1,4 +1,9 @@
 #include "Cursor.h"
+#include "SpinoSquirrel.h"
+
+#include <iostream>
+using namespace std;
+
 
 namespace Spino {
     BaseCursor::BaseCursor() {
@@ -112,6 +117,57 @@ namespace Spino {
             }               
         }
     }
+
+
+    std::string LinearCursor::runScript(std::string script) {
+        HSQUIRRELVM v;
+        v = sq_open(1024); 
+        sq_setprintfunc(v, squirrelPrintFunc, squirrelErrorFunc);
+        sq_setcompilererrorhandler(v, squirrelCompileError);
+
+        loadSquirrelStdLib(v);
+
+        sq_pushroottable(v);
+        sq_compilebuffer(
+                v, script.c_str(), script.length(), "cursor script", true);
+        sq_pushroottable(v);
+        sq_call(v, 1, SQFalse, SQFalse);
+
+
+        while(has_next) {
+            sq_pushroottable(v);
+            sq_pushstring(v,"result",-1);
+            sq_get(v,-2); //get the function from the root table
+            sq_pushroottable(v); //'this' (function environment object)
+            squirrelPushJsonObj(v, *iter);
+            sq_call(v,2,SQFalse,SQFalse);
+            sq_pop(v,2); //pops the roottable and the function
+
+            iter++;
+            findNext();
+        }
+
+        sq_pushroottable(v);
+        sq_pushstring(v, "stringify", -1);
+        sq_get(v, -2);
+        sq_pushstring(v, "finalize", -1);
+        sq_get(v, -3);
+        sq_pushroottable(v);
+        sq_call(v, 1, SQTrue, SQFalse);
+
+        if(sq_gettype(v, -1) != OT_STRING) {
+            sq_call(v, 2, SQTrue, SQFalse);
+        }
+
+        std::string ret;
+        const char* pcstr;
+        sq_getstring(v, -1, &pcstr);
+        ret = pcstr;
+        sq_pop(v, 2);
+        sq_close(v);
+        return ret;
+    }
+
 
     IndexCursor::IndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom) : 
         collection_dom(collection_dom),

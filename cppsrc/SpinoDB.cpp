@@ -20,6 +20,7 @@
 
 
 #include "SpinoDB.h"
+#include "squirrel.h"
 #include <functional>
 
 #include <iostream>
@@ -585,6 +586,16 @@ namespace Spino{
 
         }
         return true;
+    }
+
+    std::string SpinoDB::runScript(std::string script) {
+        HSQUIRRELVM v;
+        v = sq_open(1024); //creates a VM with initial stack size 1024
+
+        //do some stuff with squirrel here
+        //
+        sq_close(v);
+
     }
 
 

@@ -23,9 +23,11 @@ namespace Spino {
             virtual std::string next() = 0;
             virtual bool hasNext() = 0;
             virtual uint32_t count() = 0;
+            virtual std::string runScript(std::string txt) = 0;
 
             BaseCursor* setProjection(const char* projection);
             BaseCursor* setLimit(uint32_t max_results);
+
 
         protected: 
             void apply_projection(
@@ -47,6 +49,7 @@ namespace Spino {
             bool hasNext();
             std::string next();
             uint32_t count();
+            std::string runScript(std::string txt);
 
         private:
             void findNext();
@@ -76,6 +79,7 @@ namespace Spino {
             bool hasNext();
             std::string next();
             uint32_t count();
+            std::string runScript(std::string txt) { }
 
         private:
             ValueType& collection_dom;
