@@ -56,14 +56,14 @@ namespace Spino {
 
         char idstr[16];
         idstr[15] = 0;
-		int p = 9;
+        int p = 9;
         while(p >= 0) {
             idstr[p--] = char(tmp_timestamp%10 + '0');
             tmp_timestamp /= 10;	
         }	
 
         uint32_t tmp_idcounter = ++id_counter;
-		p = 15;
+        p = 15;
         while(p >= 10) {
             idstr[p--] = (tmp_idcounter%10) + '0';
             tmp_idcounter /= 10;	
@@ -87,7 +87,13 @@ namespace Spino {
     void Collection::append(const char* s) {
         DocType d;
         d.Parse(s);
-        append(d.GetObject());
+        if(d.HasParseError() == false) {
+            append(d.GetObject());
+        }
+        else {
+            cout << "Spino Error: could not parse JSON object" << endl;
+            cout << s << endl;
+        }
     }
 
     void Collection::updateById(const char* id_cstr, const char* update) {
@@ -97,8 +103,14 @@ namespace Spino {
             DocType j;
             j.Parse(update);
 
-            mergeObjects(arr[domIdx], j.GetObject());
-            hashmap.clear();
+            if(j.HasParseError() == false) {
+                mergeObjects(arr[domIdx], j.GetObject());
+                hashmap.clear();
+            }
+            else {
+                cout << "Spino Parse Error: could not parse json document" << endl;
+                cout << update << endl;
+            }
         } else {
         }
     }
@@ -107,6 +119,11 @@ namespace Spino {
         auto& arr = doc[name.c_str()];
         DocType j;
         j.Parse(update);
+        if(j.HasParseError()) {
+            cout << "Spino Parse Error: could not parse json document" << endl;
+            cout << update << endl;
+            return;
+        }
 
         Spino::QueryParser parser(search);
         auto block = parser.parse_expression();
