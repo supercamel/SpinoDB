@@ -112,18 +112,24 @@ namespace Spino {
         auto block = parser.parse_expression();
 
 
+        bool updated = false;
         if(arr.IsArray()) {
             for (ValueType::ValueIterator itr = arr.Begin();
                     itr != arr.End(); ++itr) {
                 Spino::QueryExecutor exec(&(*itr));
                 if(exec.resolve(block)) {
                     mergeObjects(*itr, j.GetObject());
+                    updated = true;
                 } 
             }
         }
         else {
             cout << "ERROR: collection "
                 << name << " is not an array. DOM corrupted." << endl;
+        }
+
+        if(updated == false) {
+            append(update);
         }
 
         hashmap.clear();

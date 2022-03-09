@@ -1,6 +1,5 @@
 #include "database_private.h"
 
-
 G_BEGIN_DECLS
 
 
