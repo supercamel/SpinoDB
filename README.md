@@ -45,13 +45,18 @@ This will build and install the libary along with pkg-config, gir, vapi and type
 
 ### Design
 
-A SpinoDB contains 'collections'. A collection is roughly analogous to a table in an SQL database, except that instead of containing one dimensional rows, each entry in a collection contains a JSON document / Javascript object. The documents are not required to be consistent.
+SpinoDB stores data in two formats. 
+* Collections
+* Key/value store
+
+A collection is roughly analogous to a table in an SQL database, except that instead of containing one dimensional rows, each entry in a collection contains a JSON document. The documents are not required to be consistent.
+
+Key/value store is used to store and retrieve a value with some descriptive text (the key). This is a more elegant method of storing application settings than collections. 
 
 The NodeJS and GObject bindings are almost identical except for these differences.
 - The NodeJS bindings use camel case but GObject bindings use snake case. e.g. getCollection in NodeJS and get_collection for GObject bindings.
 - The NodeJS bindings will convert objects to JSON strings. The GObject bindings strictly use strings to represent JSON documents. 
 
-SpinoDB also has a key/value store. A value stored in the database using a key. It can be retrieved later using the same key. This is a more elegant method of storing application settings than collections. 
 
 ### Example
 
@@ -141,7 +146,7 @@ An alternative to using cursors is to use the command execution interface to mak
 	});
 
     
-    
+
 ### Updating Documents
 
 update() will merge a JSON document into existing documents that match the search query. Existing fields will be overwritten and fields that do not exist will be created.
@@ -278,6 +283,71 @@ Projections and limits can be chained together like this
 
     var cursor = collection.find("<query>").setProjection("<projection>").setLimit(10);
 
+### Cursor Scripting
+
+The Cursors returned from find queries can execute Squirrel scripts to further refine search results. Cursor scripting can be used to
+* order the search results
+* format the query result into a particular format (e.g. CSV or XML)
+* aggregation and process query results within SpinoDB
+* write data to files
+
+Squirrel language documentation: 
+http://www.squirrel-lang.org/squirreldoc/reference/language.html
+
+Cursor scripting is mainly for the benefit of C/Vala users where JSON is not a first class data structure. NodeJS users will probably find it simpler to just do these things with Javascript. 
+
+Cursor scripts must contain two functions called 'result' and 'finalize'. 
+
+The result function is called iteratively for each document that the query matches. The document is passed as a 'table' to the 'result' function. Once the cursor has no more matching documents, the 'finalize' function will be called. The finalize function does not take any parameters but it must return a result. The result 
+is returned as a string to the application. If the result is a table or array, it will be stringified into JSON.
+
+
+```
+csv <- "";
+function result(doc) {
+    foreach(key, value in doc) {
+        csv += value.tostring() + ",";
+    }
+    csv += "\n";
+}
+
+function finalize() {
+    return csv;
+}
+```
+The above example will dump all values in the documents to a CSV formatted string. 
+
+Cursor scripting is a very powerful and flexible way to deal with the data, but it's much better and more efficient to use the query language and projections whenever possible, even just to whittle down the results. 
+
+#### Running Scripts
+
+```
+var oldest_trains = db.get_collection("trains").
+                    find("{}").
+                    projection("{\"name\": 1, \"year\": 1}").
+		    run_script("""
+
+trains <- [];
+function result(r) {
+    if(trains.len() < 5) {
+        trains.append(r);
+        trains.sort(@(a,b) a.year <=> b.year);
+    }
+    else {
+        if(r.year < trains[4].year) {
+            trains[4] = r;
+            trains.sort(@(a,b) a.year <=> b.year);
+	}
+    }
+}
+
+function finalize() {
+    return trains;
+}
+""");
+```
+This Vala example starts by retrieving every document in the 'trains' collection and setting a projection to only retrieve the 'name' and 'year' fields. The script then keeps a track of only the 5 oldest trains and sorts them by the 'year' field. The returned value of the finalize function, which is an ordered list of the 5 oldest trains, is stringified and assigned to the 'oldest_trains' variable. 
+ 
 
 ### _id Field
 
@@ -297,6 +367,28 @@ Collections can be indexed. Indexing yields huge performance increases because t
 col.createIndex(<field_name>);
 
 	col.createIndex("steamProfile.steamId");
+
+
+
+
+### Key/Value Store
+
+The key/value interface is very simple. Values can be stored using the following functions.
+
+```
+db.setIntValue(key name, value)
+db.setUintValue(key name, value)
+db.setDoubleValue(key name, value)
+db.setStringValue(key name, string)
+
+db.getIntValue(key name)
+db.getUintValue(key name)
+db.getDoubleValue(key name)
+db.getStringValue(key name)
+
+db.hasKey(key name)
+```
+
 
 
 ### Command Execution
@@ -384,25 +476,6 @@ Then at some convenient moment, call
 Only bother with this is unless drop time becomes problematic.
 
 dropOlderThan() is very fast. Delete old documents using this where possible.
-
-
-### Key/Value Store
-
-The key/value interface is very simple. Values can be stored using the following functions.
-
-```
-db.setIntValue(key name, value)
-db.setUintValue(key name, value)
-db.setDoubleValue(key name, value)
-db.setStringValue(key name, string)
-
-db.getIntValue(key name)
-db.getUintValue(key name)
-db.getDoubleValue(key name)
-db.getStringValue(key name)
-
-db.hasKey(key name)
-```
 
 
 ##### NodeJS
