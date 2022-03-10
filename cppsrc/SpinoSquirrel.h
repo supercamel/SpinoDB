@@ -1,4 +1,4 @@
-#ifndef SPINO_SQUIRREL_H_
+#ifndef SPINO_SQUIRREL_H
 #define SPINO_SQUIRREL_H
 
 #include "QueryNodes.h"

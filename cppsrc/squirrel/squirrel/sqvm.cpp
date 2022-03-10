@@ -1,8 +1,10 @@
 /*
     see copyright notice in squirrel.h
 */
+
+#include <cmath>
+#undef type
 #include "sqpcheader.h"
-#include <math.h>
 #include <stdlib.h>
 #include "sqopcodes.h"
 #include "sqvm.h"
