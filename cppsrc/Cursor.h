@@ -79,7 +79,7 @@ namespace Spino {
             bool hasNext();
             std::string next();
             uint32_t count();
-            std::string runScript(std::string txt) { }
+            std::string runScript(std::string txt);
 
         private:
             ValueType& collection_dom;
