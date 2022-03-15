@@ -63,6 +63,12 @@ SpinoCollection* spino_database_get_collection(SpinoDatabase* self, const gchar*
     return spino_collection_new(col);
 }
 
+
+gboolean spino_database_has_collection(SpinoDatabase* self, const gchar* name)
+{
+    return self->db->hasCollection(name);
+}
+
 void spino_database_drop_collection(SpinoDatabase* self, const gchar* name)
 {
     self->db->dropCollection(name);
@@ -114,9 +120,9 @@ double spino_database_get_double_value(SpinoDatabase* self, const gchar* key)
     return self->db->getDoubleValue(key);
 }
 
-gchar* spino_database_get_string_value(SpinoDatabase* self, const gchar* key)
+const gchar* spino_database_get_string_value(SpinoDatabase* self, const gchar* key)
 {
-    return g_strdup(self->db->getStringValue(key).c_str());
+    return self->db->getStringValue(key);
 }
 
 gboolean spino_database_has_key(SpinoDatabase* self, const gchar* key)

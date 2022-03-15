@@ -65,11 +65,12 @@ namespace Spino {
 
             void clear();
 
-            std::string execute(const char* command);
+            std::string execute(const std::string& command);
 
-            Collection* addCollection(std::string name);
-            Collection* getCollection(std::string name);
-            void dropCollection(std::string name);
+            Collection* addCollection(const std::string& name);
+            Collection* getCollection(const std::string& name);
+            bool hasCollection(const std::string& name) const;
+            void dropCollection(const std::string& name);
 
             void set_path();
 
@@ -84,11 +85,11 @@ namespace Spino {
             int getIntValue(const std::string& key);
             unsigned int getUintValue(const std::string& key);
             double getDoubleValue(const std::string& key);
-            std::string getStringValue(const std::string& key);
+            const char* getStringValue(const std::string& key);
 
             bool hasKey(const std::string& key);
 
-            std::string runScript(std::string script);
+            std::string runScript(const std::string& script);
 
         private:
             static std::string make_reply(bool success, const std::string& msg) {

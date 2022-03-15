@@ -33,6 +33,14 @@ SpinoCollection* spino_database_add_collection(SpinoDatabase* self, const gchar*
 SpinoCollection* spino_database_get_collection(SpinoDatabase* self, const gchar* name);
 
 /**
+ * spino_database_has_collection:
+ * @self: the self
+ * @name: the name of the collection
+ * Returns: TRUE if the collection exists, FALSE if not
+ */
+gboolean spino_database_has_collection(SpinoDatabase* self, const gchar* name);
+
+/**
  * spino_database_drop_collection:
  * @self: the self
  * @name: the name of the collection to drop
@@ -112,8 +120,9 @@ double spino_database_get_double_value(SpinoDatabase* self, const gchar* key);
  * spino_database_get_string_value:
  * @self: the self
  * @key: the key
+ * Returns: (transfer none): the string value
  */
-gchar* spino_database_get_string_value(SpinoDatabase* self, const gchar* key);
+const gchar* spino_database_get_string_value(SpinoDatabase* self, const gchar* key);
 
 /**
  * spino_database_has_key:

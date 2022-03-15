@@ -47,7 +47,7 @@ namespace Spino{
         keyStore->createIndex("k");
     }
 
-    Collection* SpinoDB::addCollection(std::string name) {
+    Collection* SpinoDB::addCollection(const std::string& name) {
         for(auto i : collections) {
             if(i->getName() == name) {
                 return nullptr;
@@ -63,7 +63,7 @@ namespace Spino{
         return c;
     }
 
-    Collection* SpinoDB::getCollection(std::string name) {
+    Collection* SpinoDB::getCollection(const std::string& name) {
         for(auto c : collections) {
             if(c->getName() == name) {
                 return c;
@@ -73,11 +73,21 @@ namespace Spino{
         return addCollection(name);
     }
 
+    bool SpinoDB::hasCollection(const std::string& name) const {
+        for(auto c : collections) {
+            if(c->getName() == name) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     uint64_t Collection::timestampById(const char* s) {
         return fast_atoi_len(s, 10)*1000;
     }
 
-    void SpinoDB::dropCollection(std::string name) {
+    void SpinoDB::dropCollection(const std::string& name) {
         for(auto it = collections.begin(); it != collections.end(); ) {
             auto c = *it;
             if(c->getName() == name) {
@@ -184,7 +194,7 @@ namespace Spino{
         return 0;
     }
 
-    std::string SpinoDB::getStringValue(const std::string& key) {
+    const char* SpinoDB::getStringValue(const std::string& key) {
         std::stringstream ss;
         ss << "{k:\""
             << escape(key) << "\"}";
@@ -214,9 +224,9 @@ namespace Spino{
 
 
 
-    std::string SpinoDB::execute(const char* command) {
+    std::string SpinoDB::execute(const std::string& command) {
         DocType d;
-        d.Parse(command);
+        d.Parse(command.c_str());
 
         Collection* col = nullptr;
 
@@ -528,6 +538,8 @@ namespace Spino{
             }
         }
 
+
+
         return make_reply(false, "Unknown command");
     }
 
@@ -588,7 +600,7 @@ namespace Spino{
         return true;
     }
 
-    std::string SpinoDB::runScript(std::string script) {
+    std::string SpinoDB::runScript(const std::string& script) {
         HSQUIRRELVM v;
         v = sq_open(1024); //creates a VM with initial stack size 1024
 
