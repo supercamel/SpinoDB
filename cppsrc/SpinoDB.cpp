@@ -545,12 +545,18 @@ namespace Spino{
 
 
     void SpinoDB::save(const std::string& path) const {
+        std::string tmppath = path + "spinotmp";
         std::ofstream out(path);
         rapidjson::OStreamWrapper osw(out);
 
         rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
         doc.Accept(writer);
+
+        out.flush();
         out.close();
+
+        std::rename(tmppath.c_str(), path.c_str());
+        std::remove(tmppath.c_str());
     }
 
     bool SpinoDB::load(const std::string& path) {
