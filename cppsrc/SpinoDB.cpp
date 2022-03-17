@@ -34,6 +34,7 @@ namespace Spino{
         }
         if(keyStore != nullptr) {
             delete keyStore;
+            keyStore = nullptr;
         }
 
         doc.SetObject();
@@ -243,6 +244,9 @@ namespace Spino{
     std::string SpinoDB::execute(const std::string& command) {
         DocType d;
         d.Parse(command.c_str());
+        if(d.HasParseError()) {
+            return make_reply(false, "JSON parse error.");
+        }
 
         Collection* col = nullptr;
 
@@ -303,10 +307,6 @@ namespace Spino{
             else {
                 return check;
             }
-        }
-
-        else if(cmdString == "save") {
-            save();
         }
 
         else if(cmdString == "createIndex") {
@@ -612,9 +612,9 @@ namespace Spino{
     }
 
 
-    void SpinoDB::save() const {
+    void SpinoDB::save(const std::string& path) const {
         // dump the json to a temporary file
-        std::string tmppath = db_path + "spinotmp";
+        std::string tmppath = path + "spinotmp";
         std::ofstream out(tmppath);
         rapidjson::OStreamWrapper osw(out);
 
@@ -625,7 +625,7 @@ namespace Spino{
         out.close();
 
         // move the temporary file to the correct location
-        std::rename(tmppath.c_str(), db_path.c_str());
+        std::rename(tmppath.c_str(), path.c_str());
         std::remove(tmppath.c_str());
 
         // clear the journal
@@ -634,7 +634,7 @@ namespace Spino{
         ofs.close();
     }
 
-    bool SpinoDB::load() {
+    bool SpinoDB::load(const std::string& path) {
         const char* keystoreName = "__SpinoKeyValueStore__";
         // clean up
         for(auto i : collections) {
@@ -647,7 +647,7 @@ namespace Spino{
 
         try {
             // load json from file
-            std::ifstream in(db_path);
+            std::ifstream in(path);
             rapidjson::IStreamWrapper isw(in);
             doc.ParseStream(isw);
         }
@@ -681,13 +681,17 @@ namespace Spino{
         return true;
     }
 
-    void SpinoDB::setPaths(const std::string& dbp, const std::string& jp) {
-        db_path = dbp;
-        jw.setPath(jp);
+    void SpinoDB::enableJournal(const std::string& jpth) {
+        jw.setPath(jpth);
         jw.setEnabled(true);
     }
 
-    void SpinoDB::consolidate() {
+    void SpinoDB::disableJournal() {
+        jw.setEnabled(false);
+    }
+
+    void SpinoDB::consolidate(const std::string& path) {
+        bool priorState = jw.getEnabled();
         jw.setEnabled(false);
 
         // read the journal file and execute the commands
@@ -702,9 +706,9 @@ namespace Spino{
 
         // write the db to disk 
         // noting that save will also erase the journal
-        save();
+        save(path);
 
-        jw.setEnabled(true);
+        jw.setEnabled(priorState);
     }
 
     /*

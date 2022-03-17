@@ -163,7 +163,19 @@ void CursorWrapper::setLimit(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 void CursorWrapper::runScript(const v8::FunctionCallbackInfo<v8::Value>& args) {
     Isolate* isolate = args.GetIsolate();
-    //CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.
+    CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.Holder());
+    if(args[0]->IsString()) {
+        v8::String::Utf8Value str(isolate, args[0]);
+
+        std::string result = curwrap->cursor->runScript(*str);
+        args.GetReturnValue().Set(
+                String::NewFromUtf8(isolate, result.c_str()).ToLocalChecked());
+    }
+    else {
+        isolate->ThrowException(Exception::TypeError(
+                    String::NewFromUtf8(isolate,
+                        "expected parameter for runScript to be a string").ToLocalChecked()));
+    }
 }
 
 
@@ -432,6 +444,10 @@ void SpinoWrapper::Init(Local<Object> exports) {
     NODE_SET_PROTOTYPE_METHOD(tpl, "execute", execute);
     NODE_SET_PROTOTYPE_METHOD(tpl, "save", save);
     NODE_SET_PROTOTYPE_METHOD(tpl, "load", load);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "enableJournal", enableJournal);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "disableJournal", disableJournal);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "consolidate", consolidate);
+
     NODE_SET_PROTOTYPE_METHOD(tpl, "addCollection", addCollection);
     NODE_SET_PROTOTYPE_METHOD(tpl, "getCollection", getCollection);
     NODE_SET_PROTOTYPE_METHOD(tpl, "dropCollection", dropCollection);
@@ -532,6 +548,29 @@ void SpinoWrapper::load(const FunctionCallbackInfo<Value>& args) {
     SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
     obj->spino->load(*str);
+}
+
+void SpinoWrapper::enableJournal(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value str(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+
+    obj->spino->enableJournal(*str);
+}
+
+void SpinoWrapper::disableJournal(const FunctionCallbackInfo<Value>& args) {
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+    obj->spino->disableJournal();
+}
+
+void SpinoWrapper::consolidate(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value str(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+
+    obj->spino->consolidate(*str);
 }
 
 void SpinoWrapper::addCollection(const FunctionCallbackInfo<Value>& args) {

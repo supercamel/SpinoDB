@@ -97,6 +97,10 @@ class SpinoWrapper: public node::ObjectWrap {
 		static void execute(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void save(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void load(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void enableJournal(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void disableJournal(const v8::FunctionCallbackInfo<v8::Value>& args);
+        static void consolidate(const v8::FunctionCallbackInfo<v8::Value>& args);
+
 		static void addCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void getCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void dropCollection(const v8::FunctionCallbackInfo<v8::Value>& args);

@@ -52,35 +52,41 @@ namespace Spino {
 
     void Collection::append(ValueType& d) {
         auto& arr = doc[name.c_str()];
-        uint32_t timestamp = std::time(0);
-        uint32_t tmp_timestamp = timestamp;
 
-        char idstr[16];
-        idstr[15] = 0;
-        int p = 9;
-        while(p >= 0) {
-            idstr[p--] = char(tmp_timestamp%10 + '0');
-            tmp_timestamp /= 10;	
-        }	
+        if(d.HasMember("_id") == false) {
+            uint32_t timestamp = std::time(0);
+            uint32_t tmp_timestamp = timestamp;
 
-        uint32_t tmp_idcounter = ++id_counter;
-        p = 15;
-        while(p >= 10) {
-            idstr[p--] = (tmp_idcounter%10) + '0';
-            tmp_idcounter /= 10;	
+            char idstr[16];
+            idstr[15] = 0;
+            int p = 9;
+            while(p >= 0) {
+                idstr[p--] = char(tmp_timestamp%10 + '0');
+                tmp_timestamp /= 10;	
+            }	
+
+            uint32_t tmp_idcounter = ++id_counter;
+            p = 15;
+            while(p >= 10) {
+                idstr[p--] = (tmp_idcounter%10) + '0';
+                tmp_idcounter /= 10;	
+            }
+
+
+            if(last_append_timestamp - timestamp != 0) {
+                id_counter = 0;
+            }
+            last_append_timestamp = timestamp;
+
+            ValueType _id;
+            _id.SetString(idstr, 16, doc.GetAllocator());
+
+            d.AddMember("_id", _id, doc.GetAllocator());
         }
 
-        if(last_append_timestamp - timestamp != 0) {
-            id_counter = 0;
-        }
-        last_append_timestamp = timestamp;
-
-        ValueType _id;
-        _id.SetString(idstr, 16, doc.GetAllocator());
-
-        d.AddMember("_id", _id, doc.GetAllocator());
         arr.PushBack(d.GetObject(), doc.GetAllocator());
         indexNewDoc();
+
 
         if(jw.getEnabled()) {
             stringstream ss;

@@ -75,24 +75,29 @@ void spino_database_drop_collection(SpinoDatabase* self, const gchar* name)
 }
 
 
-void spino_database_save(SpinoDatabase* self)
+void spino_database_save(SpinoDatabase* self, const gchar* path)
 {
-    self->db->save();
+    self->db->save(path);
 }
 
-void spino_database_load(SpinoDatabase* self)
+void spino_database_load(SpinoDatabase* self, const gchar* path)
 {
-    self->db->load();
+    self->db->load(path);
 }
 
-void spino_database_set_paths(SpinoDatabase* self, const gchar* dbpath, const gchar* journalpath) 
+void spino_database_enable_journal(SpinoDatabase* self, const gchar* journal_path)
 {
-    self->db->setPaths(dbpath, journalpath);
+    self->db->enableJournal(journal_path);
 }
 
-void spino_database_consolidate(SpinoDatabase* self) 
+void spino_database_disable_journal(SpinoDatabase* self)
 {
-    self->db->consolidate();
+    self->db->disableJournal();
+}
+
+void spino_database_consolidate(SpinoDatabase* self, const gchar* db_path) 
+{
+    self->db->consolidate(db_path);
 }
 
 void spino_database_set_int_value(SpinoDatabase* self, const gchar* key, gint value)

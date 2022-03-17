@@ -74,12 +74,12 @@ namespace Spino {
             bool hasCollection(const std::string& name) const;
             void dropCollection(const std::string& name);
 
-            void setPaths(const std::string& db_path, const std::string& journal_path);
+            void save(const std::string& db_path) const;
+            bool load(const std::string& db_path);
 
-            void save() const;
-            bool load();
-
-            void consolidate();
+            void enableJournal(const std::string& journal_path);
+            void disableJournal();
+            void consolidate(const std::string& db_path);
 
             void setIntValue(const std::string& key, int value);
             void setUintValue(const std::string& key, unsigned int value);
@@ -120,8 +120,6 @@ namespace Spino {
             Collection* keyStore = nullptr;
             DocType doc;
             JournalWriter jw;
-
-            std::string db_path;
     };
 
     std::string escape(const std::string& str);
