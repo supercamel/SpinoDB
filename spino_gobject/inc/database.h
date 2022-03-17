@@ -50,16 +50,28 @@ void spino_database_drop_collection(SpinoDatabase* self, const gchar* name);
 /**
  * spino_database_save:
  * @self: the self
- * @path: the file name to save to
  */
-void spino_database_save(SpinoDatabase* self, const gchar* path);
+void spino_database_save(SpinoDatabase* self);
 
 /**
  * spino_database_load:
  * @self: the self
- * @path: the file name to load from 
  */
-void spino_database_load(SpinoDatabase* self, const gchar* path);
+void spino_database_load(SpinoDatabase* self);
+
+/**
+ * spino_database_set_journal_path:
+ * @self: the self
+ * @db_path: the path to the database file
+ * @journal_path: the path to the journal file
+ */
+void spino_database_set_paths(SpinoDatabase* self, const gchar* db_path, const gchar* journal_path);
+
+/**
+ * spino_database_consolidate:
+ * @self: the self
+ */
+void spino_database_consolidate(SpinoDatabase* self);
 
 /**
  * spino_database_set_int_value:

@@ -39,6 +39,7 @@
 #include "QueryExecutor.h"
 #include "Cursor.h"
 #include "Collection.h"
+#include "Journal.h"
 
 namespace Spino {
 
@@ -52,8 +53,9 @@ namespace Spino {
                 ValueType index(keystoreName, doc.GetAllocator());
                 doc.AddMember(index, v, doc.GetAllocator());
 
-                keyStore = new Collection(doc, keystoreName);
+                keyStore = new Collection(doc, jw, keystoreName);
                 keyStore->createIndex("k");
+
             }
 
             ~SpinoDB() {
@@ -72,10 +74,12 @@ namespace Spino {
             bool hasCollection(const std::string& name) const;
             void dropCollection(const std::string& name);
 
-            void set_path();
+            void setPaths(const std::string& db_path, const std::string& journal_path);
 
-            void save(const std::string& path) const;
-            bool load(const std::string& path);
+            void save() const;
+            bool load();
+
+            void consolidate();
 
             void setIntValue(const std::string& key, int value);
             void setUintValue(const std::string& key, unsigned int value);
@@ -89,7 +93,7 @@ namespace Spino {
 
             bool hasKey(const std::string& key);
 
-            std::string runScript(const std::string& script);
+            //std::string runScript(const std::string& script);
 
         private:
             static std::string make_reply(bool success, const std::string& msg) {
@@ -115,12 +119,12 @@ namespace Spino {
             std::vector<Collection*> collections;
             Collection* keyStore = nullptr;
             DocType doc;
+            JournalWriter jw;
 
-            std::string path;
+            std::string db_path;
     };
 
     std::string escape(const std::string& str);
-
 }
 
 

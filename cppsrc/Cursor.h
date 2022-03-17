@@ -40,6 +40,16 @@ namespace Spino {
             uint32_t max_results;
     };
 
+    class DudCursor : public BaseCursor {
+        public:
+            DudCursor() { }
+            ~DudCursor() { }
+            std::string next() { return ""; }
+            bool hasNext() { return false; }
+            uint32_t count() { return 0; }
+            std::string runScript(std::string txt) { return ""; }
+    };
+
 
     class LinearCursor : public BaseCursor {
         public:

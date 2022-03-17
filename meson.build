@@ -28,6 +28,7 @@ spino_sources= [
     'cppsrc/Cursor.cpp',
     'cppsrc/Collection.cpp',
     'cppsrc/SpinoSquirrel.cpp',
+    'cppsrc/Journal.cpp',
     'cppsrc/squirrel/squirrel/sqapi.cpp',
     'cppsrc/squirrel/squirrel/sqbaselib.cpp',
     'cppsrc/squirrel/squirrel/sqclass.cpp',

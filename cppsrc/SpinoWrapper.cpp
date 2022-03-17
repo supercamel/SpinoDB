@@ -59,6 +59,7 @@ void CursorWrapper::Init(Isolate* isolate){
     NODE_SET_PROTOTYPE_METHOD(tpl, "count", count);
     NODE_SET_PROTOTYPE_METHOD(tpl, "setProjection", setProjection);
     NODE_SET_PROTOTYPE_METHOD(tpl, "setLimit", setLimit);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "runScript", runScript);
 
     Local<Context> context = isolate->GetCurrentContext();
     constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
@@ -160,6 +161,10 @@ void CursorWrapper::setLimit(const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(args.Holder());
 }
 
+void CursorWrapper::runScript(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    //CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.
+}
 
 
 void CollectionWrapper::Init(Isolate* isolate){

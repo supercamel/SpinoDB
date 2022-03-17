@@ -56,7 +56,13 @@ namespace Spino {
 
     LinearCursor::LinearCursor(ValueType& list, const char* query) : list(list) { 
         Spino::QueryParser parser(query);
-        head = parser.parse_expression();
+        try {
+            head = parser.parse_expression();
+        }
+        catch(parse_error& e) {
+            cout << "SpinoDB:: parse error: " << e.what() << endl;
+            counter = max_results;
+        }
         iter = list.Begin();
         findNext();
     }

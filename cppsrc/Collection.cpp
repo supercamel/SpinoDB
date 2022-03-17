@@ -1,10 +1,11 @@
 #include "Collection.h"
+#include "SpinoDB.h"
 
 #include <iostream>
 
 namespace Spino {
 
-    Collection::Collection(DocType& doc, std::string name) : name(name), doc(doc)  {
+    Collection::Collection(DocType& doc, JournalWriter& jw, std::string name) : name(name), doc(doc), jw(jw)  {
         auto& arr = doc[name.c_str()];
         if(arr.IsArray() == false) {
             std::cout << "WARNING: collection " 
@@ -78,10 +79,22 @@ namespace Spino {
         _id.SetString(idstr, 16, doc.GetAllocator());
 
         d.AddMember("_id", _id, doc.GetAllocator());
-
         arr.PushBack(d.GetObject(), doc.GetAllocator());
-
         indexNewDoc();
+
+        if(jw.getEnabled()) {
+            stringstream ss;
+            ss << "{\"cmd\":\"append\",\"collection\":\"";
+            ss << escape(name);
+            ss << "\",\"document\":\"";
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+            arr[arr.Size()-1].Accept(writer);
+            ss << escape(sb.GetString()) << "\"}\n";
+
+            jw.append(ss.str());
+        }
     }
 
     void Collection::append(const char* s) {
@@ -106,6 +119,20 @@ namespace Spino {
             if(j.HasParseError() == false) {
                 mergeObjects(arr[domIdx], j.GetObject());
                 hashmap.clear();
+                if(jw.getEnabled()) {
+                    stringstream ss;
+                    ss << "{\"cmd\":\"updateById\",\"collection\":\"";
+                    ss << escape(name);
+                    ss << "\",\"id\":\"" << id_cstr;
+                    ss << "\",\"document\":\"";
+
+                    rapidjson::StringBuffer sb;
+                    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+                    j.Accept(writer);
+                    ss << escape(sb.GetString()) << "\"}\n";
+
+                    jw.append(ss.str());
+                }
             }
             else {
                 cout << "Spino Parse Error: could not parse json document" << endl;
@@ -126,7 +153,14 @@ namespace Spino {
         }
 
         Spino::QueryParser parser(search);
-        auto block = parser.parse_expression();
+        std::shared_ptr<QueryNode> block;
+        try {
+            block = parser.parse_expression();
+        }
+        catch(parse_error& e) {
+            cout << "SpinoDB:: query parse error: " << e.what() << endl;
+            return;
+        }
 
 
         bool updated = false;
@@ -145,8 +179,25 @@ namespace Spino {
                 << name << " is not an array. DOM corrupted." << endl;
         }
 
+        if(jw.getEnabled()) {
+            stringstream ss;
+            ss << "{\"cmd\":\"update\",\"collection\":\"";
+            ss << escape(name);
+            ss << "\",\"query\":\"" << search;
+            ss << "\",\"document\":\"";
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+            j.Accept(writer);
+            ss << escape(sb.GetString()) << "\"}\n";
+
+            jw.append(ss.str());
+        }
+
         if(updated == false) {
+            jw.setEnabled(false);
             append(update);
+            jw.setEnabled(true);
         }
 
         hashmap.clear();
@@ -274,7 +325,13 @@ namespace Spino {
         //check if it's an index search
         QueryParser parser(s);
         std::shared_ptr<BasicFieldComparison> bfc = nullptr;
-        bfc = parser.parse_basic_comparison();
+        try {
+            bfc = parser.parse_basic_comparison();
+        }
+        catch(parse_error& err) {
+            cout << "SpinoDB:: parse error: " << err.what() << endl;
+            return "";
+        }
 
         if(bfc != nullptr) {
             for(auto idx : indices) {
@@ -326,7 +383,14 @@ namespace Spino {
         //check if it's an index search
         QueryParser parser(s);
         std::shared_ptr<BasicFieldComparison> bfc = nullptr;
-        bfc = parser.parse_basic_comparison();
+        try {
+            bfc = parser.parse_basic_comparison();
+        }
+        catch(parse_error& err) {
+            cout << "SpinoDB:: parse error: " << err.what() << endl;
+            return new DudCursor();
+        }
+
 
         if(bfc != nullptr) {
             for(auto& idx : indices) {
@@ -406,6 +470,15 @@ namespace Spino {
             arr.Erase(iter);
             hashmap.clear();
         }
+
+        if(jw.getEnabled()) {
+            stringstream ss;
+            ss << "{\"cmd\":\"dropById\",\"collection\":\"";
+            ss << escape(name);
+            ss << "\",\"id\":\"" << escape(s);
+            ss << "\"}";
+            jw.append(ss.str());
+        }
     }
 
 
@@ -419,7 +492,14 @@ namespace Spino {
         //
         auto& arr = doc[name.c_str()];
         Spino::QueryParser parser(j);
-        auto block = parser.parse_expression();
+        std::shared_ptr<QueryNode> block;
+        try {
+            block = parser.parse_expression();
+        }
+        catch(parse_error& e) {
+            cout << "SpinoDB:: query parse error: " << e.what() << endl;
+            return 0;
+        }
 
         uint32_t count = 0;
         for (ValueType::ConstValueIterator itr = arr.Begin();
@@ -441,6 +521,14 @@ namespace Spino {
             reconstructIndices();
         }
 
+        if(jw.getEnabled()) {
+            stringstream ss;
+            ss << "{\"cmd\":\"drop\",\"collection\":\"";
+            ss << escape(name);
+            ss << "\",\"query\":\"" << escape(j);
+            ss << "\",\"limit\":" << limit << "\"}";
+            jw.append(ss.str());
+        }
         return count;
     }
 
@@ -489,6 +577,14 @@ namespace Spino {
 
             hashmap.clear();
             reconstructIndices();
+        }
+
+        if(jw.getEnabled()) {
+            stringstream ss;
+            ss << "{\"cmd\":\"dropOlderThan\",\"collection\":\"";
+            ss << escape(name);
+            ss << "\",\"timestamp\":" << timestamp << "}";
+            jw.append(ss.str());
         }
         return m;
 

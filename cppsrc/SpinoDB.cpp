@@ -43,7 +43,7 @@ namespace Spino{
         ValueType index(keystoreName, doc.GetAllocator());
         doc.AddMember(index, v, doc.GetAllocator());
 
-        keyStore = new Collection(doc, keystoreName);
+        keyStore = new Collection(doc, jw, keystoreName);
         keyStore->createIndex("k");
     }
 
@@ -58,8 +58,17 @@ namespace Spino{
         ValueType index(name.c_str(), doc.GetAllocator());
         doc.AddMember(index, v, doc.GetAllocator());
 
-        auto c = new Collection(doc, name);
+        auto c = new Collection(doc, jw, name);
         collections.push_back(c);
+
+        if(jw.getEnabled()) {
+            stringstream ss;
+            ss << "{\"cmd\":\"addCollection\",\"collection\":\"";
+            ss << escape(name);
+            ss << "\"}";
+            jw.append(ss.str());
+        }
+
         return c;
     }
 
@@ -79,7 +88,6 @@ namespace Spino{
                 return true;
             }
         }
-
         return false;
     }
 
@@ -98,6 +106,14 @@ namespace Spino{
             } else {
                 it++;
             }
+        }
+
+        if(jw.getEnabled()) {
+            stringstream ss;
+            ss << "{\"cmd\":\"dropCollection\",\"collection\":\"";
+            ss << escape(name);
+            ss << "\"}";
+            jw.append(ss.str());
         }
     }
 
@@ -269,17 +285,28 @@ namespace Spino{
             }
         }
 
-        else if(cmdString == "save") {
-            auto check = require_fields(d, {"path"});
-            if(check != "") {
-                auto& pathValue = d["path"];
-                save(pathValue.GetString());
-
-                return make_reply(true, "Saved ok");
+        else if(cmdString == "addCollection") {
+            auto check = require_fields(d, {"collection"});
+            if(check == "") {
+                addCollection(d["collection"].GetString());
             }
             else {
                 return check;
             }
+        }
+
+        else if(cmdString == "dropCollection") {
+            auto check = require_fields(d, {"collection"});
+            if(check == "") {
+                dropCollection(d["collection"].GetString());
+            }
+            else {
+                return check;
+            }
+        }
+
+        else if(cmdString == "save") {
+            save();
         }
 
         else if(cmdString == "createIndex") {
@@ -538,15 +565,57 @@ namespace Spino{
             }
         }
 
+        else if(cmdString == "getValue") {
+            auto check = require_fields(d, {"key"});
+            if(check == "") {
+                std::string query = "{k:\"";
+                query += d["key"].GetString();
+                query += "\"}";
+                std::string result = keyStore->findOne(query.c_str());
+                return result;
+            }
+            else {
+                return check;
+            }
+        }
+
+        else if(cmdString == "setValue") {
+            auto check = require_fields(d, {"key", "value"});
+            if(check == "") {
+                auto& value = d["value"];
+                if(value.IsNumber()) {
+                    if(value.IsInt()) {
+                        setIntValue(d["key"].GetString(), d["value"].GetInt());
+                    }
+                    else if(value.IsUint()) {
+                        setUintValue(d["key"].GetString(), d["value"].GetUint());
+                    }
+                    else {
+                        setDoubleValue(d["key"].GetString(), d["value"].GetDouble());
+                    }
+                }
+                else if(value.IsString()) {
+                    setStringValue(d["key"].GetString(), d["value"].GetString());
+                }
+                else {
+                    return make_reply(false, "Value type can be either a number or a string.");
+                }
+                return make_reply(true, "Value added");
+            }
+            else {
+                return check;
+            }
+        }
 
 
         return make_reply(false, "Unknown command");
     }
 
 
-    void SpinoDB::save(const std::string& path) const {
-        std::string tmppath = path + "spinotmp";
-        std::ofstream out(path);
+    void SpinoDB::save() const {
+        // dump the json to a temporary file
+        std::string tmppath = db_path + "spinotmp";
+        std::ofstream out(tmppath);
         rapidjson::OStreamWrapper osw(out);
 
         rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
@@ -555,11 +624,17 @@ namespace Spino{
         out.flush();
         out.close();
 
-        std::rename(tmppath.c_str(), path.c_str());
+        // move the temporary file to the correct location
+        std::rename(tmppath.c_str(), db_path.c_str());
         std::remove(tmppath.c_str());
+
+        // clear the journal
+        std::ofstream ofs;
+        ofs.open(jw.getPath(), std::ofstream::out | std::ofstream::trunc);
+        ofs.close();
     }
 
-    bool SpinoDB::load(const std::string& path) {
+    bool SpinoDB::load() {
         const char* keystoreName = "__SpinoKeyValueStore__";
         // clean up
         for(auto i : collections) {
@@ -572,7 +647,7 @@ namespace Spino{
 
         try {
             // load json from file
-            std::ifstream in(path);
+            std::ifstream in(db_path);
             rapidjson::IStreamWrapper isw(in);
             doc.ParseStream(isw);
         }
@@ -585,13 +660,13 @@ namespace Spino{
         for (auto& m : doc.GetObject()) {
             std::string name = m.name.GetString();
             if(name != keystoreName) {
-                auto c = new Collection(doc, m.name.GetString());
+                auto c = new Collection(doc, jw, m.name.GetString());
                 collections.push_back(c);
             }
         }
 
         if(doc.HasMember(keystoreName)) {
-            keyStore = new Collection(doc, keystoreName);
+            keyStore = new Collection(doc, jw, keystoreName);
             keyStore->createIndex("k");
         }
         else {
@@ -599,22 +674,49 @@ namespace Spino{
             ValueType index(keystoreName, doc.GetAllocator());
             doc.AddMember(index, v, doc.GetAllocator());
 
-            keyStore = new Collection(doc, keystoreName);
+            keyStore = new Collection(doc, jw, keystoreName);
             keyStore->createIndex("k");
 
         }
         return true;
     }
 
-    std::string SpinoDB::runScript(const std::string& script) {
-        HSQUIRRELVM v;
-        v = sq_open(1024); //creates a VM with initial stack size 1024
-
-        //do some stuff with squirrel here
-        //
-        sq_close(v);
-
+    void SpinoDB::setPaths(const std::string& dbp, const std::string& jp) {
+        db_path = dbp;
+        jw.setPath(jp);
+        jw.setEnabled(true);
     }
+
+    void SpinoDB::consolidate() {
+        jw.setEnabled(false);
+
+        // read the journal file and execute the commands
+        std::ifstream file(jw.getPath());
+        if (file.is_open()) {
+            std::string line;
+            while (std::getline(file, line)) {
+                execute(line);
+            }
+            file.close();
+        }
+
+        // write the db to disk 
+        // noting that save will also erase the journal
+        save();
+
+        jw.setEnabled(true);
+    }
+
+    /*
+       std::string SpinoDB::runScript(const std::string& script) {
+       HSQUIRRELVM v;
+       v = sq_open(1024); //creates a VM with initial stack size 1024
+
+    //do some stuff with squirrel here
+    //
+    sq_close(v);
+    }
+    */
 
 
     std::string escape(const std::string& str) {
@@ -625,6 +727,12 @@ namespace Spino{
             }
             else if(c == '\\') {
                 result += "\\\\";
+            }
+            else if(c == '\n') {
+                result += "\\n";
+            }
+            else if(c == '\t') {
+                result += "\\t";
             }
             else {
                 result += c;

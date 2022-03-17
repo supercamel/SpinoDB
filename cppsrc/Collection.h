@@ -2,12 +2,14 @@
 #define SPINO_COLLECTION_H
 
 #include "Cursor.h"
+#include "Journal.h"
 
 namespace Spino
 {
+
     class Collection {
         public:
-            Collection(DocType& doc, std::string name);
+            Collection(DocType& doc, JournalWriter& jw, std::string name);
             ~Collection();
 
             std::string getName() const;
@@ -68,6 +70,7 @@ namespace Spino
             uint32_t id_counter;
             std::string name;
             DocType& doc;
+            JournalWriter& jw;
             std::map<uint32_t, std::string> hashmap;
 
             const uint32_t FNV_PRIME = 16777619u;
