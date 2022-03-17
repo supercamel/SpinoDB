@@ -629,9 +629,11 @@ namespace Spino{
         std::remove(tmppath.c_str());
 
         // clear the journal
-        std::ofstream ofs;
-        ofs.open(jw.getPath(), std::ofstream::out | std::ofstream::trunc);
-        ofs.close();
+        if(jw.getEnabled()) {
+            std::ofstream ofs;
+            ofs.open(jw.getPath(), std::ofstream::out | std::ofstream::trunc);
+            ofs.close();
+        }
     }
 
     bool SpinoDB::load(const std::string& path) {
