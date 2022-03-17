@@ -535,16 +535,32 @@ LokiJS is about 2x faster at inserting new documents. This is most likely becaus
 
 Drop/remove is expensive, probably because the index has to be reconstructed
 
-### Persistence
+### Persistence And Journalling
 
-The database can be loaded and stored to a file.
+The data can be loaded and stored to a file.
 db.load(<path_to_file>);
 
     db.load("data.db");
 db.save(<path_to_file>);
 
     db.save("data.db");
-Note that these functions are synchronous / blocking functions. Once your database exceeds 100+MB you may start to notice lags during saves. 
+Note that these functions are synchronous / blocking functions. Once your data exceeds 100+MB you may start to notice lags during saves. 
 
 For reference, SpinoDB will parse/stringify about 100MB per second from file on my PC with a mediocre SATA SSD, . 
+
+When journalling is enabled, Spino will record every change to the data to a journal file. In the case that your application crashes (or PC loses power or something), the journal file can be 'replayed' or consolidated with the database file to restore the unsaved data. 
+
+    db.enableJournal("journal.db");
+
+    db.consolidate("data.db");
+
+The normal process for using journalling is
+1. Load the database file 
+    db.load("data.db");
+2. Enable journalling and set the journal file path
+    db.enableJournal("journal");
+3. Consolidate the journal. This will 'replay' the journal and save the data to the specified file.
+    db.consolidate("data.db");
+    
+From here, your application probably only needs to explicitly call 'save' periodically, perhaps every 15mins or once per hour. Note that 'save' will also clear the journal. 
 
