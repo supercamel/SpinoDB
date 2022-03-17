@@ -541,6 +541,7 @@ The data can be loaded and stored to a file.
 db.load(<path_to_file>);
 
     db.load("data.db");
+
 db.save(<path_to_file>);
 
     db.save("data.db");
@@ -556,11 +557,14 @@ When journalling is enabled, Spino will record every change to the data to a jou
 
 The normal process for using journalling is
 1. Load the database file 
-    db.load("data.db");
-2. Enable journalling and set the journal file path
-    db.enableJournal("journal");
+```db.load("data.db");```
+
+2. Enable journalling and set the journal file path 
+```db.enableJournal("journal");```
+
 3. Consolidate the journal. This will 'replay' the journal and save the data to the specified file.
-    db.consolidate("data.db");
+```db.consolidate("data.db");```
     
+
 From here, your application probably only needs to explicitly call 'save' periodically, perhaps every 15mins or once per hour. Note that 'save' will also clear the journal. 
 
