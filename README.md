@@ -478,38 +478,9 @@ Only bother with this is unless drop time becomes problematic.
 dropOlderThan() is very fast. Delete old documents using this where possible.
 
 
-##### NodeJS
-
-```
-var db = new spino.Spino();
-db.setIntValue("My Key Name", 1234);
-if(db.hasKey("My Key Name")) {
-    console.log(db.getIntValue("My Key Name");
-}
-
-```
-##### Python
-
-```
-db = Spino.Database.new()
-db.set_int_value("My Key Name", 1234)
-if(db.has_key("My Key Name") == True):
-    print(db.get_int_value("My Key Name"))
-```
-
-
-##### Use zram on Linux
-
-Linux systems can use zram to compress RAM. This is especially useful on small embedded IoT type devices and virtual private servers where RAM isn't free. 
-
-zram can be used to create a RAM disk with on the fly compression. A swap file can be created on the zram disk. With default settings, the system will begin to compress RAM using lzo compression once it reaches ~50% useage. 
-This can help to eek out some extra memory space at the expense of CPU usage. 
-
-Interestingly, most other common operating systems will begin to use RAM compression as memory begins to run out, but Linux does not do this by default. It must be set up by the user. 
-
 ### Comparison To LokiJS
 
-LokiJS is a similar in-memory NoSQL database, however it is far more mature and featurefull. It also has the advantage of being a pure javascript solution and can run in browsers. 
+LokiJS is also a NoSQL database, however it has the advantage of being a pure javascript solution and can run in browsers. 
 
 ##### Inserting 1 Million Documents (1x index field)
 
@@ -533,7 +504,6 @@ LokiJS is about 2x faster at inserting new documents. This is most likely becaus
 |---------|---------|
 | 2075ms  | 404ms   |
 
-Drop/remove is expensive, probably because the index has to be reconstructed
 
 ### Persistence And Journalling
 
