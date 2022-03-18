@@ -201,9 +201,10 @@ namespace Spino {
         }
 
         if(updated == false) {
+            bool prior = jw.getEnabled();
             jw.setEnabled(false);
             append(update);
-            jw.setEnabled(true);
+            jw.setEnabled(prior);
         }
 
         hashmap.clear();

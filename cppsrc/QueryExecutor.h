@@ -37,6 +37,7 @@
 #include "rapidjson/ostreamwrapper.h"
 
 
+
 namespace Spino {
 	typedef rapidjson::GenericDocument<rapidjson::UTF8<>, rapidjson::CrtAllocator, rapidjson::CrtAllocator> DocType;
 	typedef rapidjson::GenericValue<rapidjson::UTF8<>, rapidjson::CrtAllocator> ValueType;
@@ -97,9 +98,7 @@ namespace Spino {
 						}	
 					} 
 					else if(type == TYPE_STRING) {
-						if(str == other.str) {
-							return true;
-						}
+                        return str == other.str;
 					}
 					else if(type == TYPE_BOOLEAN) {
 						return boolean == other.boolean;

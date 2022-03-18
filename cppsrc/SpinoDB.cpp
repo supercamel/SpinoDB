@@ -706,11 +706,11 @@ namespace Spino{
             file.close();
         }
 
+        jw.setEnabled(priorState);
+
         // write the db to disk 
         // noting that save will also erase the journal
         save(path);
-
-        jw.setEnabled(priorState);
     }
 
     /*

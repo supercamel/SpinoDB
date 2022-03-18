@@ -97,11 +97,11 @@ namespace Spino {
         uint32_t r = 0;
         auto itr = list.Begin();
         while(itr != list.End()) {
-            itr++;
             exec.set_json(&(*itr));
             if(exec.resolve(head)) {
                 r++;
             }
+            itr++;
         }
 
         return r;

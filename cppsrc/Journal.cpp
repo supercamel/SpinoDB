@@ -14,7 +14,7 @@ namespace Spino {
     }
 
     void JournalWriter::append(const std::string& s) {
-        if(enabled) {
+        if(enabled == true) {
             fstream f(path, fstream::out | fstream::app);
 
             if(f.is_open())
