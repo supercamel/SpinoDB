@@ -135,7 +135,7 @@ namespace Spino {
             append(d.GetObject());
         }
         else {
-            cout << "Spino Error: could not parse JSON object" << endl;
+            cout << "Spino Error:: append: could not parse JSON object" << endl;
             cout << s << endl;
         }
     }
@@ -166,7 +166,7 @@ namespace Spino {
                 }
             }
             else {
-                cout << "Spino Parse Error: could not parse json document" << endl;
+                cout << "Spino Error:: updateById: could not parse json document" << endl;
                 cout << update << endl;
             }
         } else {
@@ -178,7 +178,7 @@ namespace Spino {
         DocType j;
         j.Parse(update);
         if(j.HasParseError()) {
-            cout << "Spino Parse Error: could not parse json document" << endl;
+            cout << "Spino Error:: update: could not parse json document" << endl;
             cout << update << endl;
             return;
         }
@@ -220,7 +220,7 @@ namespace Spino {
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
             j.Accept(writer);
-            ss << escape(sb.GetString()) << "\"}\n";
+            ss << sb.GetString() << "\"}\n";
 
             jw.append(ss.str());
         }

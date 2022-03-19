@@ -746,6 +746,38 @@ namespace Spino{
         }
         return result;
     }
+
+    std::string unescape(const std::string& str) {
+        std::string result;
+        unsigned int len = str.length();
+        unsigned int i = 0;
+        while(i < len) {
+            char c = str[i++];
+            if(c == '\\') {
+                c = str[i++];
+                if(c == 'n') {
+                    result += '\n';
+                }
+                else if(c == '\\') {
+                    result += '\\';
+                }
+                else if(c == 't') {
+                    result += '\t';
+                }
+                else if(c == '"') {
+                    result += '"';
+                }
+                else {
+                    cout << "SpinoDB:: unescape: unknown escape sequence in string.\n" << str << endl;
+                    cout << str[i-1] << endl;
+                }
+            }
+            else {
+                result += c;
+            }
+        }
+        return result;
+    }
 }
 
 
