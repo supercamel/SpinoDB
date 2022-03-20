@@ -352,7 +352,7 @@ This Vala example starts by retrieving every document in the 'trains' collection
  
 #### Notes on script performance
 
-Cursor scripts are generally more efficient for processing large numbers of results than repeatedly calling cursor.next() in your application. With the 'solarsystem' test case, the cursor script executes about 20% faster than equivalent NodeJS javascript and 65% faster than equivalent Vala. Cursor scripts are fast because the documents processed by cursor scripts are not converted to and from strings. They are converted from Spino's internal DOM memory format directly to a table in the Squirrel VM which is a fairly efficient operation. On the other hand, processing results by calling cursor.next() will make Spino convert the document into a string. Most likely, the application will parse the document back into an object/DOM. 
+Cursor scripts are generally more efficient for processing large numbers of results than repeatedly calling cursor.next() in your application. With the 'solarsystem' test case, the cursor script executes about 30% faster than equivalent NodeJS javascript and 65% faster than equivalent Vala. Cursor scripts are fast because the documents processed by cursor scripts are not converted to and from strings. They are converted from Spino's internal DOM memory format directly to a table in the Squirrel VM which is a fairly efficient operation. On the other hand, processing results by calling cursor.next() will make Spino convert the document into a string. Most likely, the application will parse the document back into an object/DOM. 
 
 Cursor scripts 
 ```Spino DOM -> Squirrel table```
