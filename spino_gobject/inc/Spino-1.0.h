@@ -14,6 +14,12 @@ G_BEGIN_DECLS
  */
 gchar* spino_escape(const gchar* str);
 
+/**
+ * spino_unescape:
+ * @str: a string to unescape
+ * Returns: (transfer full):
+ */
+gchar* spino_unescape(const gchar* str);
 
 G_END_DECLS
 

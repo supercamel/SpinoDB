@@ -44,11 +44,23 @@ namespace SpinoDB {
         }
     }
 
+    void unescape(const FunctionCallbackInfo<Value>& args) {
+        Isolate* isolate = args.GetIsolate();
+        v8::String::Utf8Value str(isolate, args[0]);
+
+        std::string unescaped = Spino::unescape(*str);
+        auto v8str = v8::String::NewFromUtf8(isolate, unescaped.c_str());
+        if(!v8str.IsEmpty()) {
+            args.GetReturnValue().Set(v8str.ToLocalChecked());
+        }
+    }
+
     void InitAll(Local<Object> exports) {
         CursorWrapper::Init(exports->GetIsolate());
         CollectionWrapper::Init(exports->GetIsolate());
         SpinoWrapper::Init(exports);
         NODE_SET_METHOD(exports, "escape", escape);
+        NODE_SET_METHOD(exports, "unescape", unescape);
     }
 
     NODE_MODULE(NODE_GYP_MODULE_NAME, InitAll)
