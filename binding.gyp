@@ -15,6 +15,7 @@
             "cppsrc/squirrel/squirrel/sqapi.cpp",
             "cppsrc/squirrel/squirrel/sqbaselib.cpp",
             "cppsrc/squirrel/squirrel/sqclass.cpp",
+            "cppsrc/squirrel/squirrel/sqcompiler.cpp",
             "cppsrc/squirrel/squirrel/sqdebug.cpp",
             "cppsrc/squirrel/squirrel/sqfuncstate.cpp",
             "cppsrc/squirrel/squirrel/sqlexer.cpp",
@@ -36,7 +37,7 @@
                 "cflags!": [ "-fno-exceptions" ],
                 "cflags_cc!": [ "-fno-exceptions" ],
                 "cflags": [ "-O3" ],
-                "cflags_cc": ["-O3" ],
+                "cflags_cc": ["-O3"],
                 "include_dirs": ["cppsrc/squirrel/include"]
     }
     ]

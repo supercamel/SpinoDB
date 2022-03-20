@@ -12,10 +12,10 @@
  * Both scripts do essentially the same thing. 
  *
  * On my PC the results are
- *  nativejs: 422ms
- *  squirrel: 273ms
+ *  nativejs: 408ms
+ *  squirrel: 258ms
  *
- * It seems cursor scripts are about 30% faster, in this case. 
+ * It seems cursor scripts are significantly faster, in this case. 
  *
  */
 
@@ -128,6 +128,7 @@ function finalize() {
 
 
 
+console.time('squirrel');
 generateRandomSolarSystems(c);
 
 
@@ -135,7 +136,7 @@ console.time('nativejs')
 doTheThing(c);
 console.timeEnd('nativejs')
 
-console.time('squirrel');
+
 doTheScript(c);
 console.timeEnd('squirrel');
 

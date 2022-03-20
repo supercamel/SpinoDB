@@ -24,6 +24,7 @@
 
 #include "QueryNodes.h"
 #include "squirrel.h"
+#include "SpinoDB.h"
 
 namespace Spino {
 
@@ -36,6 +37,8 @@ namespace Spino {
             const SQChar* source, SQInteger line, SQInteger column);
 
     void loadSquirrelStdLib(HSQUIRRELVM vm);
+
+    void loadSquirrelSpinoLib(HSQUIRRELVM vm, SpinoDB* db);
 
 }
 

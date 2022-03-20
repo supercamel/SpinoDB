@@ -72,6 +72,15 @@ namespace Spino {
 
 
     void Collection::append(ValueType& d) {
+        if(d.IsObject() == false) {
+            cout << "Spino Error: document is not an object" << endl;
+            return;
+        }
+        if(doc.IsObject() == false) {
+            cout << "Spino Error: database corruption detected" << endl;
+            return;
+        }
+
         auto& arr = doc[name.c_str()];
 
         // check if _id exists already
@@ -106,8 +115,10 @@ namespace Spino {
             ValueType _id;
             _id.SetString(idstr, 16, doc.GetAllocator());
 
+
             d.AddMember("_id", _id, doc.GetAllocator());
         }
+
 
         arr.PushBack(d.GetObject(), doc.GetAllocator());
         indexNewDoc();
@@ -132,7 +143,12 @@ namespace Spino {
         DocType d;
         d.Parse(s);
         if(d.HasParseError() == false) {
-            append(d.GetObject());
+            if(d.IsObject()) {
+                append(d.GetObject());
+            }
+            else {
+                cout << "Spino Error: document is not an object" << endl;
+            }
         }
         else {
             cout << "Spino Error: could not parse JSON object" << endl;
@@ -206,7 +222,7 @@ namespace Spino {
             }
         }
         else {
-            cout << "ERROR: collection "
+            cout << "Spino Error: collection "
                 << name << " is not an array. DOM corrupted." << endl;
         }
 

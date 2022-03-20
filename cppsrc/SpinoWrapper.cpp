@@ -252,7 +252,6 @@ void CollectionWrapper::append(const FunctionCallbackInfo<Value>& args) {
 
     if(args[0]->IsString()) {
         v8::String::Utf8Value str(isolate, args[0]);
-
         obj->collection->append(*str);
     } 
     else if(args[0]->IsObject()) {

@@ -55,7 +55,6 @@ namespace Spino {
 
                 keyStore = new Collection(doc, jw, keystoreName);
                 keyStore->createIndex("k");
-
             }
 
             ~SpinoDB() {

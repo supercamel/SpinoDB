@@ -1,91 +1,137 @@
 /**
-*/
+ * This is the Vala version of the solar system test
+ *
+ * This executes in ~580ms on my machine.
+ * The NodeJS version takes about 670ms. 
+ */
 
 
 void generate_random_solarsystems(Spino.Collection pc) {
     string[] star_types = {"solar", "hotblue", "reddwarf", "redgiant", "whitedwarf", "neutron"};
     string[] planet_types = {"gas", "rock"};
 
-    for(int i = 0; i < 1000; i++) {
-        Json.Builder builder = new Json.Builder();
-        builder.begin_object();
-        builder.set_member_name("star_name");
+    var json = new GLib.StringBuilder();
+    for(int i = 0; i < 100000; i++) {
+        json.erase(0);
+        json.append("{\"name\":\"");
         var star_name = GLib.Random.int_range(0, 100000).to_string();
-        builder.add_string_value(star_name);
+        json.append(star_name.to_string());
+        json.append("\",\"type\":\"");
 
-        builder.set_member_name("star_type");
-        var star_type = star_types[GLib.Random.int_range(0, 6)];
-        builder.add_string_value(star_type);
+        json.append(star_types[GLib.Random.int_range(0, 6)]);
+        json.append("\",\"dist\":");
 
-        builder.set_member_name("distance_from_earth");
-        var distance_from_earth = GLib.Random.double_range(100, 100000);
-        builder.add_double_value(distance_from_earth);
+        json.append(GLib.Random.int_range(100, 100000).to_string());
+        json.append(",\"planets\":[");
 
-        builder.set_member_name("planets");
-        builder.begin_array();
         var n_planets = GLib.Random.int_range(0, 6);
         for(int j = 0; j < n_planets; j++) {
-            builder.begin_object();
-            builder.set_member_name("planet_type");
+            json.append("{\"type\":\"");
             var planet_type = planet_types[GLib.Random.int_range(0, 2)];
-            builder.add_string_value(planet_type);
-
-            builder.set_member_name("distance_from_star");
-            var distance_from_star = GLib.Random.double_range(0.1, 10.0);
-            builder.add_double_value(distance_from_star);
-            builder.end_object();
+            json.append(planet_type);
+            json.append("\",\"dist\":");
+            var distance_from_star = (double)GLib.Random.double_range(0.1, 10.0);
+            json.append(distance_from_star.to_string());
+            json.append("},");
         }
-        builder.end_array();
-        builder.end_object();
-
-        Json.Generator generator = new Json.Generator ();
-        Json.Node root = builder.get_root ();
-        generator.set_root (root);
-
-        string str = generator.to_data (null);
-        pc.append(str);
+        json.erase(json.len-1, (int)(n_planets != 0));
+        json.append("]}");
+        pc.append(json.str);
     }
 }
 
-string run_script(Spino.Collection pc, string query) {
+class planetResult {
+    public string star;
+    public int planet;
+    public int dist;
+}
+
+string nativeFoo(Spino.Collection pc) {
+    var cur = pc.find("{}");
+    var parser = new Json.Parser();
+    var list = new GLib.SList<planetResult>();
+    while(cur.has_next()) {
+        parser.load_from_data(cur.next());
+
+        var node = parser.get_root().get_object();
+        var planets = node.get_array_member("planets");
+        int count = 0;
+        foreach(unowned Json.Node planet in planets.get_elements()) {
+            var dist = planet.get_object().get_double_member("dist");
+            if(planet.get_object().get_string_member("type") == "rock") {
+                if((dist > 3.2) && (dist < 3.8)) {
+                    planetResult pr = new planetResult();
+                    pr.star = node.get_string_member("name");
+                    pr.planet = count;
+                    pr.dist = (int)node.get_int_member("dist");
+                    list.insert_sorted(pr, (a, b) => {
+                        if(a.dist > b.dist) { return 1; }
+                        else { return -1; }
+                    });
+                    if(list.length() > 5) {
+                        list.remove_link(list.last());
+                    }
+                }
+            }
+            count++;
+        }
+    }
+
+    var json = new GLib.StringBuilder();
+    json.append("[");
+    list.@foreach((item) => {
+        json.append("{\"planet\":");
+        json.append(item.planet.to_string());
+
+        json.append(",\"dist\":");
+        json.append(item.dist.to_string());
+
+        json.append(",\"star\":\"");
+        json.append(item.star);
+
+        json.append("\"},");
+    });
+    json.erase(json.len-1, 1);
+    json.append("]");
+
+    return json.str;
+}
+
+
+string run_script(Spino.Collection pc) {
     string script = """
 
-goldilocksZoned <- [];
-function result(solarsystem) {
-    try {
-    local count = 0;
-    foreach(planet in solarsystem.planets) {
-        if(planet.planet_type == "rock") {
-            if((planet.distance_from_star > 3.2) && 
-                (planet.distance_from_star < 3.8)) {
-                local p = {
-                    "star": solarsystem.star_name,
-                    "planet": count,
-                    "distance_from_earth": solarsystem.distance_from_earth
+        goldilocksZoned <- [];
+    function result(ss) {
+        local count = 0;
+        foreach(p in ss.planets) {
+            if(p.type == "rock") {
+                if((p.dist > 3.2) && 
+                   (p.dist < 3.8)) {
+                    local p = {
+                        "star": ss.name,
+                        "planet": count,
+                        "dist": ss.dist
+                    }
+                    goldilocksZoned.append(p);
                 }
-                goldilocksZoned.append(p);
             }
+            count++;
         }
-        count++;
     }
-    }
-    catch(err) {
-        print(err);
-    }
-}
 
-function finalize() {
-    goldilocksZoned.sort(@(a, b) a.distance_from_earth <=> b.distance_from_earth);
-    if(goldilocksZoned.len() > 5) {
-        goldilocksZoned.resize(5);
+    function finalize() {
+        goldilocksZoned.sort(@(a, b) a.dist <=> b.dist);
+        if(goldilocksZoned.len() > 5) {
+            goldilocksZoned.resize(5);
+        }
+        return goldilocksZoned;
     }
-    return goldilocksZoned;
-}
 
 
-""";
+    """;
 
-    return pc.find(query).run_script(script);
+    return pc.find("{}").run_script(script);
 }
 
 public static int main() {
@@ -93,12 +139,22 @@ public static int main() {
 
     var solarsystems = db.get_collection("solarsystems");
 
+
     generate_random_solarsystems(solarsystems);
 
-    var result = run_script(solarsystems, ("{}"));
-    print(result);
 
-    db.save("solarsystems.db");
+    int64 msec = GLib.get_real_time () / 1000;
+    var result = run_script(solarsystems);
+    print("%s\n".printf(result));
+    int64 msec2 = GLib.get_real_time() / 1000;
+    print("Script time: %i\n", (int)(msec2-msec));
+
+    msec = GLib.get_real_time() / 1000;
+    result = nativeFoo(solarsystems);
+    print("%s\n".printf(result));
+    msec2 = GLib.get_real_time() / 1000;
+    print("Native time: %i\n", (int)(msec2-msec));
+
     return 0;
 }
 
