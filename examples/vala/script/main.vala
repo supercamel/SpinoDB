@@ -1,8 +1,11 @@
 /**
  * This is the Vala version of the solar system test
  *
- * This executes in ~580ms on my machine.
- * The NodeJS version takes about 670ms. 
+ * Results on my PC
+ *
+ * Script time: 251ms
+ * Native time: 1162ms
+ *
  */
 
 
