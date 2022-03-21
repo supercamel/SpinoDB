@@ -101,6 +101,7 @@ namespace Spino {
                     ss << "{\"msg\":\"" << msg << "\"}";
                 }
                 else {
+                    cout << "Command error: " << msg << endl;
                     ss << "{\"error\":\"" << msg << "\"}";
                 }
                 return ss.str();

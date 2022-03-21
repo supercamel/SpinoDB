@@ -536,7 +536,10 @@ namespace Spino{
                     if(!limitValue.IsNumber()) {
                         return make_reply(false, "limit must be a number");
                     }
-                    limit = limitValue.GetInt();
+                    if(!limitValue.IsUint()) {
+                        return make_reply(false, "limit must be an unsigned (positive) whole number");
+                    }
+                    limit = limitValue.GetUint();
                 }
 
                 auto r = col->drop(queryValue.GetString(), limit);

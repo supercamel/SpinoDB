@@ -133,7 +133,7 @@ namespace Spino {
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
             arr[arr.Size()-1].Accept(writer);
-            ss << escape(sb.GetString()) << "\"}\n";
+            ss << escape(sb.GetString()) << "\"}";
 
             jw.append(ss.str());
         }
@@ -176,7 +176,7 @@ namespace Spino {
                     rapidjson::StringBuffer sb;
                     rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
                     j.Accept(writer);
-                    ss << escape(sb.GetString()) << "\"}\n";
+                    ss << escape(sb.GetString()) << "\"}";
 
                     jw.append(ss.str());
                 }
@@ -236,7 +236,7 @@ namespace Spino {
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
             j.Accept(writer);
-            ss << escape(sb.GetString()) << "\"}\n";
+            ss << escape(sb.GetString()) << "\"}";
 
             jw.append(ss.str());
         }
@@ -574,7 +574,7 @@ namespace Spino {
             ss << "{\"cmd\":\"drop\",\"collection\":\"";
             ss << escape(name);
             ss << "\",\"query\":\"" << escape(j);
-            ss << "\",\"limit\":" << limit << "\"}";
+            ss << "\",\"limit\":" << limit << "}";
             jw.append(ss.str());
         }
         return count;
