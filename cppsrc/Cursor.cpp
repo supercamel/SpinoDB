@@ -209,7 +209,6 @@ namespace Spino {
         iter_range(iter_range)
     {
         iter = iter_range.first;
-        next();
     }
 
     EqIndexCursor::~EqIndexCursor() { }
