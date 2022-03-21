@@ -44,10 +44,12 @@ namespace Spino {
             virtual std::string next() = 0;
             virtual bool hasNext() = 0;
             virtual uint32_t count() = 0;
-            virtual std::string runScript(std::string txt) = 0;
+            virtual const ValueType& nextAsJsonObj() = 0;
 
             BaseCursor* setProjection(const char* projection);
             BaseCursor* setLimit(uint32_t max_results);
+
+            std::string runScript(std::string txt);
 
 
         protected: 
@@ -69,6 +71,10 @@ namespace Spino {
             bool hasNext() { return false; }
             uint32_t count() { return 0; }
             std::string runScript(std::string txt) { return ""; }
+
+            const ValueType& nextAsJsonObj() { return v; }
+        private:
+            ValueType v;
     };
 
 
@@ -80,7 +86,7 @@ namespace Spino {
             bool hasNext();
             std::string next();
             uint32_t count();
-            std::string runScript(std::string txt);
+            const ValueType& nextAsJsonObj();
 
         private:
             void findNext();
@@ -102,15 +108,15 @@ namespace Spino {
         std::multimap<Spino::Value, uint32_t>::iterator
             > IndexIteratorRange;
 
-    class IndexCursor : public BaseCursor {
+    class EqIndexCursor : public BaseCursor {
         public:
-            IndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom);
-            ~IndexCursor();
+            EqIndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom);
+            ~EqIndexCursor();
 
             bool hasNext();
             std::string next();
             uint32_t count();
-            std::string runScript(std::string txt);
+            const ValueType& nextAsJsonObj();
 
         private:
             ValueType& collection_dom;

@@ -5,6 +5,7 @@
 	"main": "./build/Release/spinodb.node",
 	"gypfile": true,
 	"dependencies": {
+		"mongodb": "^4.4.1",
 		"node-gyp": "^8.2.0"
 	},
 	"keywords": [

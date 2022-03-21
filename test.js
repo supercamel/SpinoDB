@@ -31,6 +31,7 @@ function getRandomInt(max) {
     return Math.floor(Math.random() * max);
 }
 
+
 function generateRandomSolarSystems(col) {
     var starTypes = ["solar", "hotblue", "reddwarf", "redgiant", "whitedwarf", "neutron"];
     var planetTypes = ["rock", "gas"];

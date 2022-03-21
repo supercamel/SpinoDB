@@ -230,13 +230,13 @@ namespace Spino {
             stringstream ss;
             ss << "{\"cmd\":\"update\",\"collection\":\"";
             ss << escape(name);
-            ss << "\",\"query\":\"" << search;
+            ss << "\",\"query\":\"" << escape(search);
             ss << "\",\"document\":\"";
 
             rapidjson::StringBuffer sb;
             rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
             j.Accept(writer);
-            ss << sb.GetString() << "\"}\n";
+            ss << escape(sb.GetString()) << "\"}\n";
 
             jw.append(ss.str());
         }
@@ -444,7 +444,7 @@ namespace Spino {
             for(auto& idx : indices) {
                 if(idx->field_name == bfc->field_name) {
                     auto range = idx->index.equal_range(bfc->v);
-                    return new IndexCursor(range, doc[name.c_str()]);
+                    return new EqIndexCursor(range, doc[name.c_str()]);
                 }
             }
         }
