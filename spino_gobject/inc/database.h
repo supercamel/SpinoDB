@@ -139,7 +139,7 @@ double spino_database_get_double_value(SpinoDatabase* self, const gchar* key);
  * spino_database_get_string_value:
  * @self: the self
  * @key: the key
- * Returns: (transfer none): the string value
+ * Returns: (transfer full): the string value
  */
 const gchar* spino_database_get_string_value(SpinoDatabase* self, const gchar* key);
 

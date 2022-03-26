@@ -679,8 +679,9 @@ void SpinoWrapper::getStringValue(const FunctionCallbackInfo<Value>& args) {
     v8::String::Utf8Value key(isolate, args[0]);
 
     SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
-    std::string v = obj->spino->getStringValue(*key);
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, v.c_str()).ToLocalChecked());
+    const char* v = obj->spino->getStringValue(*key);
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, v).ToLocalChecked());
+    delete v;
 }
 
 void SpinoWrapper::hasKey(const FunctionCallbackInfo<Value>& args) {

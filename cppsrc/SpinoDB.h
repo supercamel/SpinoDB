@@ -88,6 +88,9 @@ namespace Spino {
             int getIntValue(const std::string& key);
             unsigned int getUintValue(const std::string& key);
             double getDoubleValue(const std::string& key);
+
+            //NOTE: the pointer returned from getStringValue must be free'd
+            //the application is responsible for releasing this memory, not spino
             const char* getStringValue(const std::string& key);
 
             bool hasKey(const std::string& key);

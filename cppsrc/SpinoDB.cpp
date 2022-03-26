@@ -152,7 +152,9 @@ namespace Spino{
 
         std::stringstream ss;
         ss << "\"" << escape(value) << "\"";
-        keyStore->update(query_ss.str().c_str(), make_key_value_json(key, ss.str()).c_str());
+        string kvjson = make_key_value_json(key, ss.str());
+
+        keyStore->update(query_ss.str().c_str(), kvjson.c_str());
     }
 
     int SpinoDB::getIntValue(const std::string& key) {
@@ -217,17 +219,23 @@ namespace Spino{
             << escape(key) << "\"}";
 
         std::string result = keyStore->findOne(ss.str().c_str());
+
         if(result != "") {
             DocType keydoc;
             keydoc.Parse(result.c_str());
             if(keydoc.HasMember("v")) {
                 if(keydoc["v"].IsString()) {
-                    return keydoc["v"].GetString();
+                    size_t len = keydoc["v"].GetStringLength();
+                    const char* src = keydoc["v"].GetString();
+                    char* r = new char[len+1];
+
+                    memcpy(r, src, len);
+                    r[len] = '\0';
+                    return r;
                 }
             }
         }
-        return "";
-
+        return nullptr;
     }
 
     bool SpinoDB::hasKey(const std::string& key) {
