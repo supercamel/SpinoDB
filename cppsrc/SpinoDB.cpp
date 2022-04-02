@@ -636,8 +636,9 @@ namespace Spino{
         out.close();
 
         // move the temporary file to the correct location
-        std::rename(tmppath.c_str(), path.c_str());
-        std::remove(tmppath.c_str());
+        std::remove(path.c_str()); // remove original db file
+        std::rename(tmppath.c_str(), path.c_str()); // move tmp file to actual location
+        std::remove(tmppath.c_str()); // remove tmp file
 
         // clear the journal
         if(jw.getEnabled()) {
