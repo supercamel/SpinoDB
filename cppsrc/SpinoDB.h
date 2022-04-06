@@ -80,11 +80,13 @@ namespace Spino {
             void disableJournal();
             void consolidate(const std::string& db_path);
 
+            void setBoolValue(const std::string& key, bool value);
             void setIntValue(const std::string& key, int value);
             void setUintValue(const std::string& key, unsigned int value);
             void setDoubleValue(const std::string& key, double value);
             void setStringValue(const std::string& key, const std::string& value);
 
+			bool getBoolValue(const std::string& key);
             int getIntValue(const std::string& key);
             unsigned int getUintValue(const std::string& key);
             double getDoubleValue(const std::string& key);

@@ -128,6 +128,12 @@ namespace Spino{
         return ss.str();
     }
 
+    void SpinoDB::setBoolValue(const std::string& key, bool value) {
+        std::stringstream ss;
+        ss << "{k:\"" << escape(key) << "\"}";
+        keyStore->update(ss.str().c_str(), make_key_value_json(key, value).c_str());
+    }
+	
     void SpinoDB::setIntValue(const std::string& key, int value) {
         std::stringstream ss;
         ss << "{k:\"" << escape(key) << "\"}";
@@ -157,6 +163,24 @@ namespace Spino{
         keyStore->update(query_ss.str().c_str(), kvjson.c_str());
     }
 
+    bool SpinoDB::getBoolValue(const std::string& key) {
+        std::stringstream ss;
+        ss << "{k:\""
+            << escape(key) << "\"}";
+
+        std::string result = keyStore->findOne(ss.str().c_str());
+        if(result != "") {
+            DocType keydoc;
+            keydoc.Parse(result.c_str());
+            if(keydoc.HasMember("v")) {
+                if(keydoc["v"].IsBool()) {
+                    return keydoc["v"].GetBool();
+                }
+            }
+        }
+        return 0;
+    }
+	
     int SpinoDB::getIntValue(const std::string& key) {
         std::stringstream ss;
         ss << "{k:\""
