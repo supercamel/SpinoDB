@@ -100,6 +100,11 @@ void spino_database_consolidate(SpinoDatabase* self, const gchar* db_path)
     self->db->consolidate(db_path);
 }
 
+void spino_database_set_bool_value(SpinoDatabase* self, const gchar* key, gboolean value)
+{
+    self->db->setBoolValue(key, value);
+}
+
 void spino_database_set_int_value(SpinoDatabase* self, const gchar* key, gint value)
 {
     self->db->setIntValue(key, value);
@@ -118,6 +123,11 @@ void spino_database_set_double_value(SpinoDatabase* self, const gchar* key, doub
 void spino_database_set_string_value(SpinoDatabase* self, const gchar* key, const gchar* value)
 {
     self->db->setStringValue(key, value);
+}
+
+gboolean spino_database_get_bool_value(SpinoDatabase* self, const gchar* key)
+{
+    return self->db->getBoolValue(key);
 }
 
 gint spino_database_get_int_value(SpinoDatabase* self, const gchar* key)
