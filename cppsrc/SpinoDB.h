@@ -86,7 +86,7 @@ namespace Spino {
             void setDoubleValue(const std::string& key, double value);
             void setStringValue(const std::string& key, const std::string& value);
 
-			bool getBoolValue(const std::string& key);
+            bool getBoolValue(const std::string& key);
             int getIntValue(const std::string& key);
             unsigned int getUintValue(const std::string& key);
             double getDoubleValue(const std::string& key);
