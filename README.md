@@ -394,11 +394,13 @@ db.setIntValue(key name, value)
 db.setUintValue(key name, value)
 db.setDoubleValue(key name, value)
 db.setStringValue(key name, string)
+db.setBoolValue(key name, true/false)
 
 db.getIntValue(key name)
 db.getUintValue(key name)
 db.getDoubleValue(key name)
 db.getStringValue(key name)
+db.getBoolValue(key name)
 
 db.hasKey(key name)
 ```
