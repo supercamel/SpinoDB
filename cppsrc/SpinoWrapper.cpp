@@ -451,11 +451,13 @@ void SpinoWrapper::Init(Local<Object> exports) {
     NODE_SET_PROTOTYPE_METHOD(tpl, "getCollection", getCollection);
     NODE_SET_PROTOTYPE_METHOD(tpl, "dropCollection", dropCollection);
 
+    NODE_SET_PROTOTYPE_METHOD(tpl, "setBoolValue", setBoolValue);
     NODE_SET_PROTOTYPE_METHOD(tpl, "setIntValue", setIntValue);
     NODE_SET_PROTOTYPE_METHOD(tpl, "setUintValue", setUintValue);
     NODE_SET_PROTOTYPE_METHOD(tpl, "setDoubleValue", setDoubleValue);
     NODE_SET_PROTOTYPE_METHOD(tpl, "setStringValue", setStringValue);
 
+    NODE_SET_PROTOTYPE_METHOD(tpl, "getBoolValue", getBoolValue);
     NODE_SET_PROTOTYPE_METHOD(tpl, "getIntValue", getIntValue);
     NODE_SET_PROTOTYPE_METHOD(tpl, "getUintValue", getUintValue);
     NODE_SET_PROTOTYPE_METHOD(tpl, "getDoubleValue", getDoubleValue);
@@ -610,6 +612,15 @@ void SpinoWrapper::dropCollection(const FunctionCallbackInfo<Value>& args) {
     obj->spino->dropCollection(*str);
 }
 
+void SpinoWrapper::setBoolValue(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+
+    obj->spino->setBoolValue(*key, args[1].As<Boolean>()->Value());
+}
+
 void SpinoWrapper::setIntValue(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
     v8::String::Utf8Value key(isolate, args[0]);
@@ -645,6 +656,15 @@ void SpinoWrapper::setStringValue(const FunctionCallbackInfo<Value>& args) {
     SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
     obj->spino->setStringValue(*key, *value);
+}
+
+void SpinoWrapper::getBoolValue(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value key(isolate, args[0]);
+
+    SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+    bool v = obj->spino->getBoolValue(*key);
+    args.GetReturnValue().Set(v8::Boolean::New(isolate, v));
 }
 
 void SpinoWrapper::getIntValue(const FunctionCallbackInfo<Value>& args) {

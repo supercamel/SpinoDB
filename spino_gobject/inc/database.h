@@ -81,6 +81,14 @@ void spino_database_disable_journal(SpinoDatabase* self);
 void spino_database_consolidate(SpinoDatabase* self, const gchar* db_path);
 
 /**
+ * spino_database_set_bool_value:
+ * @self: the self
+ * @key: the key
+ * @value: the value to set
+ */
+void spino_database_set_bool_value(SpinoDatabase* self, const gchar* key, gboolean value);
+
+/**
  * spino_database_set_int_value:
  * @self: the self
  * @key: the key
@@ -113,6 +121,13 @@ void spino_database_set_double_value(SpinoDatabase* self, const gchar* key, doub
  * @value: the value to set
  */
 void spino_database_set_string_value(SpinoDatabase* self, const gchar* key, const gchar* value);
+
+/**
+ * spino_database_get_bool_value:
+ * @self: the self
+ * @key: the key
+ */
+gboolean spino_database_get_bool_value(SpinoDatabase* self, const gchar* key);
 
 /**
  * spino_database_get_int_value:
