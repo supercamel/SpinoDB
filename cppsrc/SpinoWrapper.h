@@ -29,11 +29,11 @@
 
 class CursorWrapper: public node::ObjectWrap {
 	public:
-		CursorWrapper(Spino::BaseCursor* cursor) : cursor(cursor) { }
+		CursorWrapper(Spino::Cursor* cursor) : cursor(cursor) { }
 		~CursorWrapper() { delete cursor; }
 
 		static void Init(v8::Isolate* isolate);
-		static void NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args, Spino::BaseCursor* cur);
+		static void NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args, Spino::Cursor* cur);
 	private:
 
 		static void next(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -46,7 +46,7 @@ class CursorWrapper: public node::ObjectWrap {
 
 
 		static v8::Global<v8::Function> constructor;
-		Spino::BaseCursor* cursor;
+		Spino::Cursor* cursor;
 };
 
 

@@ -17,6 +17,12 @@
  *
  * It seems cursor scripts are about 30% faster, in this case. 
  *
+ * Since we are looking for inhabitable planets around the closest starts, 
+ * some further improve performance consider are
+ * 1. Indexing the 'dist' field
+ * 2. Query for dist less than some arbitary amount to trim the amount of query results
+ * This can improve query speed 50x which is far more significant than script vs native.
+ *
  */
 
 
@@ -26,6 +32,7 @@ const spino = require('./build/Release/spinodb.node');
 var db = new spino.Spino();
 
 let c = db.getCollection("solarsystems");
+//c.createIndex("dist");
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
@@ -60,7 +67,8 @@ function generateRandomSolarSystems(col) {
 }
 
 function doTheThing(col) {
-    var cursor = col.find("{}");
+    //var cursor = col.find("{dist:{$lt:2000}}");
+    var cursor = col.find("");
     var goldilocksZoned = [];
     while(cursor.hasNext()) {
         var ss = JSON.parse(cursor.next());

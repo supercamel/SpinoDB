@@ -70,7 +70,7 @@ void CursorWrapper::Init(Isolate* isolate){
 
 }
 
-void CursorWrapper::NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args, Spino::BaseCursor* cur) {
+void CursorWrapper::NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args, Spino::Cursor* cur) {
     Isolate* isolate = args.GetIsolate();
 
     auto cons = Local<Function>::New(isolate, constructor);
