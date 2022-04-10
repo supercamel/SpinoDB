@@ -198,6 +198,10 @@ $lt - Less than. Will only match documents if the field is a numeric value and i
 
     {score: {$lt: 20}}
 
+$range - Checks if a value is within a lower and upper bounds. The field must be numeric.
+
+    {score: {$range:[0, 20]}}
+
 $in - Checks if a field contains one of many values. This example will return any document if the name field matches one of the specified names.
 
     {name: {$in: ["Dave", "Mike", "Alexis"]}}
