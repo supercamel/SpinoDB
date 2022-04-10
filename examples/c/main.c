@@ -16,7 +16,7 @@ int main() {
         g_string_free(s, TRUE);
     }
     
-    SpinoCursor* cur = spino_collection_find(col, "{}");
+    SpinoCursor* cur = spino_collection_find(col, "{idx: {$gt: 5}}");
     while(spino_cursor_has_next(cur) == TRUE) {
         printf("%s\n", spino_cursor_next(cur));
     }

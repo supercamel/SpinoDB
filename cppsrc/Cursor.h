@@ -36,23 +36,36 @@
 #include "QueryParser.h"
 
 namespace Spino {
-    class BaseCursor {
+    
+
+    // typedef so you can breath while reading this
+    // this is the type name of the pair that holds the start and end iterators 
+    // of a range of values in an index
+    typedef std::pair<
+        std::multimap<Spino::Value, size_t>::iterator, 
+        std::multimap<Spino::Value, size_t>::iterator
+            > IndexIteratorRange;
+
+
+    // eq index cursor does a binary search against an index to return results
+    class Cursor {
         public:
-            BaseCursor();
+            Cursor(shared_ptr<QueryNode> node, 
+                    shared_ptr<IndexIteratorRange> iter_range, 
+                    ValueType& collection_dom);
+            ~Cursor();
 
-            virtual ~BaseCursor() { };
-            virtual std::string next() = 0;
-            virtual bool hasNext() = 0;
-            virtual uint32_t count() = 0;
-            virtual const ValueType& nextAsJsonObj() = 0;
-
-            BaseCursor* setProjection(const char* projection);
-            BaseCursor* setLimit(uint32_t max_results);
+            bool hasNext();
+            std::string next();
+            size_t count();
+            const ValueType* nextAsJsonObj();
 
             std::string runScript(std::string txt);
 
+            Cursor* setLimit(size_t limit);
+            Cursor* setProjection(const char* projection);
 
-        protected: 
+        private:
             void apply_projection(
                     const ValueType& proj, 
                     const ValueType& source, 
@@ -60,70 +73,16 @@ namespace Spino {
 
             DocType projection;
             bool projection_set;
-            uint32_t max_results;
-    };
+            size_t max_results;
 
-    class DudCursor : public BaseCursor {
-        public:
-            DudCursor() { }
-            ~DudCursor() { }
-            std::string next() { return ""; }
-            bool hasNext() { return false; }
-            uint32_t count() { return 0; }
-            std::string runScript(std::string txt) { return ""; }
-
-            const ValueType& nextAsJsonObj() { return v; }
-        private:
-            ValueType v;
-    };
-
-
-    class LinearCursor : public BaseCursor {
-        public:
-            LinearCursor(ValueType& list, const char* query);
-            ~LinearCursor();
-
-            bool hasNext();
-            std::string next();
-            uint32_t count();
-            const ValueType& nextAsJsonObj();
-
-        private:
-            void findNext();
-
-            ValueType& list;
-            QueryExecutor exec;
-            ValueType::ConstValueIterator iter;
-            std::shared_ptr<QueryNode> head;
-            uint32_t limit;
-            uint32_t counter = 0;
-            bool has_next;
-    };
-
-    // typedef so you can breath while reading this
-    // this is the type name of the pair that holds the start and end iterators 
-    // of a range of values in an index
-    typedef std::pair<
-        std::multimap<Spino::Value, uint32_t>::iterator, 
-        std::multimap<Spino::Value, uint32_t>::iterator
-            > IndexIteratorRange;
-
-    class EqIndexCursor : public BaseCursor {
-        public:
-            EqIndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom);
-            ~EqIndexCursor();
-
-            bool hasNext();
-            std::string next();
-            uint32_t count();
-            const ValueType& nextAsJsonObj();
-
-        private:
             ValueType& collection_dom;
-            IndexIteratorRange iter_range;
-            std::multimap<Spino::Value, uint32_t>::iterator iter;
-            uint32_t counter = 0;
+            shared_ptr<QueryNode> head;
+            std::shared_ptr<IndexIteratorRange> iter_range;
+            std::multimap<Spino::Value, size_t>::iterator iter;
+            size_t counter = 0;
             string nextdoc;
+
+            QueryExecutor exec;
     };
 
 }

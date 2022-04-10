@@ -8,10 +8,10 @@ G_BEGIN_DECLS
 
 struct _SpinoCursor{
     GObject parent_instance;
-    Spino::BaseCursor* priv;
+    Spino::Cursor* priv;
 };
 
-SpinoCursor* spino_cursor_new(Spino::BaseCursor* cursor);
+SpinoCursor* spino_cursor_new(Spino::Cursor* cursor);
 
 G_END_DECLS
 

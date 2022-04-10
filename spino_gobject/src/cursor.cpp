@@ -28,7 +28,7 @@ static void spino_cursor_init(SpinoCursor* self)
 
 }
 
-SpinoCursor* spino_cursor_new(Spino::BaseCursor* cursor)
+SpinoCursor* spino_cursor_new(Spino::Cursor* cursor)
 {
     SpinoCursor* cur = (SpinoCursor*)g_object_new(SPINO_TYPE_CURSOR, NULL);
     cur->priv = cursor;

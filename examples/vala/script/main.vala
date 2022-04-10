@@ -3,7 +3,7 @@
  *
  * Results on my PC
  *
- * Script time: 251ms
+ * Script time: 280ms
  * Native time: 1162ms
  *
  */
@@ -50,7 +50,7 @@ class planetResult {
 }
 
 string nativeFoo(Spino.Collection pc) {
-    var cur = pc.find("{}");
+    var cur = pc.find("{dist: {$range:[0, 1000]}}");
     var parser = new Json.Parser();
     var list = new GLib.SList<planetResult>();
     while(cur.has_next()) {
@@ -134,13 +134,14 @@ string run_script(Spino.Collection pc) {
 
     """;
 
-    return pc.find("{}").run_script(script);
+    return pc.find("{dist:{$range:[0,10000]}}").run_script(script);
 }
 
 public static int main() {
     var db = new Spino.Database();
 
     var solarsystems = db.get_collection("solarsystems");
+    solarsystems.create_index("dist");
 
 
     generate_random_solarsystems(solarsystems);

@@ -29,14 +29,14 @@ namespace Spino {
 	class QueryNode {
 		public:
 			virtual ~QueryNode() { }
-			virtual void Accept(QueryExecutor* t) = 0;
+			virtual void Accept(QueryWalker* t) = 0;
 	};
 
 	// represents a numeric value
 	class NumericValue: public QueryNode {
 		public:
 			double value;
-			virtual void Accept(QueryExecutor* t) {
+			virtual void Accept(QueryWalker* t) {
 				t->Visit(this);
 			}
 	};
@@ -45,7 +45,7 @@ namespace Spino {
 	class StringValue: public QueryNode {
 		public: 
 			std::string value;
-			virtual void Accept(QueryExecutor* t) {
+			virtual void Accept(QueryWalker* t) {
 				t->Visit(this);
 			}
 	};
@@ -54,7 +54,7 @@ namespace Spino {
 	class BoolValue: public QueryNode {
 		public:
 			bool value;
-			virtual void Accept(QueryExecutor* t) {
+			virtual void Accept(QueryWalker* t) {
 				t->Visit(this);
 			}
 	};
@@ -64,7 +64,7 @@ namespace Spino {
 		public:
 			std::regex base_regex;
 
-			virtual void Accept(QueryExecutor* t) {
+			virtual void Accept(QueryWalker* t) {
 				t->Visit(this);
 			}
 	};
@@ -77,8 +77,9 @@ namespace Spino {
 		public:
 			std::shared_ptr<Operator> operation;
 			PointerType jp;
+            std::string path;
 
-			virtual void Accept(QueryExecutor* t) {
+			virtual void Accept(QueryWalker* t) {
 				t->Visit(this);
 			}
 	};
@@ -91,7 +92,7 @@ namespace Spino {
 			int op;
 			std::vector<std::shared_ptr<QueryNode>> fields;
 
-			virtual void Accept(QueryExecutor* t) {
+			virtual void Accept(QueryWalker* t) {
 				t->Visit(this);
 			}
 	};
@@ -101,7 +102,7 @@ namespace Spino {
 		public:
 			std::vector<std::shared_ptr<QueryNode>> list;
 
-			virtual void Accept(QueryExecutor* t) {
+			virtual void Accept(QueryWalker* t) {
 				t->Visit(this);
 			}
 	};
@@ -115,7 +116,7 @@ namespace Spino {
 			int op;
 			std::shared_ptr<QueryNode> cmp;
 
-			virtual void Accept(QueryExecutor* t) {
+			virtual void Accept(QueryWalker* t) {
 				t->Visit(this);
 			}
 	};
@@ -126,11 +127,13 @@ namespace Spino {
 			PointerType jp;
 			Value v;
 
-			virtual void Accept(QueryExecutor* t) {
+			virtual void Accept(QueryWalker* t) {
 				t->Visit(this);
 			}
 	};
+
 }
+
 
 
 #endif

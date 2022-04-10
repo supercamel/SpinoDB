@@ -24,6 +24,8 @@
 
 #include <regex>
 
+#include <iostream>
+using namespace std;
 
 namespace Spino {
     void QueryExecutor::Visit(NumericValue* f) {
@@ -169,6 +171,24 @@ namespace Spino {
                     if(a.numeric < b.numeric) {
                         boolean = true;
                     }
+                    Value& v = stack[stack_ptr++];
+                    v.type = TYPE_BOOLEAN;
+                    v.boolean = boolean;
+                }
+                break;
+            case TOK_RANGE:
+                {
+                    auto& upper = stack[--stack_ptr];
+                    auto& lower = stack[--stack_ptr]; 
+                    auto& a = stack[--stack_ptr];
+                    bool boolean = false;
+
+                    if(a.type == TYPE_NUMERIC) {
+                        if((a.numeric > lower.numeric) && (a.numeric < upper.numeric)) {
+                            boolean = true;
+                        }
+                    }
+
                     Value& v = stack[stack_ptr++];
                     v.type = TYPE_BOOLEAN;
                     v.boolean = boolean;
@@ -371,7 +391,6 @@ namespace Spino {
         b->Accept(this);
         return stack[0].boolean;
     }
-
 }
 
 

@@ -27,24 +27,46 @@ using namespace std;
 
 
 namespace Spino {
-    BaseCursor::BaseCursor() {
+    Cursor::Cursor(
+            shared_ptr<QueryNode> qn, 
+            shared_ptr<IndexIteratorRange> iter_range, 
+            ValueType& collection_dom) : 
+        collection_dom(collection_dom),
+        iter_range(iter_range)
+    {
         max_results = UINT32_MAX;
         projection_set = false;
+        head = qn;
+        iter = iter_range->first;
+
+        exec.set_json(&collection_dom[iter->second]);
+        while(exec.resolve(head) == false) {
+            iter++;
+            if(iter == iter_range->second) {
+                break;
+            }
+            else {
+                exec.set_json(&collection_dom[iter->second]);
+            }
+        }
     }
 
-    BaseCursor* BaseCursor::setProjection(const char* p) {
+    Cursor::~Cursor() { }
+
+
+    Cursor* Cursor::setProjection(const char* p) {
         projection.Parse(p);
         projection_set = true;
         return this;
     }
 
-    BaseCursor* BaseCursor::setLimit(uint32_t limit) {
+    Cursor* Cursor::setLimit(size_t limit) {
         max_results = limit;
         return this;
     }
 
 
-    void BaseCursor::apply_projection(
+    void Cursor::apply_projection(
             const ValueType& proj, 
             const ValueType& source, 
             rapidjson::Writer<rapidjson::StringBuffer>& writer) 
@@ -76,7 +98,7 @@ namespace Spino {
     }
 
 
-    std::string BaseCursor::runScript(std::string script) {
+    std::string Cursor::runScript(std::string script) {
         HSQUIRRELVM v;
         v = sq_open(1024); 
         sq_setprintfunc(v, squirrelPrintFunc, squirrelErrorFunc);
@@ -96,7 +118,7 @@ namespace Spino {
             sq_pushstring(v,"result",-1);
             sq_get(v,-2); //get the function from the root table
             sq_pushroottable(v); //'this' (function environment object)
-            squirrelPushJsonObj(v, nextAsJsonObj());
+            squirrelPushJsonObj(v, *nextAsJsonObj());
             sq_call(v,2,SQFalse,SQFalse);
             sq_pop(v,2); //pops the roottable and the function
         }
@@ -122,99 +144,10 @@ namespace Spino {
         return ret;
     }
 
-    LinearCursor::LinearCursor(ValueType& list, const char* query) : list(list) { 
-        Spino::QueryParser parser(query);
-        try {
-            head = parser.parse_expression();
-        }
-        catch(parse_error& e) {
-            cout << "SpinoDB:: parse error: " << e.what() << endl;
-            counter = max_results;
-        }
-        iter = list.Begin();
-        findNext();
-    }
 
-    LinearCursor::~LinearCursor() { }
-
-    bool LinearCursor::hasNext() {
-        return has_next;
-    }
-
-    std::string LinearCursor::next() {
-        if(has_next) {
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-            if(projection_set) {
-                apply_projection(projection, *iter, writer);
-            }
-            else {
-                iter->Accept(writer);
-            }
-            std::string ret = buffer.GetString();
-
-            iter++;
-            findNext();
-            return ret;
-        }
-        return "";
-
-    }
-
-    uint32_t LinearCursor::count() {
-        uint32_t r = 0;
-        auto itr = list.Begin();
-        while(itr != list.End()) {
-            exec.set_json(&(*itr));
-            if(exec.resolve(head)) {
-                r++;
-            }
-            itr++;
-        }
-
-        return r;
-    }
-
-    void LinearCursor::findNext() {
-        has_next = false;
-        if(counter < max_results) {
-            while(iter != list.End()) {
-                exec.set_json(&(*iter));	
-                if(exec.resolve(head)) {
-                    has_next = true;
-                    counter++;
-                    return;
-                }
-                else {
-                    iter++;
-                }
-            }               
-        }
-    }
-
-
-    const ValueType& LinearCursor::nextAsJsonObj() { 
-        if(has_next) {
-            const ValueType& ret = *iter;
-            iter++;
-            findNext();
-            return ret;
-        }
-        return ValueType();
-    }
-
-
-    EqIndexCursor::EqIndexCursor(IndexIteratorRange iter_range, ValueType& collection_dom) : 
-        collection_dom(collection_dom),
-        iter_range(iter_range)
-    {
-        iter = iter_range.first;
-    }
-
-    EqIndexCursor::~EqIndexCursor() { }
-
-    bool EqIndexCursor::hasNext() {
-        if((counter < max_results) && (iter != iter_range.second)) {
+    
+    bool Cursor::hasNext() {
+        if((counter < max_results) && (iter != iter_range->second)) {
             return true;
         }
         else {
@@ -222,9 +155,9 @@ namespace Spino {
         }
     }
 
-    std::string EqIndexCursor::next() {
+    std::string Cursor::next() {
         if(counter < max_results) {
-            if(iter != iter_range.second) {
+            if(iter != iter_range->second) {
                 rapidjson::StringBuffer buffer;
                 rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
                 if(projection_set) {
@@ -234,7 +167,14 @@ namespace Spino {
                 else {
                     collection_dom[iter->second].Accept(writer);
                 }
-                iter++;
+
+                while(++iter != iter_range->second) {
+                    exec.set_json(&collection_dom[iter->second]);
+                    if(exec.resolve(head)) {
+                        break;
+                    }
+                }
+
                 counter++;
                 return buffer.GetString();
             } 
@@ -242,26 +182,35 @@ namespace Spino {
         return "";
     }
 
-    uint32_t EqIndexCursor::count() {
-        uint32_t r = 0;
-        auto itr = iter_range.first;
-        while(itr != iter_range.second) {
+    size_t Cursor::count() {
+        size_t r = 0;
+        auto itr = iter_range->first;
+        while(itr != iter_range->second) {
+            exec.set_json(&collection_dom[itr->second]);
+            if(exec.resolve(head)) {
+                r++;
+            }
             itr++;
-            r++;
         }	
         return r;
     }
 
-    const ValueType& EqIndexCursor::nextAsJsonObj() {
+    const ValueType* Cursor::nextAsJsonObj() {
         if(counter < max_results) {
-            if(iter != iter_range.second) {
+            if(iter != iter_range->second) {
                 const ValueType& ret = collection_dom[iter->second];
-                iter++;
+                while(++iter != iter_range->second) {
+                    exec.set_json(&collection_dom[iter->second]);
+                    if(exec.resolve(head)) {
+                        break;
+                    }
+                }
                 counter++;
-                return ret;
+
+                return &ret;
             } 
         }
-        return ValueType();
+        return nullptr;
     }
 
 

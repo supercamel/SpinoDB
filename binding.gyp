@@ -6,6 +6,7 @@
                 "cppsrc/main.cpp",
             "cppsrc/QueryExecutor.cpp",
             "cppsrc/QueryParser.cpp",
+            "cppsrc/IndexResolver.cpp",
             "cppsrc/SpinoDB.cpp",
             "cppsrc/Cursor.cpp",
             "cppsrc/Collection.cpp",

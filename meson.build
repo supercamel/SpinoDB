@@ -24,6 +24,7 @@ spino_sources= [
   'spino_gobject/src/spino.cpp',
   'cppsrc/QueryExecutor.cpp',
   'cppsrc/QueryParser.cpp',
+  'cppsrc/IndexResolver.cpp',
   'cppsrc/SpinoDB.cpp',
   'cppsrc/Cursor.cpp',
   'cppsrc/Collection.cpp',

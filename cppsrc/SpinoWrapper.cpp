@@ -618,7 +618,7 @@ void SpinoWrapper::setBoolValue(const FunctionCallbackInfo<Value>& args) {
 
     SpinoWrapper* obj = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-    obj->spino->setBoolValue(*key, args[1].As<Boolean>()->Value());
+    obj->spino->setBoolValue(*key, args[1].As<v8::Boolean>()->Value());
 }
 
 void SpinoWrapper::setIntValue(const FunctionCallbackInfo<Value>& args) {

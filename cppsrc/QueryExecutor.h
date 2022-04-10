@@ -35,6 +35,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/istreamwrapper.h"
 #include "rapidjson/ostreamwrapper.h"
+#include "QueryWalker.h"
 
 
 
@@ -122,7 +123,7 @@ namespace Spino {
 	};
 
 
-	class QueryExecutor {
+	class QueryExecutor : public QueryWalker {
 		public:
 			QueryExecutor() {
 				doc = nullptr;

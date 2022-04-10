@@ -18,7 +18,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 //  DEALINGS IN THE SOFTWARE.
 
-
+#include "IndexResolver.h"
 #include "Collection.h"
 #include "SpinoDB.h"
 
@@ -36,10 +36,16 @@ namespace Spino {
         }
         id_counter = 0;	
         last_append_timestamp = std::time(0); 
+
+        createIndex("_id");
     }
 
     Collection::~Collection() {
-        for(auto i : indices) {
+        for(auto& i : indices) {
+            delete i;
+        }
+
+        for(auto& i : compound_indices) {
             delete i;
         }
     }
@@ -68,6 +74,29 @@ namespace Spino {
                 }
             }
         }
+
+        for(auto& cidx : compound_indices) {
+            std::vector<Value> values;
+            for(auto& field : cidx->fields) {
+                auto v = field.Get(newdoc);
+                if(v) {
+                    if(v->IsString()) {
+                        Value val;
+                        val.type = TYPE_STRING;
+                        val.str = v->GetString();
+                        values.push_back(val);
+                    } else if(v->IsNumber()) {
+                        Value val;
+                        val.type = TYPE_NUMERIC;
+                        val.numeric = v->GetDouble();
+                        values.push_back(val);
+                    }
+                }
+            }
+            if(values.size() == cidx->fields.size()) {
+                cidx->index.insert({values, arr.Size()-1});
+            }
+        }
     }
 
 
@@ -88,8 +117,8 @@ namespace Spino {
         // in this case its correct to use the existing _id
         // otherwise just trust the user knows what they are doing
         if(d.HasMember("_id") == false) {
-            uint32_t timestamp = std::time(0);
-            uint32_t tmp_timestamp = timestamp;
+            size_t timestamp = std::time(0);
+            size_t tmp_timestamp = timestamp;
 
             char idstr[16];
             idstr[15] = 0;
@@ -99,7 +128,7 @@ namespace Spino {
                 tmp_timestamp /= 10;	
             }	
 
-            uint32_t tmp_idcounter = ++id_counter;
+            size_t tmp_idcounter = ++id_counter;
             p = 15;
             while(p >= 10) {
                 idstr[p--] = (tmp_idcounter%10) + '0';
@@ -158,7 +187,7 @@ namespace Spino {
 
     void Collection::updateById(const char* id_cstr, const char* update) {
         auto& arr = doc[name.c_str()];
-        uint32_t domIdx;
+        size_t domIdx;
         if(domIndexFromId(id_cstr, domIdx)) {
             DocType j;
             j.Parse(update);
@@ -253,7 +282,7 @@ namespace Spino {
 
     void Collection::createIndex(const char* s) {
         auto& arr = doc[name.c_str()];
-        auto idx = new Collection::Index();
+        auto idx = new Index();
         idx->field_name = s;
         stringstream ss(s);
         string intermediate;
@@ -265,7 +294,7 @@ namespace Spino {
 
         auto n = arr.Size();
 
-        for(uint32_t i = 0; i < n; i++) {
+        for(size_t i = 0; i < n; i++) {
             ValueType& doc = arr[i].GetObject();
             auto v = idx->field.Get(doc);
 
@@ -291,6 +320,52 @@ namespace Spino {
         indices.push_back(idx);
     }
 
+    void Collection::createCompoundIndex(const char** field_names, size_t len) {
+        auto& arr = doc[name.c_str()];
+        auto cidx = new CompoundIndex();
+
+        for(size_t i = 0; i < len; i++) {
+            cidx->field_names.push_back(field_names[i]);
+
+            stringstream ss(field_names[i]);
+            string intermediate;
+            string ptr;
+            while(getline(ss, intermediate, '.')) {
+                ptr += "/" + intermediate;
+            }
+            cidx->fields.push_back(PointerType(ptr.c_str()));
+        }
+
+        auto n = arr.Size();
+
+        for(size_t i = 0; i < n; i++) {
+            ValueType& doc = arr[i].GetObject();
+            std::vector<Spino::Value> values;
+            for(auto& f : cidx->fields) {
+                auto v = f.Get(doc);
+                if(v != nullptr) {
+                    if(v->IsString()) {
+                        Value val;
+                        val.type = TYPE_STRING;
+                        val.str = v->GetString();
+                        values.push_back(val);
+                    }
+                    if(v->IsNumber()) {
+                        Value val;
+                        val.type = TYPE_NUMERIC;
+                        val.numeric = v->GetDouble();
+                        values.push_back(val);
+                    }
+                }
+            }
+
+            if(values.size() == len) {
+                cidx->index.insert({values, i});
+                compound_indices.push_back(cidx);
+            }
+        }
+    }
+
     void Collection::dropIndex(const char* s) {
         for(auto itr = indices.begin(); itr != indices.end(); ) {
             auto index = *itr;
@@ -307,7 +382,7 @@ namespace Spino {
      * The _id field is gauranteed to be ordered so we can do a binary search
      */
     std::string Collection::findOneById(const char* id_cstr) const {
-        uint32_t m;
+        size_t m;
         if(domIndexFromId(id_cstr, m)) {
             auto& list = doc[name.c_str()];
             rapidjson::StringBuffer sb;
@@ -318,14 +393,14 @@ namespace Spino {
         return "";
     }
 
-    bool Collection::domIndexFromId(const char* id_cstr, uint32_t& domIdx) const {
+    bool Collection::domIndexFromId(const char* id_cstr, size_t& domIdx) const {
         auto& arr = doc[name.c_str()];
         uint64_t tsc = fast_atoi_len(id_cstr, 10);
         uint64_t countc = fast_atoi_len(&id_cstr[10], 6);
 
         auto n = arr.Size();
         auto R = n-1;
-        uint32_t L = 0;
+        size_t L = 0;
         while(L <= R) {
             auto m = (L+R)/2;
 
@@ -372,36 +447,30 @@ namespace Spino {
 
         //check if it's an index search
         QueryParser parser(s);
-        std::shared_ptr<BasicFieldComparison> bfc = nullptr;
         try {
-            bfc = parser.parse_basic_comparison();
+            Cursor* ic;
+            auto expr = parser.parse_expression();
+            auto range = make_shared<IndexIteratorRange>();
+            range->first = indices[0]->index.begin();
+            range->second = indices[0]->index.end();
+            if(expr != nullptr) {
+                IndexResolver ir(indices);
+                ir.resolve(expr, range);
+                ic = new Cursor(expr, range, doc[name.c_str()]);
+            }
+            else {
+                ic = new Cursor(nullptr, range, doc[name.c_str()]);
+            }
+
+            if(ic->hasNext()) {
+                v = ic->next();
+            }
+            delete ic;
+
         }
         catch(parse_error& err) {
             cout << "SpinoDB:: parse error: " << err.what() << endl;
             return "";
-        }
-
-        if(bfc != nullptr) {
-            for(auto idx : indices) {
-                if(idx->field_name == bfc->field_name) {
-                    auto iter = idx->index.find(bfc->v);
-                    if(iter != idx->index.end()) {
-                        auto n = iter->second;
-
-                        rapidjson::StringBuffer sb;
-                        rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-                        doc[name.c_str()][n].Accept(writer);
-                        v = sb.GetString();
-                    }
-                    break;
-                }
-            }
-        }
-
-        //if it's not an index search, do a linear search using a cursor
-        if(v == "") {
-            LinearCursor cursor(doc[name.c_str()], s);
-            v = cursor.next();
         }
 
         //if there is a result, add it to the hashmap for future reference
@@ -416,7 +485,7 @@ namespace Spino {
      * fnv-1a is a very fast hashing algorithm with low collision rates
      * at least, that's what the internet told me
      */
-    uint32_t Collection::fnv1a_hash(std::string& s) {
+    size_t Collection::fnv1a_hash(std::string& s) {
         auto length = s.length()+1;
         unsigned int hash = OFFSET_BASIS;
         for (size_t i = 0; i < length; ++i)
@@ -427,32 +496,29 @@ namespace Spino {
         return hash;
     }
 
-    BaseCursor* Collection::find(const char* s) const {
-        //check if it's an index search
+    Cursor* Collection::find(const char* s) const {
         QueryParser parser(s);
-        std::shared_ptr<BasicFieldComparison> bfc = nullptr;
         try {
-            bfc = parser.parse_basic_comparison();
+            auto expr = parser.parse_expression();
+            auto range = make_shared<IndexIteratorRange>();
+            range->first = indices[0]->index.begin();
+            range->second = indices[0]->index.end();
+            if(expr != nullptr) {
+                IndexResolver ir(indices);
+                ir.resolve(expr, range);
+                return new Cursor(expr, range, doc[name.c_str()]);
+            }
+            else {
+                return new Cursor(nullptr, range, doc[name.c_str()]);
+            }
         }
         catch(parse_error& err) {
             cout << "SpinoDB:: parse error: " << err.what() << endl;
-            return new DudCursor();
+            return nullptr;
         }
-
-
-        if(bfc != nullptr) {
-            for(auto& idx : indices) {
-                if(idx->field_name == bfc->field_name) {
-                    auto range = idx->index.equal_range(bfc->v);
-                    return new EqIndexCursor(range, doc[name.c_str()]);
-                }
-            }
-        }
-
-        return new LinearCursor(doc[name.c_str()], s);
     }
 
-    void Collection::removeDomIdxFromIndex(uint32_t domIdx) {
+    void Collection::removeDomIdxFromIndex(size_t domIdx) {
         for(auto idx : indices) {
             std::vector<std::pair<Spino::Value, int>> idx_copies;
             auto iitr = idx->index.begin();
@@ -483,7 +549,7 @@ namespace Spino {
         for(auto& idx : indices) {
             idx->index.clear();
 
-            for(uint32_t i = 0; i < n; i++) {
+            for(size_t i = 0; i < n; i++) {
                 ValueType& doc = arr[i].GetObject();
                 auto v = idx->field.Get(doc);
 
@@ -504,11 +570,41 @@ namespace Spino {
                 }
             }
         }
+
+        for(auto& cidx : compound_indices) {
+            cidx->index.clear();
+            for(size_t i = 0; i < n; i++) {
+                ValueType& doc = arr[i].GetObject();
+                std::vector<Spino::Value> values;
+                for(auto& f : cidx->fields) {
+                    auto v = f.Get(doc);
+                    if(v != nullptr) {
+                        if(v->IsString()) {
+                            Value val;
+                            val.type = TYPE_STRING;
+                            val.str = v->GetString();
+                            values.push_back(val);
+                        }
+                        if(v->IsNumber()) {
+                            Value val;
+                            val.type = TYPE_NUMERIC;
+                            val.numeric = v->GetDouble();
+                            values.push_back(val);
+                        }
+                    }
+                }
+
+                if(values.size() == cidx->fields.size()) {
+                    cidx->index.insert({values, i});
+                    compound_indices.push_back(cidx);
+                }
+            }
+        }
     }
 
     void Collection::dropById(const char* s) {
         auto& arr = doc[name.c_str()];
-        uint32_t domIdx;
+        size_t domIdx;
         if(domIndexFromId(s, domIdx)) {
             removeDomIdxFromIndex(domIdx);
 
@@ -534,7 +630,7 @@ namespace Spino {
         drop(j, 1);
     }
 
-    uint32_t Collection::drop(const char* j, uint32_t limit) {
+    size_t Collection::drop(const char* j, size_t limit) {
         // TODO
         // do an index search first
         //
@@ -549,7 +645,7 @@ namespace Spino {
             return 0;
         }
 
-        uint32_t count = 0;
+        size_t count = 0;
         for (ValueType::ConstValueIterator itr = arr.Begin();
                 itr != arr.End(); ) {
             Spino::QueryExecutor exec(&(*itr));
@@ -580,18 +676,18 @@ namespace Spino {
         return count;
     }
 
-    uint32_t Collection::dropOlderThan(uint64_t timestamp) {
+    size_t Collection::dropOlderThan(uint64_t timestamp) {
         auto& arr = doc[name.c_str()];
         timestamp /= 1000; // convert to seconds since epoch
 
-        uint32_t n = arr.Size();
+        size_t n = arr.Size();
         if(n == 0) {
             return 0;
         }
 
-        uint32_t R = n-1;
-        uint32_t L = 0;
-        uint32_t m;
+        size_t R = n-1;
+        size_t L = 0;
+        size_t m;
         // this search fill find the nearest document to the specified timestamp
         // and anything up to that can be deleted
         while(L <= R) {
@@ -617,7 +713,7 @@ namespace Spino {
 
         if(L > 0) {
             ValueType::ConstValueIterator itr = arr.Begin();
-            for(uint32_t i = 0; i < L; i++) {
+            for(size_t i = 0; i < L; i++) {
                 itr++;
             }
 
