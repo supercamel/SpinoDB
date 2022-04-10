@@ -80,6 +80,55 @@ namespace Spino {
                 }
             }
         }
+
+        if(f->operation->op == TOK_RANGE) {
+            for(auto& idx : indices) {
+                if(f->path == idx->field_name) {
+                    List* l = (List*)&(*f->operation->cmp);  
+                    l->list[0]->Accept(this);
+                    Value lower = top;
+                    l->list[1]->Accept(this);
+                    Value upper = top;
+
+                    range->first = idx->index.lower_bound(lower);
+                    range->second = idx->index.upper_bound(upper);
+
+                    exit = true;
+                    drop_node = true;
+                    return;
+                }
+            }
+        }
+
+        if(f->operation->op == TOK_GREATER_THAN) {
+            for(auto& idx : indices) {
+                if(f->path == idx->field_name) {
+                    f->operation->Accept(this);
+
+                    range->first = idx->index.upper_bound(top);
+                    range->second = idx->index.end();
+
+                    exit = true;
+                    drop_node = true;
+                    return;
+                }
+            }
+        }
+
+        if(f->operation->op == TOK_LESS_THAN) {
+            for(auto& idx : indices) {
+                if(f->path == idx->field_name) {
+                    f->operation->Accept(this);
+
+                    range->first = idx->index.begin();
+                    range->second = idx->index.lower_bound(top);
+
+                    exit = true;
+                    drop_node = true;
+                    return;
+                }
+            }
+        }
     }
 
     void IndexResolver::Visit(LogicalExpression* l) {
