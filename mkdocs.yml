@@ -2,7 +2,7 @@ site_name: SpinoDB
 nav:
     - Home: index.md
     - 'API Reference': 
-        - Database: database.md
-        - Collection: collection.md
-        - Cursor: cursor.md
+        - Database: api/database.md
+        - Collection: api/collection.md
+        - Cursor: api/cursor.md
 theme: readthedocs
