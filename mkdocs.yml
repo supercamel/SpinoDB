@@ -1,6 +1,7 @@
 site_name: SpinoDB
 nav:
     - Home: index.md
+    - 'Query Language': query_language.md
     - 'API Reference': 
         - Database: api/database.md
         - Collection: api/collection.md
