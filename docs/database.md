@@ -204,7 +204,7 @@ setIntValue sets an integer value in the key store. If the key already exists it
 
 No return value
 
-## setUintValue
+### setUintValue
 
 setUintValue sets a unsigned integer value in the key store. If they key already exists it will be overwritten.
 
@@ -217,7 +217,7 @@ setUintValue sets a unsigned integer value in the key store. If they key already
 
 No return value
 
-## setDoubleValue
+### setDoubleValue
 
 setDoubleValue sets a double precision floating value in the key store. Overwrites any existing entry.
 
@@ -231,7 +231,7 @@ setDoubleValue sets a double precision floating value in the key store. Overwrit
 No return value
 
 
-## setStringValue
+### setStringValue
 
 setStringValue sets a string in the key store. Overwrites existing entry.
 
@@ -244,7 +244,7 @@ setStringValue sets a string in the key store. Overwrites existing entry.
 
 No return value
 
-## setBoolValue
+### setBoolValue
 
 setBoolValue sets a boolean value in the key store.
 
@@ -257,7 +257,7 @@ setBoolValue sets a boolean value in the key store.
 
 No return value
 
-## getIntValue
+### getIntValue
 
 getIntValue gets an integer value from the key store.
 
@@ -269,7 +269,7 @@ getIntValue gets an integer value from the key store.
 
 The value as an integer, or 0 if the key does not exist, or the value is not an integer type.
 
-## getUintValue
+### getUintValue
 
 getUintValue gets an unsigned integer from the key store.
 
@@ -282,7 +282,7 @@ getUintValue gets an unsigned integer from the key store.
 The value as an unsigned integer, or 0 if the key does not exist or the value is of the wrong type.
 
 
-## getDoubleValue
+### getDoubleValue
 
 getDoubleValue gets a double value from the key store.
 
@@ -294,7 +294,7 @@ getDoubleValue gets a double value from the key store.
 
 The value as a double, or 0 if the key does not exist or the value is of the wrong type.
 
-## getStringValue
+### getStringValue
 
 getStringValue gets a string from the key store.
 
@@ -306,7 +306,7 @@ getStringValue gets a string from the key store.
 
 The value as a string, or an empty string if the key does not exist or is of the wrong type.
 
-## getBoolValue
+### getBoolValue
 
 getBoolValue gets a boolean from the key store
 
