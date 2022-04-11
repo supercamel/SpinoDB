@@ -474,8 +474,8 @@ The db.load() function does not have a corresponding command because loading sho
 ### Performance Tuning
 
 When SpinoDB executes a search, it goes through 3 stages
-1. it will look up a cache of previously conducted queries and return a result from that. the cache is purged every time the collection is modified (appended, updated or a document dropped).
-2. if the query contains an indexed field, spino will attempt will attempt a binary search on the index. this operation is very fast, typically under 50us for a findOne()
+1. for findOne queries only, it will look up a cache of previously conducted queries and return a result from that. the cache is purged every time the collection is modified (appended, updated or a document dropped).
+2. if the query contains an indexed field, spino will try to use the index to set upper and lower bounds on the cursor. this reduces the number of documents to be searched, sometimes down to a single document or none at all, and in general is a massive performance booster. 
 3. finally, spino will execute the query on every document. this is done linearly from the first document to the last. execution time depends on the number of documents in the collection and the complexity of the query. 
 
 * use the id field with the ById functions whenever possible. performing operations by id is by far the fastest.
