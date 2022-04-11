@@ -1,3 +1,4 @@
+
 SpinoDB has bindings for NodeJS and C/GObjects. GObject introspection automatically makes available bindings for a variety of languages such as Vala and Python. 
 
 The only differences between the NodeJS and GObject bindings are
@@ -7,7 +8,7 @@ The only differences between the NodeJS and GObject bindings are
 
 
 
-# Construction
+## Construction
 
 NodeJS 
 
@@ -26,8 +27,8 @@ int main() {
 }
 ```
 
-# Persistence
-## save
+## Persistence
+### save
 
 Dumps the database to a JSON file.
 
@@ -53,7 +54,7 @@ C
 spino_database_save(db, "data.db");
 ```
 
-## load
+### load
 
 Loads the database from a JSON file. Returns true on success or false on failure.
 
@@ -81,7 +82,7 @@ if(spino_database_load(db, "data.db") == FALSE) {
 }
 ```
 
-## enableJournal
+### enableJournal
 
 Journalling makes Spino record every change to the data to a journal file. It's fast to append data to a file, so this doesn't create an appreciable dent in performance but it almost gaurantees that data won't be lost after a crash. 
 
@@ -107,7 +108,7 @@ C
 spino_database_enable_journal(db, "journal");
 ```
 
-## consolidate
+### consolidate
 
 The consolidate function loads the journal file and replays it against the database, then saves the data to the specified file name. Typically, this would be done immediately after the call the 'enableJournal'.
 
@@ -135,9 +136,9 @@ C
 spino_database_consolidate(db, "data.db");
 ```
 
-# Collections
+## Collections
 
-# Key Store
+## Key Store
 
 
 
