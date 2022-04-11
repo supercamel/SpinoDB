@@ -1,7 +1,6 @@
 # SpinoDB
 
-SpinoDB is an in-memory NoSQL database that is small and self-contained and with emphasis on **speed**. It is written in C++ and has bindings for both NodeJS and C using GObjects. Bindings for Vala, Python, Java, GJS (Gnome Javascript), Lua and so on are all automatically available through GObject Introspection. 
-
+SpinoDB is an in-memory NoSQL data library that is small, self-contained and with emphasis on **speed**. It is written in C++ and has bindings for both NodeJS and C using GObjects. Bindings for Vala, Python, Java, GJS (Gnome Javascript), Lua and so on are all automatically available through GObject Introspection. 
 
 ### When To Use It
 
