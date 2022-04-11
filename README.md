@@ -475,11 +475,11 @@ The db.load() function does not have a corresponding command because loading sho
 
 When SpinoDB executes a search, it goes through 3 stages
 1. it will look up a cache of previously conducted queries and return a result from that. the cache is purged every time the collection is modified (appended, updated or a document dropped).
-2. if the query is a basic comparison to an indexed field, it will conduct a binary search on the index. this operation is very fast, typically under 50us for a findOne()
-3. finally, it will execute the query on every document. this is done linearly from the first document to the last. typically, might take a millisecond, but results vary. absolute worst case scenarious might take hundreds of milliseconds. 
+2. if the query contains an indexed field, spino will attempt will attempt a binary search on the index. this operation is very fast, typically under 50us for a findOne()
+3. finally, spino will execute the query on every document. this is done linearly from the first document to the last. execution time depends on the number of documents in the collection and the complexity of the query. 
 
 * use the id field with the ById functions whenever possible. performing operations by id is by far the fastest.
-* make sure you create indexes for fields you will be using to search for documents
+* always create indexes for fields that will be used to search for documents
 * use findOne over find if you only expect to get 1 result. 
 
 Prefer drop() over a series of calls to dropOne(). drop() can be used delete many documents but will only reconstruct the index once. 
