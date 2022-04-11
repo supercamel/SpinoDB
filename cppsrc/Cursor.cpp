@@ -39,14 +39,16 @@ namespace Spino {
         head = qn;
         iter = iter_range->first;
 
-        exec.set_json(&collection_dom[iter->second]);
-        while(exec.resolve(head) == false) {
-            iter++;
-            if(iter == iter_range->second) {
-                break;
-            }
-            else {
-                exec.set_json(&collection_dom[iter->second]);
+        if(iter != iter_range->second) {
+            exec.set_json(&collection_dom[iter->second]);
+            while(exec.resolve(head) == false) {
+                iter++;
+                if(iter == iter_range->second) {
+                    break;
+                }
+                else {
+                    exec.set_json(&collection_dom[iter->second]);
+                }
             }
         }
     }
@@ -145,7 +147,7 @@ namespace Spino {
     }
 
 
-    
+
     bool Cursor::hasNext() {
         if((counter < max_results) && (iter != iter_range->second)) {
             return true;
