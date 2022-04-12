@@ -6,7 +6,7 @@
 	"gypfile": true,
 	"dependencies": {
 		"mongodb": "^4.4.1",
-		"node-gyp": "^8.2.0"
+		"node-gyp": "^8.4.1"
 	},
 	"keywords": [
 		"NoSQL",

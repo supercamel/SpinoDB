@@ -4,6 +4,7 @@
 #include <glib-object.h>
 #include <stdint.h>
 #include "cursor.h"
+#include "doc_object.h"
 
 G_BEGIN_DECLS
 
@@ -15,6 +16,7 @@ gchar* spino_collection_get_name(SpinoCollection* self);
 void spino_collection_create_index(SpinoCollection* self, const gchar* name);
 void spino_collection_drop_index(SpinoCollection* self, const gchar* name);
 void spino_collection_append(SpinoCollection* self, const gchar* doc);
+void spino_collection_append_object(SpinoCollection* self, SpinoDocObject* doc);
 void spino_collection_update_by_id(SpinoCollection* self, const gchar* id, const gchar* doc);
 void spino_collection_update(SpinoCollection* self, const gchar* query, const gchar* doc);
 gchar* spino_collection_find_one_by_id(SpinoCollection* self, const gchar* id);

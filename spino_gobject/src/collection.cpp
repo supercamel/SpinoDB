@@ -1,5 +1,6 @@
 #include "collection_private.h"
 #include "cursor_private.h"
+#include "doc_object_private.h"
 
 G_BEGIN_DECLS
 
@@ -55,6 +56,11 @@ void spino_collection_drop_index(SpinoCollection* self, const gchar* name)
 void spino_collection_append(SpinoCollection* self, const gchar* doc)
 {
     self->priv->append(doc);
+}
+
+void spino_collection_append_object(SpinoCollection* self, SpinoDocObject* doc)
+{
+    self->priv->append(doc->doc->GetObject());
 }
 
 void spino_collection_update_by_id(
