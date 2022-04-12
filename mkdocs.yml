@@ -8,4 +8,6 @@ nav:
         - Database: api/database.md
         - Collection: api/collection.md
         - Cursor: api/cursor.md
+        - DocView: api/document_viewer.md
+        - Values : api/value.md
 theme: readthedocs
