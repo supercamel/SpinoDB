@@ -44,10 +44,6 @@ namespace Spino {
         for(auto& i : indices) {
             delete i;
         }
-
-        for(auto& i : compound_indices) {
-            delete i;
-        }
     }
 
     std::string Collection::getName() const {
@@ -72,29 +68,6 @@ namespace Spino {
                     val.numeric = v->GetDouble();
                     idx->index.insert({val, arr.Size()-1});
                 }
-            }
-        }
-
-        for(auto& cidx : compound_indices) {
-            std::vector<Value> values;
-            for(auto& field : cidx->fields) {
-                auto v = field.Get(newdoc);
-                if(v) {
-                    if(v->IsString()) {
-                        Value val;
-                        val.type = TYPE_STRING;
-                        val.str = v->GetString();
-                        values.push_back(val);
-                    } else if(v->IsNumber()) {
-                        Value val;
-                        val.type = TYPE_NUMERIC;
-                        val.numeric = v->GetDouble();
-                        values.push_back(val);
-                    }
-                }
-            }
-            if(values.size() == cidx->fields.size()) {
-                cidx->index.insert({values, arr.Size()-1});
             }
         }
     }
@@ -320,52 +293,6 @@ namespace Spino {
         indices.push_back(idx);
     }
 
-    void Collection::createCompoundIndex(const char** field_names, size_t len) {
-        auto& arr = doc[name.c_str()];
-        auto cidx = new CompoundIndex();
-
-        for(size_t i = 0; i < len; i++) {
-            cidx->field_names.push_back(field_names[i]);
-
-            stringstream ss(field_names[i]);
-            string intermediate;
-            string ptr;
-            while(getline(ss, intermediate, '.')) {
-                ptr += "/" + intermediate;
-            }
-            cidx->fields.push_back(PointerType(ptr.c_str()));
-        }
-
-        auto n = arr.Size();
-
-        for(size_t i = 0; i < n; i++) {
-            ValueType& doc = arr[i].GetObject();
-            std::vector<Spino::Value> values;
-            for(auto& f : cidx->fields) {
-                auto v = f.Get(doc);
-                if(v != nullptr) {
-                    if(v->IsString()) {
-                        Value val;
-                        val.type = TYPE_STRING;
-                        val.str = v->GetString();
-                        values.push_back(val);
-                    }
-                    if(v->IsNumber()) {
-                        Value val;
-                        val.type = TYPE_NUMERIC;
-                        val.numeric = v->GetDouble();
-                        values.push_back(val);
-                    }
-                }
-            }
-
-            if(values.size() == len) {
-                cidx->index.insert({values, i});
-                compound_indices.push_back(cidx);
-            }
-        }
-    }
-
     void Collection::dropIndex(const char* s) {
         for(auto itr = indices.begin(); itr != indices.end(); ) {
             auto index = *itr;
@@ -481,6 +408,43 @@ namespace Spino {
         return v;
     }
 
+
+    const ValueType* Collection::findOneValue(const char* s)
+    {
+        QueryParser parser(s);
+        try {
+            Cursor* ic;
+            auto expr = parser.parse_expression();
+            auto range = make_shared<IndexIteratorRange>();
+            range->first = indices[0]->index.begin();
+            range->second = indices[0]->index.end();
+            if(expr != nullptr) {
+                IndexResolver ir(indices);
+                ir.resolve(expr, range);
+                ic = new Cursor(expr, range, doc[name.c_str()]);
+            }
+            else {
+                ic = new Cursor(nullptr, range, doc[name.c_str()]);
+            }
+
+            if(ic->hasNext()) {
+                const ValueType* ret  = ic->nextAsJsonObj();
+                delete ic;
+                return ret;
+            }
+            else {
+                delete ic;
+                return nullptr;
+            }
+        }
+        catch(parse_error& err) {
+            cout << "SpinoDB:: parse error: " << err.what() << endl;
+            return nullptr;
+        }
+
+        return nullptr;
+    }
+
     /**
      * fnv-1a is a very fast hashing algorithm with low collision rates
      * at least, that's what the internet told me
@@ -567,36 +531,6 @@ namespace Spino {
                         val.numeric = v->GetDouble();
                         idx->index.insert({val, i});
                     } 
-                }
-            }
-        }
-
-        for(auto& cidx : compound_indices) {
-            cidx->index.clear();
-            for(size_t i = 0; i < n; i++) {
-                ValueType& doc = arr[i].GetObject();
-                std::vector<Spino::Value> values;
-                for(auto& f : cidx->fields) {
-                    auto v = f.Get(doc);
-                    if(v != nullptr) {
-                        if(v->IsString()) {
-                            Value val;
-                            val.type = TYPE_STRING;
-                            val.str = v->GetString();
-                            values.push_back(val);
-                        }
-                        if(v->IsNumber()) {
-                            Value val;
-                            val.type = TYPE_NUMERIC;
-                            val.numeric = v->GetDouble();
-                            values.push_back(val);
-                        }
-                    }
-                }
-
-                if(values.size() == cidx->fields.size()) {
-                    cidx->index.insert({values, i});
-                    compound_indices.push_back(cidx);
                 }
             }
         }

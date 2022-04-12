@@ -22,8 +22,8 @@ spino_sources= [
   'spino_gobject/src/database.cpp',
   'spino_gobject/src/collection.cpp',
   'spino_gobject/src/spino.cpp',
-  'spino_gobject/src/doc_object.cpp',
-  'spino_gobject/src/doc_array.cpp',
+  'spino_gobject/src/value.cpp',
+  'spino_gobject/src/document_viewer.cpp',
   'cppsrc/QueryExecutor.cpp',
   'cppsrc/QueryParser.cpp',
   'cppsrc/IndexResolver.cpp',
@@ -74,7 +74,9 @@ headers = [
   'spino_gobject/inc/Spino-1.0.h',
   'spino_gobject/inc/database.h',
   'spino_gobject/inc/collection.h',
-  'spino_gobject/inc/cursor.h'
+  'spino_gobject/inc/cursor.h',
+  'spino_gobject/inc/value.h',
+  'spino_gobject/inc/document_viewer.h'
   ]
 
 install_headers(headers, subdir: 'spino')
@@ -84,13 +86,13 @@ introspection_sources= [
   'spino_gobject/src/database.cpp',
   'spino_gobject/src/collection.cpp',
   'spino_gobject/src/spino.cpp',
-  'spino_gobject/src/doc_object.cpp',
-  'spino_gobject/src/doc_array.cpp',
+  'spino_gobject/src/value.cpp',
+  'spino_gobject/src/document_viewer.cpp',
   'spino_gobject/inc/cursor.h',
   'spino_gobject/inc/database.h',
   'spino_gobject/inc/collection.h',
-  'spino_gobject/inc/doc_object.h',
-  'spino_gobject/inc/doc_array.h',
+  'spino_gobject/inc/value.h',
+  'spino_gobject/inc/document_viewer.h',
   'spino_gobject/inc/Spino-1.0.h'
   ]
 

@@ -1,23 +1,13 @@
 #include "collection_private.h"
 #include "cursor_private.h"
-#include "doc_object_private.h"
+#include "value_private.h"
+#include "document_viewer_private.h"
 
 G_BEGIN_DECLS
 
 
 G_DEFINE_TYPE(SpinoCollection, spino_collection, G_TYPE_OBJECT)
 
-
-enum
-{
-    PROP_0,
-    LAST_PROP
-};
-
-enum
-{
-    LAST_SIGNAL
-};
 
 SpinoCollection* spino_collection_new(Spino::Collection* c)
 {
@@ -58,9 +48,9 @@ void spino_collection_append(SpinoCollection* self, const gchar* doc)
     self->priv->append(doc);
 }
 
-void spino_collection_append_object(SpinoCollection* self, SpinoDocObject* doc)
+void spino_collection_append_value(SpinoCollection* self, SpinoValue* doc)
 {
-    self->priv->append(doc->doc->GetObject());
+    self->priv->append(doc->priv);
 }
 
 void spino_collection_update_by_id(
@@ -86,11 +76,24 @@ gchar* spino_collection_find_one(SpinoCollection* self, const gchar* query)
     return g_strdup(self->priv->findOne(query).c_str());
 }
 
+SpinoDocView* spino_collection_find_one_view(SpinoCollection* self, const gchar* query)
+{
+    SpinoDocView* val = (SpinoDocView*)g_object_new(SPINO_TYPE_DOCVIEW, NULL);
+     const Spino::ValueType* doc = self->priv->findOneValue(query);
+    if(doc != nullptr) {
+        val->priv = doc;
+        return val;
+    }
+    else {
+        return nullptr;
+    }
+}
+
 SpinoCursor* spino_collection_find(
         SpinoCollection* self, const gchar* query)
 {
     auto* cursor = self->priv->find(query);
-    return spino_cursor_new(cursor);
+    return spino_cursor_new(cursor, self->priv->getAllocator());
 }
 
 
@@ -123,6 +126,11 @@ uint64_t spino_collection_timestamp_by_id(SpinoCollection* self, const gchar* id
 uint32_t spino_collection_get_size(SpinoCollection* self)
 {
     return self->priv->size();
+}
+
+SpinoValue* spino_collection_create_value(SpinoCollection* self)
+{
+    return spino_value_new(self->priv->getAllocator());
 }
 
 

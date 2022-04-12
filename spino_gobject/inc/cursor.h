@@ -2,6 +2,7 @@
 #define GSPINO_CURSOR_H_INCLUDED
 
 #include <glib-object.h>
+#include "document_viewer.h"
 
 G_BEGIN_DECLS
 
@@ -10,6 +11,12 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(SpinoCursor, spino_cursor, Spino, Cursor, GObject)
 
 gchar* spino_cursor_next(SpinoCursor* self);
+/**
+ * spino_cursor_next_view:
+ * @self: the self
+ * Returns: (transfer full):
+ */
+SpinoDocView* spino_cursor_next_view(SpinoCursor* self);
 guint spino_cursor_count(SpinoCursor* self);
 gboolean spino_cursor_has_next(SpinoCursor* self);
 

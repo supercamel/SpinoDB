@@ -4,7 +4,7 @@
 #include <glib-object.h>
 #include <stdint.h>
 #include "cursor.h"
-#include "doc_object.h"
+#include "value.h"
 
 G_BEGIN_DECLS
 
@@ -16,11 +16,19 @@ gchar* spino_collection_get_name(SpinoCollection* self);
 void spino_collection_create_index(SpinoCollection* self, const gchar* name);
 void spino_collection_drop_index(SpinoCollection* self, const gchar* name);
 void spino_collection_append(SpinoCollection* self, const gchar* doc);
-void spino_collection_append_object(SpinoCollection* self, SpinoDocObject* doc);
+void spino_collection_append_value(SpinoCollection* self, SpinoValue* doc);
 void spino_collection_update_by_id(SpinoCollection* self, const gchar* id, const gchar* doc);
 void spino_collection_update(SpinoCollection* self, const gchar* query, const gchar* doc);
 gchar* spino_collection_find_one_by_id(SpinoCollection* self, const gchar* id);
 gchar* spino_collection_find_one(SpinoCollection* self, const gchar* query);
+
+/**
+ * spino_collection_find_one_view:
+ * @self: the self
+ * @query: the query string
+ * Returns: (transfer full):
+ */
+SpinoDocView* spino_collection_find_one_view(SpinoCollection* self, const gchar* query);
 
 /**
  * spino_collection_find:
@@ -37,6 +45,13 @@ void spino_collection_drop_older_than(SpinoCollection* self, uint64_t timestamp)
 uint64_t spino_collection_timestamp_by_id(SpinoCollection* self, const gchar* id);
 
 uint32_t spino_collection_get_size(SpinoCollection* self);
+
+/**
+ * spino_collection_create_value:
+ * @self: the self
+ * Returns: (transfer full):
+ */
+SpinoValue* spino_collection_create_value(SpinoCollection* self);
 
 
 G_END_DECLS

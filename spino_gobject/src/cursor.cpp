@@ -1,21 +1,10 @@
 #include "cursor_private.h"
+#include "document_viewer_private.h"
 
 G_BEGIN_DECLS
 
 
 G_DEFINE_TYPE(SpinoCursor, spino_cursor, G_TYPE_OBJECT)
-
-
-enum
-{
-    PROP_0,
-    LAST_PROP
-};
-
-enum
-{
-    LAST_SIGNAL
-};
 
 
 static void spino_cursor_class_init(SpinoCursorClass* klass) 
@@ -28,16 +17,24 @@ static void spino_cursor_init(SpinoCursor* self)
 
 }
 
-SpinoCursor* spino_cursor_new(Spino::Cursor* cursor)
+SpinoCursor* spino_cursor_new(Spino::Cursor* cursor, rapidjson::CrtAllocator* alloc)
 {
     SpinoCursor* cur = (SpinoCursor*)g_object_new(SPINO_TYPE_CURSOR, NULL);
     cur->priv = cursor;
+    cur->alloc = alloc;
     return cur;
 }
 
 gchar* spino_cursor_next(SpinoCursor* self)
 {
     return g_strdup(self->priv->next().c_str());
+}
+
+SpinoDocView* spino_cursor_next_view(SpinoCursor* self)
+{
+    SpinoDocView* val = (SpinoDocView*)g_object_new(SPINO_TYPE_DOCVIEW, NULL);
+    val->priv = self->priv->nextAsJsonObj();
+    return val;
 }
 
 guint spino_cursor_count(SpinoCursor* self)

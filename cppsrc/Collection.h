@@ -27,39 +27,12 @@
 
 namespace Spino
 {
-    struct CompoundIndexCmp {
-        bool operator()(const std::vector<Spino::Value>& lhs, 
-                const std::vector<Spino::Value>& rhs) {
-            size_t lh_len = lhs.size();
-            size_t rh_len = rhs.size();
-            if(lh_len != rh_len) {
-                return false;
-            }
-
-            for(size_t i = 0; i < lh_len; i++) {
-                if(lhs > rhs) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-    };
-
     class Index {
         public:
             std::string field_name;
             PointerType field;
             std::multimap<Spino::Value, size_t> index;
     };
-
-    class CompoundIndex {
-        public:
-            std::vector<std::string> field_names;
-            std::vector<PointerType> fields;
-            std::multimap<std::vector<Spino::Value>, size_t, CompoundIndexCmp> index;
-    };
-
 
     class Collection {
         public:
@@ -69,7 +42,6 @@ namespace Spino
             std::string getName() const;
 
             void createIndex(const char* field);
-            void createCompoundIndex(const char** field_names, size_t len);
             void dropIndex(const char* field);
 
             void append(ValueType& d);
@@ -80,6 +52,7 @@ namespace Spino
 
             std::string findOneById(const char* id) const;
             std::string findOne(const char* s);
+            const ValueType* findOneValue(const char* s);
             Cursor* find(const char* s) const;
 
             void dropById(const char* s);
@@ -88,6 +61,8 @@ namespace Spino
             size_t dropOlderThan(uint64_t timestamp); //milliseconds since 1970 epoch
 
             static uint64_t timestampById(const char* id);
+
+            rapidjson::CrtAllocator* getAllocator() { return &doc.GetAllocator(); }
 
             size_t size() {
                 auto& arr = doc[name.c_str()];
@@ -102,7 +77,6 @@ namespace Spino
             void reconstructIndices();
 
             std::vector<Index*> indices;
-            std::vector<CompoundIndex*> compound_indices;
             bool mergeObjects(ValueType& dstObject, ValueType& srcObject);
 
             size_t fnv1a_hash(std::string& s);
