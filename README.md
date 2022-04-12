@@ -41,6 +41,10 @@ As a rule of thumb, if the size of your data is greater than 50% of your availab
 
 This will build and install the libary along with pkg-config, gir, vapi and typelib files.
     
+### The Docs
+
+https://spinodb.readthedocs.io/en/latest/
+
 
 ### Design
 
