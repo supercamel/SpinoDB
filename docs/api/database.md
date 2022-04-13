@@ -6,6 +6,7 @@ The only differences between the NodeJS and GObject bindings are
 
 * NodeJS bindings use CamelCase whereas GObject bindings use snake_case. 
 * NodeJS bindings can accept Javascript objects as documents for append() and update() whereas GObject bindings strictly use strings.
+* GObject bindings have DocView and DocNode to traverse and create documents. Javascript is very efficient at dealing with JSON already and does not require those things. 
 
 
 

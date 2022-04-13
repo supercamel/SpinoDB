@@ -1,16 +1,14 @@
 # Cursor Scripts
 
+**Cursor scripts are deprecated and likely to be removed in future.**
+**If you are using Javascript, use Javascript. If you are using C/Vala, use the DocView API.**
+
 The Cursors returned from find queries can execute Squirrel scripts to further refine search results. Cursor scripting can be used to
 
 * order the search results
 * format the query result into a particular format (e.g. CSV or XML)
 * aggregation and process query results within SpinoDB
 * write data to files
-
-The benefits of using cursor scripts over processing results in 'native' code are
-
-* Speed. Cursor scripts generally process results faster than Javascript and C/Vala.
-* Simplicity. Mostly to the benefit of C/Vala users, cursor scripts provide a very concise way of processing query results.
 
 [Squirrel language documentation](http://www.squirrel-lang.org/squirreldoc/reference/language.html)
 

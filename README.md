@@ -478,7 +478,7 @@ The db.load() function does not have a corresponding command because loading sho
 ### Performance Tuning
 
 When SpinoDB executes a search, it goes through 3 stages
-1. for findOne queries only, it will look up a cache of previously conducted queries and return a result from that. the cache is purged every time the collection is modified (appended, updated or a document dropped).
+1. for findOne queries, it will look up a cache of previously conducted queries and return a result from that. the cache is purged every time the collection is modified (appended, updated or a document dropped).
 2. if the query contains an indexed field, spino will try to use the index to set upper and lower bounds on the cursor. this reduces the number of documents to be searched, sometimes down to a single document or none at all, and in general is a massive performance booster. 
 3. finally, spino will execute the query on every document. this is done linearly from the first document to the last. execution time depends on the number of documents in the collection and the complexity of the query. 
 
@@ -488,44 +488,7 @@ When SpinoDB executes a search, it goes through 3 stages
 
 Prefer drop() over a series of calls to dropOne(). drop() can be used delete many documents but will only reconstruct the index once. 
 
-If you have a high rate of data passing through a collection of millions of documents, drop time potentially could become a performance bottleneck. One strategy might be adding a field called pendingDelete to your documents that are ready for deletion. A search query to exclude 'deleted' documents might look like this.
-
-	var cursor = col.find('{$and: [{name: "Dave"}, {pendingDelete: {$exists: false}}]}');
-
-Then at some convenient moment, call 
-	
-    col.drop("{pendingDelete: {$exists: true}}");
-    
-Only bother with this is unless drop time becomes problematic.
-
 dropOlderThan() is very fast. Delete old documents using this where possible.
-
-
-### Comparison To LokiJS
-
-LokiJS is also a NoSQL database, however it has the advantage of being a pure javascript solution and can run in browsers. 
-
-##### Inserting 1 Million Documents (1x index field)
-
-| LokiJS | SpinoDB |
-|:-------|:--------|
-| 1148ms |  2100ms |
-
-
-LokiJS is about 2x faster at inserting new documents. This is most likely because SpinoDB requires objects to be stringified and reparsed . .. we working on this.
-
-##### findOne by an indexed field
-
-| LokiJS | SpinoDB |
-|--------|---------|
-| 0.459ms|0.049ms  |
-
-
-##### drop/remove by an indexed field
-
-| LokiJS  | SpinoDB |
-|---------|---------|
-| 2075ms  | 404ms   |
 
 
 ### Persistence And Journalling

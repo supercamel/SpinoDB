@@ -170,14 +170,17 @@ namespace Spino {
                     collection_dom[iter->second].Accept(writer);
                 }
 
-                while(++iter != iter_range->second) {
-                    exec.set_json(&collection_dom[iter->second]);
-                    if(exec.resolve(head)) {
-                        break;
+
+                counter++;
+                if(counter != max_results) {
+                    while(++iter != iter_range->second) {
+                        exec.set_json(&collection_dom[iter->second]);
+                        if(exec.resolve(head)) {
+                            break;
+                        }
                     }
                 }
 
-                counter++;
                 return buffer.GetString();
             } 
         }
@@ -201,13 +204,17 @@ namespace Spino {
         if(counter < max_results) {
             if(iter != iter_range->second) {
                 const ValueType& ret = collection_dom[iter->second];
-                while(++iter != iter_range->second) {
-                    exec.set_json(&collection_dom[iter->second]);
-                    if(exec.resolve(head)) {
-                        break;
+
+
+                counter++;
+                if(counter != max_results) {
+                    while(++iter != iter_range->second) {
+                        exec.set_json(&collection_dom[iter->second]);
+                        if(exec.resolve(head)) {
+                            break;
+                        }
                     }
                 }
-                counter++;
 
                 return &ret;
             } 

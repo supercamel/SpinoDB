@@ -422,9 +422,11 @@ namespace Spino {
                 IndexResolver ir(indices);
                 ir.resolve(expr, range);
                 ic = new Cursor(expr, range, doc[name.c_str()]);
+                ic->setLimit(1);
             }
             else {
                 ic = new Cursor(nullptr, range, doc[name.c_str()]);
+                ic->setLimit(1);
             }
 
             if(ic->hasNext()) {
