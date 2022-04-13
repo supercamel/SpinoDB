@@ -1,6 +1,6 @@
 # DocNode
 
-DocNodes are used to assemble new JSON documents directly in SpinoDBs memory. 
+DocNodes are used to assemble new JSON documents directly in SpinoDBs memory. DocNode does not exist in NodeJS bindings. It is only in GObject bindings.
 
 DocNodes are created using the Collection that the document is intended for (appending or updating).
 
@@ -62,6 +62,15 @@ Turns the DocNode into a null type
     `spino_docnode_add_int_member(SpinoDocNode* self, const gchar* name, const int value)`
 
 If 'self' is an object, an integer field is added to the object with name as 'name' and value 'value'.
+
+Example
+```
+    spino_docnode_set_object(doc); // make the node an empty object
+    spino_docnode_add_int_member(doc, "idx", 1);
+
+    // doc now looks like this JSON string
+    // { idx: 1 }
+```
 
 ## add_uint_member
 
