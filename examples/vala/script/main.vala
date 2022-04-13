@@ -13,9 +13,9 @@ void generate_random_solarsystems(Spino.Collection pc) {
     string[] star_types = {"solar", "hotblue", "reddwarf", "redgiant", "whitedwarf", "neutron"};
     string[] planet_types = {"gas", "rock"};
 
-    var doc = pc.create_value();
-    var arr = pc.create_value();
-    var planet_doc = pc.create_value();
+    var doc = pc.create_node();
+    var arr = pc.create_node();
+    var planet_doc = pc.create_node();
 
     for(int i = 0; i < 1000000; i++) {
         doc.set_object();
@@ -36,7 +36,7 @@ void generate_random_solarsystems(Spino.Collection pc) {
         }
 
         doc.add_member("planets", arr);
-        pc.append_value(doc);
+        pc.append_node(doc);
     }
 }
 

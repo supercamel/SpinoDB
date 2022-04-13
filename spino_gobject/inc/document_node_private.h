@@ -2,17 +2,17 @@
 #define GSPINO_VALUE_PRIVATE_H
 
 #include "cppsrc/QueryExecutor.h"
-#include "value.h"
+#include "document_node.h"
 
 G_BEGIN_DECLS
 
-struct _SpinoValue {
+struct _SpinoDocNode {
     GObject parent_instance;
     Spino::ValueType priv;
     rapidjson::CrtAllocator* alloc;
 };
 
-SpinoValue* spino_value_new(rapidjson::CrtAllocator* a);
+SpinoDocNode* spino_docnode_new(rapidjson::CrtAllocator* a);
 
 G_END_DECLS
 

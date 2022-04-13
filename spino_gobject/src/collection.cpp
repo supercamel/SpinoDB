@@ -1,6 +1,6 @@
 #include "collection_private.h"
 #include "cursor_private.h"
-#include "value_private.h"
+#include "document_node_private.h"
 #include "document_viewer_private.h"
 
 G_BEGIN_DECLS
@@ -48,7 +48,7 @@ void spino_collection_append(SpinoCollection* self, const gchar* doc)
     self->priv->append(doc);
 }
 
-void spino_collection_append_value(SpinoCollection* self, SpinoValue* doc)
+void spino_collection_append_node(SpinoCollection* self, SpinoDocNode* doc)
 {
     self->priv->append(doc->priv);
 }
@@ -128,9 +128,9 @@ uint32_t spino_collection_get_size(SpinoCollection* self)
     return self->priv->size();
 }
 
-SpinoValue* spino_collection_create_value(SpinoCollection* self)
+SpinoDocNode* spino_collection_create_node(SpinoCollection* self)
 {
-    return spino_value_new(self->priv->getAllocator());
+    return spino_docnode_new(self->priv->getAllocator());
 }
 
 

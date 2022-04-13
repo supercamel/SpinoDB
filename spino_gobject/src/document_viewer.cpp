@@ -50,6 +50,11 @@ gboolean spino_member_iterator_compare(SpinoMemberIterator* iter, SpinoMemberIte
     return (iter->iter == other->iter);
 }
 
+gboolean spino_member_iterator_is_not(SpinoMemberIterator* iter, SpinoMemberIterator* other)
+{
+    return (iter->iter != other->iter);
+}
+
 G_DEFINE_TYPE(SpinoValueIterator, spino_value_iterator, G_TYPE_OBJECT)
 
 static void spino_value_iterator_finalize(GObject* object)
@@ -90,6 +95,11 @@ SpinoDocView* spino_value_iterator_get_view(SpinoValueIterator* iter)
 gboolean spino_value_iterator_compare(SpinoValueIterator* iter, SpinoValueIterator* other)
 {
     return (iter->iter == other->iter);
+}
+
+gboolean spino_value_iterator_is_not(SpinoValueIterator* iter, SpinoValueIterator* other)
+{
+    return (iter->iter != other->iter);
 }
 
 G_DEFINE_TYPE(SpinoDocView, spino_docview, G_TYPE_OBJECT)
@@ -265,14 +275,14 @@ SpinoDocView* spino_docview_get_element(SpinoDocView* self, guint index)
     return val;
 }
 
-SpinoValueIterator* spino_docview_value_begin(SpinoDocView* self)
+SpinoValueIterator* spino_docview_begin(SpinoDocView* self)
 {
     SpinoValueIterator* ret = spino_value_iterator_new();
     ret->iter = self->priv->Begin();
     return ret;
 }
 
-SpinoValueIterator* spino_docview_value_end(SpinoDocView* self)
+SpinoValueIterator* spino_docview_end(SpinoDocView* self)
 {
     SpinoValueIterator* ret = spino_value_iterator_new();
     ret->iter = self->priv->End();

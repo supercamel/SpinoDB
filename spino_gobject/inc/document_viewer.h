@@ -44,6 +44,7 @@ const gchar* spino_member_iterator_get_name(SpinoMemberIterator* iter);
  */
 SpinoDocView* spino_member_iterator_get_view(SpinoMemberIterator* iter);
 gboolean spino_member_iterator_compare(SpinoMemberIterator* iter, SpinoMemberIterator* other);
+gboolean spino_member_iterator_is_not(SpinoMemberIterator* iter, SpinoMemberIterator* other);
 
 
 void spino_value_iterator_next(SpinoValueIterator* iter);
@@ -54,6 +55,7 @@ void spino_value_iterator_next(SpinoValueIterator* iter);
  */
 SpinoDocView* spino_value_iterator_get_view(SpinoValueIterator* iter);
 gboolean spino_value_iterator_compare(SpinoValueIterator* iter, SpinoValueIterator* other);
+gboolean spino_value_iterator_is_not(SpinoValueIterator* iter, SpinoValueIterator* other);
 
 
 int spino_docview_get_int(SpinoDocView* self);
@@ -103,18 +105,18 @@ SpinoMemberIterator* spino_docview_member_end(SpinoDocView* self);
 SpinoDocView* spino_docview_get_element(SpinoDocView* self, guint index);
 
 /**
- * spino_docview_value_begin:
+ * spino_docview_begin:
  * @self: the self
  * Returns: (transfer full):
  */
-SpinoValueIterator* spino_docview_value_begin(SpinoDocView* self);
+SpinoValueIterator* spino_docview_begin(SpinoDocView* self);
 
 /**
- * spino_docview_value_end:
+ * spino_docview_end:
  * @self: the self
  * Returns: (transfer full):
  */
-SpinoValueIterator* spino_docview_value_end(SpinoDocView* self);
+SpinoValueIterator* spino_docview_end(SpinoDocView* self);
 
 gchar* spino_docview_stringify(SpinoDocView* self);
 

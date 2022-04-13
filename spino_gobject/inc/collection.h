@@ -4,7 +4,7 @@
 #include <glib-object.h>
 #include <stdint.h>
 #include "cursor.h"
-#include "value.h"
+#include "document_node.h"
 
 G_BEGIN_DECLS
 
@@ -16,7 +16,7 @@ gchar* spino_collection_get_name(SpinoCollection* self);
 void spino_collection_create_index(SpinoCollection* self, const gchar* name);
 void spino_collection_drop_index(SpinoCollection* self, const gchar* name);
 void spino_collection_append(SpinoCollection* self, const gchar* doc);
-void spino_collection_append_value(SpinoCollection* self, SpinoValue* doc);
+void spino_collection_append_node(SpinoCollection* self, SpinoDocNode* doc);
 void spino_collection_update_by_id(SpinoCollection* self, const gchar* id, const gchar* doc);
 void spino_collection_update(SpinoCollection* self, const gchar* query, const gchar* doc);
 gchar* spino_collection_find_one_by_id(SpinoCollection* self, const gchar* id);
@@ -47,11 +47,11 @@ uint64_t spino_collection_timestamp_by_id(SpinoCollection* self, const gchar* id
 uint32_t spino_collection_get_size(SpinoCollection* self);
 
 /**
- * spino_collection_create_value:
+ * spino_collection_create_node:
  * @self: the self
  * Returns: (transfer full):
  */
-SpinoValue* spino_collection_create_value(SpinoCollection* self);
+SpinoDocNode* spino_collection_create_node(SpinoCollection* self);
 
 
 G_END_DECLS

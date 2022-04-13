@@ -10,11 +10,11 @@ from gi.repository import Spino
 db = Spino.Database.new()
 col = db.get_collection("people")
 
-doc = col.create_value()
+doc = col.create_node()
 for i in range(100):
     doc.set_object()
     doc.add_int_member("i", i)
-    col.append_value(doc)
+    col.append_node(doc)
 
 
 val = col.find_one_view("{i:10}")
