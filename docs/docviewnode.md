@@ -1,15 +1,15 @@
 # DocView & DocNode 
 
-DocView and DocNode are GObjects provided in the GObject bindings. They are not available in NodeJS because Javascript is already highly optimised for processing JSON. 
+DocView and DocNode are GObjects provided in the GObject bindings for creating and reading JSON data. They are not available in NodeJS because Javascript is already highly optimised for processing JSON. 
 
 SpinoDB relies on rapidjson heavily for json parsing, serialisation and the DOM. DocView and DocNode are lightweight wrappers around some rapidjson DOM functions. 
 
 
 ## DocView Description
 
-A DocView is a 'read-only' peek at a document inside SpinoDBs DOM. DocViews do not copy memory or do any string processing, and are a very efficient way to get information out of the document. DocView is also quite a convenient and simple API for traversing the JSON DOM in C / Vala. 
+A DocView is a 'read-only' peek at a value inside SpinoDBs DOM. DocViews do not copy memory or do any string processing, and are a very efficient way to get information out of the document. DocView is also quite a convenient and simple API for traversing the JSON DOM in C / Vala. 
 
-DocViews are created by cursors through calls to spino_cursor_next_view(), and by collections with spino_collection_find_one_view()
+DocViews are created by cursors with the spino_cursor_next_view() function, and by collections with spino_collection_find_one_view()
 
 ```
     SpinoDocView* view = spino_cursor_next_view(cursor);
@@ -77,7 +77,7 @@ Arrays are traversed using ValueIterators. ValueIterators have the same API as M
 
 DocNode is a type for building JSON documents. 
 
-DocNodes require a collection in order to be created. This is for memory allocation reasons. Once a DocNode begins to construct a JSON DOM, it is using the memory allocator provided by the collection and essentially constructs the DOM in place. When the document is appended to the collection, there is deep copy or large memory transfer. 
+DocNodes require a collection in order to be created. This is for memory allocation reasons. Once a DocNode begins to construct a JSON DOM, it is using the memory allocator provided by the collection and essentially constructs the DOM in place. When the document is appended to the collection, there is not deep copy or large memory transfer. 
 
 ```
     SpinoDocNode* doc = spino_collection_create_node(col);

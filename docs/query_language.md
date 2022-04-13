@@ -6,6 +6,10 @@ Spino queries have a similar format and appearance to JSON, though this similari
 
 ## Operators
 
+Empty brackets will match all documents in a collection. 
+
+    { }
+
 ### Equal
  
 $eq - Equality operator will return documents if a field matches a value. 

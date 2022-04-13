@@ -6,6 +6,9 @@ This documentation will focus on NodeJS code, however all objects and functions 
 
 ## Use Cases
 
+SpinoDB was originally created to power a web crawler and discord bot. The bot had to reply to people in real timewhile doing complex queries on collections that contained millions of documents. After much frustration with an enterprise grade database (and also for self interest), SpinoDB was developed and introduced. Queries that were taking several seconds were now taking only a few milliseconds, server CPU useage was lower, though unsuprisingly RAM useage increased. 
+
+
 ### Web Services
 
 SpinoDB integrates nicely with Node & Express. By switching from an enterprise grade solution to SpinoDB, small/medium websites might notice improvements in website responsiveness and lower server CPU useage.
