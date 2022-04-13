@@ -156,7 +156,7 @@ void spino_docnode_remove(SpinoDocNode* self, SpinoValueIterator* iter)
 }
 
 
-SpinoDocView* spino_docnode_get_viewer(SpinoDocNode* self)
+SpinoDocView* spino_docnode_get_view(SpinoDocNode* self)
 {
     SpinoDocView* val = (SpinoDocView*)g_object_new(SPINO_TYPE_DOCVIEW, NULL);
     val->priv = &self->priv;

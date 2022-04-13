@@ -38,7 +38,7 @@ void spino_docnode_remove(SpinoDocNode* self, SpinoValueIterator* iter);
  * @self: the self
  * Returns: (transfer full):
  */
-SpinoDocView* spino_docnode_get_viewer(SpinoDocNode* self);
+SpinoDocView* spino_docnode_get_view(SpinoDocNode* self);
 
 G_END_DECLS
 
