@@ -12,4 +12,7 @@ nav:
         - Cursor: api/cursor.md
         - DocView: api/docview.md
         - DocNode: api/docnode.md
+        - ValueIter: api/value_iter.md
+        - MemberIter: api/member_iter.md
+
 theme: readthedocs
