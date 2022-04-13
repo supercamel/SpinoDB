@@ -4,6 +4,7 @@ nav:
     - 'Getting Started': getting_started.md
     - 'Overview': overview.md
     - 'Query Language': query_language.md
+    - 'DocView & DocNode': docviewnode.md
     - 'Cursor Scripts': cursor_scripts.md
     - 'API Reference': 
         - Database: api/database.md
