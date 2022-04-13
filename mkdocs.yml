@@ -2,6 +2,7 @@ site_name: SpinoDB
 nav:
     - Home: index.md
     - 'Getting Started': getting_started.md
+    - 'Overview': overview.md
     - 'Query Language': query_language.md
     - 'Cursor Scripts': cursor_scripts.md
     - 'API Reference': 
