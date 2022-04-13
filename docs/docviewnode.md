@@ -2,6 +2,9 @@
 
 DocView and DocNode are GObjects provided in the GObject bindings. They are not available in NodeJS because Javascript is already highly optimised for processing JSON. 
 
+SpinoDB relies on rapidjson heavily for json parsing, serialisation and the DOM. DocView and DocNode are lightweight wrappers around some rapidjson DOM functions. 
+
+
 ## DocView Description
 
 A DocView is a 'read-only' peek at a document inside SpinoDBs DOM. DocViews do not copy memory or do any string processing, and are a very efficient way to get information out of the document. DocView is also quite a convenient and simple API for traversing the JSON DOM in C / Vala. 
@@ -10,7 +13,7 @@ DocViews are created by cursors through calls to spino_cursor_next_view(), and b
 
 ```
     SpinoDocView* view = spino_cursor_next_view(cursor);
-// OR
+    // OR
     SpinoDocView* view = spino_collection_find_one_view(col);
 ```
 
@@ -19,11 +22,11 @@ The view represents a JSON value. It could be a numeric value, an object, an arr
 Members of the object can be read directly using these functions
 
 ```
-int spino_docview_get_int_member(SpinoDocView* docview, const gchar* name);
-guint spino_docview_get_uint_member(SpinoDocView* docview, const gchar* name);
-gboolean spino_docview_get_bool_member(SpinoDocView* docview, const gchar* name);
-double spino_docview_get_double_member(SpinoDocView* docview, const gchar* name);
-const gchar* spino_docview_get_string_member(SpinoDocView* docview, const gchar* name);
+    int spino_docview_get_int_member(SpinoDocView* docview, const gchar* name);
+    guint spino_docview_get_uint_member(SpinoDocView* docview, const gchar* name);
+    gboolean spino_docview_get_bool_member(SpinoDocView* docview, const gchar* name);
+    double spino_docview_get_double_member(SpinoDocView* docview, const gchar* name);
+    const gchar* spino_docview_get_string_member(SpinoDocView* docview, const gchar* name);
 ```
 
 Sub-object and array members must projected into a DocView of their own using spino_docview_get_member()
@@ -134,9 +137,10 @@ When a DocNode is moved, the DOM elements are transferred to the new DocNode con
 
 ## Viewing DocNodes
 
-DocNodes are used to create new documents but they can create a DocView that can traverse and stringify the DOM. 
+DocNodes are used to create new documents, to view them create a DocView that can traverse and stringify the DOM. 
 
 ```
     DocView* view = spino_docnode_get_view(doc);
     printf("%s\n", spino_docview_stringify(view));
 ```
+
