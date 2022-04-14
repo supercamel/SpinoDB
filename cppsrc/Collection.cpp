@@ -582,17 +582,23 @@ namespace Spino {
         }
 
         size_t count = 0;
-        for (ValueType::ConstValueIterator itr = arr.Begin();
-                itr != arr.End(); ) {
-            Spino::QueryExecutor exec(&(*itr));
-            if(exec.resolve(block)) {
-                count++;
-                itr = arr.Erase(itr);
-                if(count >= limit) {
-                    break;
-                } 
-            } else {
-                itr++;
+        if(block == nullptr) {
+            count = arr.Size();
+            arr.SetArray();
+        }
+        else {
+            for (ValueType::ConstValueIterator itr = arr.Begin();
+                    itr != arr.End(); ) {
+                Spino::QueryExecutor exec(&(*itr));
+                if(exec.resolve(block)) {
+                    count++;
+                    itr = arr.Erase(itr);
+                    if(count >= limit) {
+                        break;
+                    } 
+                } else {
+                    itr++;
+                }
             }
         }
 
