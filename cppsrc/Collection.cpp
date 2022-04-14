@@ -582,7 +582,7 @@ namespace Spino {
         }
 
         size_t count = 0;
-        if(block == nullptr) {
+        if((block == nullptr) && (limit >= UINT32_MAX)){
             count = arr.Size();
             arr.SetArray();
         }

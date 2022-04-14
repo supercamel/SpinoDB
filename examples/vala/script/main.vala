@@ -53,9 +53,9 @@ string nativeValueFoo(Spino.Collection pc) {
         var doc = cur.next_view();
 
         var planets_arr = doc.get_member("planets");
-        var iter = planets_arr.value_begin();
+        var iter = planets_arr.begin();
         int count = 0;
-        while(iter.compare(planets_arr.value_end()) == false) {
+        while(iter.compare(planets_arr.end()) == false) {
             var planet_doc = iter.get_view();
             if(planet_doc.get_string_member("type") == "rock") {
                 var dist = planet_doc.get_double_member("dist");
