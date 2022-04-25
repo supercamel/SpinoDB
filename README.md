@@ -2,6 +2,11 @@
 
 SpinoDB is an in-memory NoSQL data library that is small, self-contained and with emphasis on **speed**. It is written in C++ and has bindings for both NodeJS and C using GObjects. Bindings for Vala, Python, Java, GJS (Gnome Javascript), Lua and so on are all automatically available through GObject Introspection. 
 
+### Documentation
+
+https://spinodb.readthedocs.io/en/latest/
+
+
 ### When To Use It
 
 ##### Web Services
@@ -40,11 +45,6 @@ As a rule of thumb, if the size of your data is greater than 50% of your availab
     cd builddir && sudo meson install
 
 This will build and install the libary along with pkg-config, gir, vapi and typelib files.
-    
-### The Docs
-
-https://spinodb.readthedocs.io/en/latest/
-
 
 ### Design
 
