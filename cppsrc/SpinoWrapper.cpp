@@ -450,6 +450,7 @@ void SpinoWrapper::Init(Local<Object> exports) {
     NODE_SET_PROTOTYPE_METHOD(tpl, "addCollection", addCollection);
     NODE_SET_PROTOTYPE_METHOD(tpl, "getCollection", getCollection);
     NODE_SET_PROTOTYPE_METHOD(tpl, "dropCollection", dropCollection);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "hasCollection", hasCollection);
 
     NODE_SET_PROTOTYPE_METHOD(tpl, "setBoolValue", setBoolValue);
     NODE_SET_PROTOTYPE_METHOD(tpl, "setIntValue", setIntValue);
@@ -583,6 +584,19 @@ void SpinoWrapper::addCollection(const FunctionCallbackInfo<Value>& args) {
     auto col = spinowrap->spino->addCollection(*str);
     CollectionWrapper::NewInstance(args, col);
 }
+
+void SpinoWrapper::hasCollection(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    v8::String::Utf8Value str(isolate, args[0]);
+
+    SpinoWrapper* spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+
+    auto col = spinowrap->spino->hasCollection(*str);
+    args.GetReturnValue().Set(v8::Boolean::New(isolate, col));
+
+ // CollectionWrapper::NewInstance(args, col);
+}
+
 
 void SpinoWrapper::getCollection(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
