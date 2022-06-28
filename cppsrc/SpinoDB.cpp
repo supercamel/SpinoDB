@@ -92,6 +92,14 @@ namespace Spino{
         return false;
     }
 
+    vector<string> SpinoDB::listCollections() const {
+        vector<string>  collectionNames;
+        for(auto c : collections) {
+            collectionNames.push_back(c->getName());
+        }
+        return collectionNames;
+    }
+
     uint64_t Collection::timestampById(const char* s) {
         return fast_atoi_len(s, 10)*1000;
     }

@@ -455,6 +455,7 @@ void SpinoWrapper::Init(Local <Object> exports) {
     NODE_SET_PROTOTYPE_METHOD(tpl, "getCollection", getCollection);
     NODE_SET_PROTOTYPE_METHOD(tpl, "dropCollection", dropCollection);
     NODE_SET_PROTOTYPE_METHOD(tpl, "hasCollection", hasCollection);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "listCollections", listCollections);
 
     NODE_SET_PROTOTYPE_METHOD(tpl, "setBoolValue", setBoolValue);
     NODE_SET_PROTOTYPE_METHOD(tpl, "setIntValue", setIntValue);
@@ -596,6 +597,54 @@ void SpinoWrapper::hasCollection(const FunctionCallbackInfo <Value> &args) {
 
     auto col = spinowrap->spino->hasCollection(*str);
     args.GetReturnValue().Set(v8::Boolean::New(isolate, col));
+}
+
+void SpinoWrapper::listCollections(const FunctionCallbackInfo <Value> &args) {
+    Isolate *isolate = args.GetIsolate();
+    v8::String::Utf8Value str(isolate, args[0]);
+
+    SpinoWrapper *spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
+
+
+
+    Local <v8::Array> nodes = v8::Array::New(isolate);
+
+    auto col = spinowrap->spino->listCollections();
+    uint32_t count = 0;
+    vector<string>  collectionNames;
+    for(auto name : col) {
+        auto v8str = v8::String::NewFromUtf8(isolate,name.c_str());
+        if (!v8str.IsEmpty()) {
+            nodes->Set(isolate->GetCurrentContext(), count++, v8str.ToLocalChecked());
+        }
+    }
+    args.GetReturnValue().Set(nodes);
+
+//    while (txt != "") {
+//        auto v8str = v8::String::NewFromUtf8(isolate, txt.c_str());
+//        if (!v8str.IsEmpty()) {
+//            auto v8strlocal = v8str.ToLocalChecked();
+//            auto jsonobj = v8::JSON::Parse(isolate->GetCurrentContext(), v8strlocal);
+//            if (!jsonobj.IsEmpty()) {
+//                nodes->Set(isolate->GetCurrentContext(), count++, jsonobj.ToLocalChecked());
+//            }
+//        } else {
+//            return;
+//        }
+//
+//        txt = curwrap->cursor->next();
+//    }
+
+
+
+
+
+
+
+
+
+
+//    args.GetReturnValue().Set(v8::Array::New(isolate, col));
 }
 
 
