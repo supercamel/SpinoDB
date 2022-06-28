@@ -605,11 +605,10 @@ void SpinoWrapper::listCollections(const FunctionCallbackInfo <Value> &args) {
 
     SpinoWrapper *spinowrap = ObjectWrap::Unwrap<SpinoWrapper>(args.Holder());
 
-
-
     Local <v8::Array> nodes = v8::Array::New(isolate);
 
     auto col = spinowrap->spino->listCollections();
+
     uint32_t count = 0;
     vector<string>  collectionNames;
     for(auto name : col) {
@@ -618,33 +617,8 @@ void SpinoWrapper::listCollections(const FunctionCallbackInfo <Value> &args) {
             nodes->Set(isolate->GetCurrentContext(), count++, v8str.ToLocalChecked());
         }
     }
+
     args.GetReturnValue().Set(nodes);
-
-//    while (txt != "") {
-//        auto v8str = v8::String::NewFromUtf8(isolate, txt.c_str());
-//        if (!v8str.IsEmpty()) {
-//            auto v8strlocal = v8str.ToLocalChecked();
-//            auto jsonobj = v8::JSON::Parse(isolate->GetCurrentContext(), v8strlocal);
-//            if (!jsonobj.IsEmpty()) {
-//                nodes->Set(isolate->GetCurrentContext(), count++, jsonobj.ToLocalChecked());
-//            }
-//        } else {
-//            return;
-//        }
-//
-//        txt = curwrap->cursor->next();
-//    }
-
-
-
-
-
-
-
-
-
-
-//    args.GetReturnValue().Set(v8::Array::New(isolate, col));
 }
 
 
