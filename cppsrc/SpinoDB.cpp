@@ -24,6 +24,9 @@
 #include <functional>
 
 #include <iostream>
+#include "rapidjson/filereadstream.h"
+#include <cstdio>
+
 using namespace std;
 
 namespace Spino{
@@ -693,9 +696,15 @@ namespace Spino{
 
         try {
             // load json from file
-            std::ifstream in(path);
-            rapidjson::IStreamWrapper isw(in);
-            doc.ParseStream(isw);
+            // this is a bit faster
+            // depending on the disk block size use of 4096 bytes or 8192 bytes use 32768 bit or 65536 bit
+            char readBuffer[65536];
+            FILE *fp = fopen(path.c_str(), "rb");
+            rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+            doc.ParseStream<0, rapidjson::UTF8<>, rapidjson::FileReadStream>(is);
+
+            fflush(fp);
+            fclose(fp);
         }
         catch(...) {
             clear();
@@ -739,9 +748,12 @@ namespace Spino{
     void SpinoDB::consolidate(const std::string& path) {
         bool priorState = jw.getEnabled();
         jw.setEnabled(false);
-
+        // read the journal file and execute the commands
+        // depending on the disk block size use of 4096 bytes or 8192 bytes use 32768 bit or 65536 bit
+        char readBuffer[65536];
         // read the journal file and execute the commands
         std::ifstream file(jw.getPath());
+        file.rdbuf()->pubsetbuf(readBuffer, sizeof(readBuffer));
         if (file.is_open()) {
             std::string line;
             while (std::getline(file, line)) {
