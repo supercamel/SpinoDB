@@ -71,6 +71,7 @@ namespace Spino {
             Collection* addCollection(const std::string& name);
             Collection* getCollection(const std::string& name);
             bool hasCollection(const std::string& name) const;
+            vector<string> listCollections() const;
             void dropCollection(const std::string& name);
 
             void save(const std::string& db_path) const;
@@ -117,7 +118,7 @@ namespace Spino {
                     if(!d.HasMember(f.c_str())) {
                         return make_reply(false, "Missing field " + f);
                     }
-                }	
+                }
                 return "";
             }
 

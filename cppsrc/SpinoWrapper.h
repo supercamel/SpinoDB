@@ -62,6 +62,7 @@ class CollectionWrapper: public node::ObjectWrap {
 		~CollectionWrapper() { }
 
 		static void getName(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void size(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void createIndex(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void dropIndex(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void append(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -104,6 +105,8 @@ class SpinoWrapper: public node::ObjectWrap {
 		static void addCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void getCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void dropCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void hasCollection(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void listCollections(const v8::FunctionCallbackInfo<v8::Value>& args);
 
         static void setBoolValue(const v8::FunctionCallbackInfo<v8::Value>& args);
         static void setIntValue(const v8::FunctionCallbackInfo<v8::Value>& args);
