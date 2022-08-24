@@ -220,7 +220,6 @@ namespace Spino {
                 if(exec.resolve(block)) {
                     mergeObjects(*itr, j.GetObject());
                     updated = true;
-                    cout << "updated a document" << endl;
                 } 
             }
         }
@@ -681,7 +680,6 @@ namespace Spino {
     {
         for (auto srcIt = srcObject.MemberBegin(); srcIt != srcObject.MemberEnd(); ++srcIt)
         {
-            cout << srcIt->name.GetString() << endl;
             auto dstIt = dstObject.FindMember(srcIt->name);
             if (dstIt == dstObject.MemberEnd())
             {
