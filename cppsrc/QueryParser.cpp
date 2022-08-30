@@ -21,6 +21,8 @@
 
 #include "QueryParser.h"
 
+#include <iostream>
+
 #include <sstream>
 #include <set>
 
@@ -137,7 +139,7 @@ Token QueryParser::lex() {
                 break;
         }
         // if the current character is alphabetic (a-z, A-Z)
-        if(isalpha(curc())) {
+        if(isalpha(curc()) || curc() == '_') {
             // read an identifier
             auto ident = read_identifier();
             // if its true/false then it's a boolean literal
