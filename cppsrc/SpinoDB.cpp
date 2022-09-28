@@ -42,7 +42,6 @@ namespace Spino{
 
         doc.SetObject();
 
-        const char* keystoreName = "__SpinoKeyValueStore__";
         ValueType v(rapidjson::kArrayType);
         ValueType index(keystoreName, doc.GetAllocator());
         doc.AddMember(index, v, doc.GetAllocator());
@@ -52,6 +51,10 @@ namespace Spino{
     }
 
     Collection* SpinoDB::addCollection(const std::string& name) {
+        if(name == keystoreName) {
+            return keyStore;
+        }
+
         for(auto i : collections) {
             if(i->getName() == name) {
                 return nullptr;
@@ -77,6 +80,10 @@ namespace Spino{
     }
 
     Collection* SpinoDB::getCollection(const std::string& name) {
+        if(name == keystoreName) {
+            return keyStore;
+        }
+
         for(auto c : collections) {
             if(c->getName() == name) {
                 return c;

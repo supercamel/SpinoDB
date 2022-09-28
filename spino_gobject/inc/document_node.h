@@ -34,7 +34,7 @@ void spino_docnode_pop_back(SpinoDocNode* self);
 void spino_docnode_remove(SpinoDocNode* self, SpinoValueIterator* iter);
 
 /**
- * spino_docnode_get_viewer:
+ * spino_docnode_get_view:
  * @self: the self
  * Returns: (transfer full):
  */

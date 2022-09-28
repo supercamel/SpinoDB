@@ -123,6 +123,7 @@ namespace Spino {
             }
 
             std::vector<Collection*> collections;
+            static constexpr char* keystoreName = "__SpinoKeyValueStore__";
             Collection* keyStore = nullptr;
             DocType doc;
             JournalWriter jw;
