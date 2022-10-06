@@ -57,7 +57,6 @@ SpinoDocView* spino_value_iterator_get_view(SpinoValueIterator* iter);
 gboolean spino_value_iterator_compare(SpinoValueIterator* iter, SpinoValueIterator* other);
 gboolean spino_value_iterator_is_not(SpinoValueIterator* iter, SpinoValueIterator* other);
 
-
 int spino_docview_get_int(SpinoDocView* self);
 guint spino_docview_get_uint(SpinoDocView* self);
 double spino_docview_get_double(SpinoDocView* self);

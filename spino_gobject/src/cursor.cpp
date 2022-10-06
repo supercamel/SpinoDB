@@ -6,10 +6,31 @@ G_BEGIN_DECLS
 
 G_DEFINE_TYPE(SpinoCursor, spino_cursor, G_TYPE_OBJECT)
 
+static void spino_cursor_dispose (GObject *gobject)
+{
+    SpinoCursor* self = (SpinoCursor*)gobject;
+
+    if (self->priv != nullptr)
+    {
+        delete self->priv;
+        self->priv = nullptr;
+    }
+
+    /* Chain up to the parent class */
+    G_OBJECT_CLASS (spino_cursor_parent_class)->dispose (gobject);
+}
+
+static void spino_cursor_finalize(GObject *gobject)
+{
+    G_OBJECT_CLASS (spino_cursor_parent_class)->finalize (gobject);
+}
 
 static void spino_cursor_class_init(SpinoCursorClass* klass) 
 {
+    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
+    gobject_class->dispose = spino_cursor_dispose;
+    gobject_class->finalize = spino_cursor_finalize;
 }
 
 static void spino_cursor_init(SpinoCursor* self) 
