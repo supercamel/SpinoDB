@@ -25,7 +25,13 @@
 
 #include <iostream>
 #include "rapidjson/filereadstream.h"
+
+#include "rapidjson/filewritestream.h"
+#include "rapidjson/writer.h"
+
 #include <cstdio>
+#include <cstdlib>
+
 
 using namespace std;
 
@@ -134,8 +140,8 @@ namespace Spino{
             const std::string& key, const T& value) {
         std::stringstream ss;
         ss << "{\"k\":\""
-            << escape(key) << "\",\"v\":"
-            << value << "}";
+           << escape(key) << "\",\"v\":"
+           << value << "}";
         return ss.str();
     }
 
@@ -144,7 +150,7 @@ namespace Spino{
         ss << "{k:\"" << escape(key) << "\"}";
         keyStore->update(ss.str().c_str(), make_key_value_json(key, value).c_str());
     }
-	
+
     void SpinoDB::setIntValue(const std::string& key, int value) {
         std::stringstream ss;
         ss << "{k:\"" << escape(key) << "\"}";
@@ -177,7 +183,7 @@ namespace Spino{
     bool SpinoDB::getBoolValue(const std::string& key) {
         std::stringstream ss;
         ss << "{k:\""
-            << escape(key) << "\"}";
+           << escape(key) << "\"}";
 
         std::string result = keyStore->findOne(ss.str().c_str());
         if(result != "") {
@@ -191,11 +197,11 @@ namespace Spino{
         }
         return 0;
     }
-	
+
     int SpinoDB::getIntValue(const std::string& key) {
         std::stringstream ss;
         ss << "{k:\""
-            << escape(key) << "\"}";
+           << escape(key) << "\"}";
 
         std::string result = keyStore->findOne(ss.str().c_str());
         if(result != "") {
@@ -213,7 +219,7 @@ namespace Spino{
     unsigned int SpinoDB::getUintValue(const std::string& key) {
         std::stringstream ss;
         ss << "{k:\""
-            << escape(key) << "\"}";
+           << escape(key) << "\"}";
 
 
         std::string result = keyStore->findOne(ss.str().c_str());
@@ -232,7 +238,7 @@ namespace Spino{
     double SpinoDB::getDoubleValue(const std::string& key) {
         std::stringstream ss;
         ss << "{k:\""
-            << escape(key) << "\"}";
+           << escape(key) << "\"}";
 
 
         std::string result = keyStore->findOne(ss.str().c_str());
@@ -251,7 +257,7 @@ namespace Spino{
     const char* SpinoDB::getStringValue(const std::string& key) {
         std::stringstream ss;
         ss << "{k:\""
-            << escape(key) << "\"}";
+           << escape(key) << "\"}";
 
         std::string result = keyStore->findOne(ss.str().c_str());
 
@@ -276,7 +282,7 @@ namespace Spino{
     bool SpinoDB::hasKey(const std::string& key) {
         std::stringstream ss;
         ss << "{k:\""
-            << escape(key) << "\"}";
+           << escape(key) << "\"}";
 
         std::string result = keyStore->findOne(ss.str().c_str());
         return result != "";
@@ -659,16 +665,21 @@ namespace Spino{
 
 
     void SpinoDB::save(const std::string& path) const {
-        // dump the json to a temporary file
-        std::string tmppath = path + "spinotmp";
-        std::ofstream out(tmppath);
-        rapidjson::OStreamWrapper osw(out);
 
-        rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
+        // dump the json to a temporary file
+        std::string  tmppath = path + "spinotmp";
+
+        FILE *fp = std::fopen(tmppath.c_str(), "wb");
+
+        char writeBuffer[65536];
+        rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
+
+        rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
         doc.Accept(writer);
 
-        out.flush();
-        out.close();
+        fflush(fp);
+        fclose(fp);
+
 
         // move the temporary file to the correct location
         std::remove(path.c_str()); // remove original db file
@@ -705,6 +716,7 @@ namespace Spino{
 
             fflush(fp);
             fclose(fp);
+
         }
         catch(...) {
             clear();
@@ -748,11 +760,14 @@ namespace Spino{
     void SpinoDB::consolidate(const std::string& path) {
         bool priorState = jw.getEnabled();
         jw.setEnabled(false);
+
         // read the journal file and execute the commands
         // depending on the disk block size use of 4096 bytes or 8192 bytes use 32768 bit or 65536 bit
         char readBuffer[65536];
+
         // read the journal file and execute the commands
         std::ifstream file(jw.getPath());
+
         file.rdbuf()->pubsetbuf(readBuffer, sizeof(readBuffer));
         if (file.is_open()) {
             std::string line;
