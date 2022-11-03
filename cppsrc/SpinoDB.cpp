@@ -25,13 +25,7 @@
 
 #include <iostream>
 #include "rapidjson/filereadstream.h"
-
-#include "rapidjson/filewritestream.h"
-#include "rapidjson/writer.h"
-
 #include <cstdio>
-#include <cstdlib>
-
 
 using namespace std;
 
@@ -665,21 +659,16 @@ namespace Spino{
 
 
     void SpinoDB::save(const std::string& path) const {
-
         // dump the json to a temporary file
-        std::string  tmppath = path + "spinotmp";
+        std::string tmppath = path + "spinotmp";
+        std::ofstream out(tmppath);
+        rapidjson::OStreamWrapper osw(out);
 
-        FILE *fp = std::fopen(tmppath.c_str(), "wb");
-
-        char writeBuffer[65536];
-        rapidjson::FileWriteStream os(fp, writeBuffer, sizeof(writeBuffer));
-
-        rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
+        rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
         doc.Accept(writer);
 
-        fflush(fp);
-        fclose(fp);
-
+        out.flush();
+        out.close();
 
         // move the temporary file to the correct location
         std::remove(path.c_str()); // remove original db file
@@ -716,7 +705,6 @@ namespace Spino{
 
             fflush(fp);
             fclose(fp);
-
         }
         catch(...) {
             clear();
@@ -760,14 +748,11 @@ namespace Spino{
     void SpinoDB::consolidate(const std::string& path) {
         bool priorState = jw.getEnabled();
         jw.setEnabled(false);
-
         // read the journal file and execute the commands
         // depending on the disk block size use of 4096 bytes or 8192 bytes use 32768 bit or 65536 bit
         char readBuffer[65536];
-
         // read the journal file and execute the commands
         std::ifstream file(jw.getPath());
-
         file.rdbuf()->pubsetbuf(readBuffer, sizeof(readBuffer));
         if (file.is_open()) {
             std::string line;
