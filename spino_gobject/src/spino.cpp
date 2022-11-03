@@ -1,6 +1,6 @@
-#include "Spino-1.0.h"
+#include "Spino-1.2.h"
 
-#include "cppsrc/SpinoDB.h"
+#include "cppsrc/database.h"
 
 
 G_BEGIN_DECLS

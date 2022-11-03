@@ -2,11 +2,11 @@
 #define SPINO_DATABASE_PRIVATE_H_INCLUDED
 
 #include "database.h"
-#include "collection_private.h"
+#include "../../cppsrc/database.h"
 
 struct _SpinoDatabase {
     GObject parent_instance;
-    Spino::SpinoDB* db;
+    Spino::Database* db;
 };
 
 

@@ -4,7 +4,7 @@ import gi
 import json
 import time
 
-gi.require_version("Spino", "1.0")
+gi.require_version("Spino", "1.2")
 from gi.repository import Spino
 
 db = Spino.Database.new()

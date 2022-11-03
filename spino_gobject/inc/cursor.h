@@ -2,7 +2,6 @@
 #define GSPINO_CURSOR_H_INCLUDED
 
 #include <glib-object.h>
-#include "document_viewer.h"
 
 G_BEGIN_DECLS
 
@@ -10,34 +9,17 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE(SpinoCursor, spino_cursor, Spino, Cursor, GObject)
 
-gchar* spino_cursor_next(SpinoCursor* self);
 /**
- * spino_cursor_next_view:
+ * spino_cursor_next:
  * @self: the self
  * Returns: (transfer full):
  */
-SpinoDocView* spino_cursor_next_view(SpinoCursor* self);
-guint spino_cursor_count(SpinoCursor* self);
+gchar* spino_cursor_next(SpinoCursor* self);
 gboolean spino_cursor_has_next(SpinoCursor* self);
 
-/**
- * spino_cursor_set_projection:
- * @self: the self
- * @projection: the projection string
- * Returns: (transfer none):
- */
-SpinoCursor* spino_cursor_set_projection(SpinoCursor* self, const gchar* projection);
+void spino_cursor_set_limit(SpinoCursor* self, guint limit);
 
-/**
- * spino_cursor_set_limit:
- * @self: the self
- * @limit: the maximum number of documents the cursor can return 
- * Returns: (transfer none):
- */
-SpinoCursor* spino_cursor_set_limit(SpinoCursor* self, guint limit);
-
-gchar* spino_cursor_run_script(SpinoCursor* self, const gchar* script);
-
+guint spino_cursor_count(SpinoCursor* self);
 
 G_END_DECLS
 

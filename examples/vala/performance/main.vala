@@ -5,22 +5,17 @@
 
 void add_many_entries(Spino.Collection col)
 {
-    var doc = col.create_node();
-    for(int i = 0; i < 100000; i++) {
-        doc.set_object();
-        doc.add_int_member("i", i);
-        col.append_node(doc);
+    for(int i = 0; i < 1000000; i++) {
+        col.append("{\"i\":" + i.to_string() + "}");
     }
 }
 
 int search(Spino.Collection col) 
 {
-    var view = col.find_one_view("{i:45432}");
-    if(view != null) {
-    //print("i: %i\n", view.get_int_member("i"));
-    return view.get_int_member("i");
-    }
-    return -1;
+    var view = col.find_one("{i:45432}");
+    int len = view.length;
+    len++;
+    return 1;
 }
 
 public static int main() {
@@ -36,7 +31,9 @@ public static int main() {
 
     testcol.create_index("i");
     int64 usec = GLib.get_real_time ();
-    search(testcol);
+    for(int i = 0; i < 10000; i++) {
+        search(testcol);
+    }
     int64 usec2 = GLib.get_real_time();
     print("Indexed Search Time: %ius\n", (int)(usec2-usec));
 

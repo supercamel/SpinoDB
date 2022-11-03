@@ -1,21 +1,11 @@
 #include "database_private.h"
+#include "collection_private.h"
 
 G_BEGIN_DECLS
 
 
 G_DEFINE_TYPE(SpinoDatabase, spino_database, G_TYPE_OBJECT)
 
-
-enum
-{
-    PROP_0,
-    LAST_PROP
-};
-
-enum
-{
-    LAST_SIGNAL
-};
 
 
 SpinoDatabase* spino_database_new()
@@ -40,38 +30,32 @@ static void spino_database_class_init(SpinoDatabaseClass* klass)
 
 static void spino_database_init(SpinoDatabase* self) 
 {
-    self->db = new Spino::SpinoDB(); 
+    self->db = new Spino::Database(); 
 }
 
 
 gchar* spino_database_execute(SpinoDatabase* self, const gchar* command)
 {
-    return g_strdup(self->db->execute(command).c_str());
-}
-
-
-SpinoCollection* spino_database_add_collection(SpinoDatabase* self, const gchar* name)
-{
-    auto* col = self->db->addCollection(name);
-    return spino_collection_new(col);
+    std::string result = self->db->execute(command);
+    return g_strdup(result.c_str());
 }
 
 
 SpinoCollection* spino_database_get_collection(SpinoDatabase* self, const gchar* name)
 {
-    auto* col = self->db->getCollection(name);
+    auto col = self->db->get_collection(name);
     return spino_collection_new(col);
 }
 
 
 gboolean spino_database_has_collection(SpinoDatabase* self, const gchar* name)
 {
-    return self->db->hasCollection(name);
+    return self->db->has_collection(name);
 }
 
 void spino_database_drop_collection(SpinoDatabase* self, const gchar* name)
 {
-    self->db->dropCollection(name);
+    self->db->drop_collection(name);
 }
 
 
@@ -87,12 +71,12 @@ void spino_database_load(SpinoDatabase* self, const gchar* path)
 
 void spino_database_enable_journal(SpinoDatabase* self, const gchar* journal_path)
 {
-    self->db->enableJournal(journal_path);
+    self->db->enable_journal(journal_path);
 }
 
 void spino_database_disable_journal(SpinoDatabase* self)
 {
-    self->db->disableJournal();
+    self->db->disable_journal();
 }
 
 void spino_database_consolidate(SpinoDatabase* self, const gchar* db_path) 
@@ -102,57 +86,58 @@ void spino_database_consolidate(SpinoDatabase* self, const gchar* db_path)
 
 void spino_database_set_bool_value(SpinoDatabase* self, const gchar* key, gboolean value)
 {
-    self->db->setBoolValue(key, value);
+    self->db->set_bool_value(key, value);
 }
 
 void spino_database_set_int_value(SpinoDatabase* self, const gchar* key, gint value)
 {
-    self->db->setIntValue(key, value);
+    self->db->set_int_value(key, value);
 }
 
 void spino_database_set_uint_value(SpinoDatabase* self, const gchar* key, guint value)
 {
-    self->db->setUintValue(key, value);
+    self->db->set_uint_value(key, value);
 }
 
 void spino_database_set_double_value(SpinoDatabase* self, const gchar* key, double value)
 {
-    self->db->setDoubleValue(key, value);
+    self->db->set_double_value(key, value);
 }
 
 void spino_database_set_string_value(SpinoDatabase* self, const gchar* key, const gchar* value)
 {
-    self->db->setStringValue(key, value);
+    self->db->set_string_value(key, value);
 }
 
 gboolean spino_database_get_bool_value(SpinoDatabase* self, const gchar* key)
 {
-    return self->db->getBoolValue(key);
+    return self->db->get_bool_value(key);
 }
 
 gint spino_database_get_int_value(SpinoDatabase* self, const gchar* key)
 {
-    return self->db->getIntValue(key);
+    return self->db->get_int_value(key);
 }
 
 guint spino_database_get_uint_value(SpinoDatabase* self, const gchar* key)
 {
-    return self->db->getUintValue(key);
+    return self->db->get_uint_value(key);
 }
 
 double spino_database_get_double_value(SpinoDatabase* self, const gchar* key)
 {
-    return self->db->getDoubleValue(key);
+    return self->db->get_double_value(key);
 }
 
 const gchar* spino_database_get_string_value(SpinoDatabase* self, const gchar* key)
 {
-    return self->db->getStringValue(key);
+    const char* value = self->db->get_string_value(key);
+    return g_strdup(value);
 }
 
 gboolean spino_database_has_key(SpinoDatabase* self, const gchar* key)
 {
-    return self->db->hasKey(key);
+    return self->db->has_key(key);
 }
 
 G_END_DECLS

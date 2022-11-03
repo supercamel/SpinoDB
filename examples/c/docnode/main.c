@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <Spino-1.0.h>
+#include <time.h>
 
 void add_entries(SpinoCollection* col) 
 {
@@ -9,7 +10,7 @@ void add_entries(SpinoCollection* col)
     SpinoDocNode* str = spino_collection_create_node(col);
     SpinoDocNode* dnode = spino_collection_create_node(col);
 
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 1000000; i++) {
         // set the document root node to be an object
         // this is mandatory. 
         // nodes to be added to the collection must be objects
@@ -38,7 +39,7 @@ void add_entries(SpinoCollection* col)
         // move the node to the collection
         // this removes the nodes from 'doc' and transfers them into the collection
         // doing so avoids a deep copy and needless memory allocations
-        spino_collection_append_node(col, doc);
+        //spino_collection_append_node(col, doc);
         // 'doc' is now of type 'null'
     }
 
@@ -56,11 +57,16 @@ int main() {
     SpinoCollection* col = spino_database_add_collection(db, "my_collection");
     spino_collection_create_index(col, "idx");
 
+    clock_t start, end;
+    start = clock();
     add_entries(col);
+    end = clock();
+    double cpu_time = ((double)(end-start))/CLOCKS_PER_SEC;
+    printf("time: %f\n", cpu_time);
 
     SpinoCursor* cur = spino_collection_find(col, "{idx: {$gt: 5}}");
     while(spino_cursor_has_next(cur) == TRUE) {
-        printf("%s\n", spino_cursor_next(cur));
+        spino_cursor_next(cur);
     }
 
     g_object_unref(cur);

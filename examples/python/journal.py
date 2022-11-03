@@ -3,7 +3,7 @@
 import gi
 import json
 
-gi.require_version("Spino", "1.0")
+gi.require_version("Spino", "1.2")
 from gi.repository import Spino
 
 for i in range(3):

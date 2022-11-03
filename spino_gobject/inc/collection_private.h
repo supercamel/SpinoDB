@@ -2,7 +2,7 @@
 #define SPINO_COLLECTION_PRIVATE_H
 
 #include "collection.h"
-#include "cppsrc/SpinoDB.h"
+#include "cppsrc/collection.h"
 
 G_BEGIN_DECLS
 

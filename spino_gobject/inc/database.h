@@ -2,7 +2,6 @@
 #define SPINO_DATABASE_H_INCLUDED
 
 #include <glib-object.h>
-
 #include "collection.h"
 
 G_BEGIN_DECLS
@@ -13,16 +12,13 @@ G_DECLARE_FINAL_TYPE(SpinoDatabase, spino_database, Spino, Database, GObject)
 
 SpinoDatabase* spino_database_new();
 
-gchar* spino_database_execute(SpinoDatabase* self, const gchar* command);
-
-
 /**
- * spino_database_add_collection:
- * @self: the self
- * @name: the name of the collection
- * Returns: (transfer full):
+ * spino_database_execute:
+ * @self: The database object
+ * @command: The command to execute
+ * Returns: (transfer full): The result of the command
  */
-SpinoCollection* spino_database_add_collection(SpinoDatabase* self, const gchar* name);
+gchar* spino_database_execute(SpinoDatabase* self, const gchar* command);
 
 /**
  * spino_database_get_collection:
@@ -31,6 +27,7 @@ SpinoCollection* spino_database_add_collection(SpinoDatabase* self, const gchar*
  * Returns: (transfer full):
  */
 SpinoCollection* spino_database_get_collection(SpinoDatabase* self, const gchar* name);
+
 
 /**
  * spino_database_has_collection:

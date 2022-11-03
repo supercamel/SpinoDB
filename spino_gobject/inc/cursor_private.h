@@ -2,17 +2,16 @@
 #define SPINO_CURSOR_PRIVATE_H
 
 #include "cursor.h"
-#include "cppsrc/SpinoDB.h"
+#include "cppsrc/cursor.h"
 
 G_BEGIN_DECLS
 
 struct _SpinoCursor{
     GObject parent_instance;
-    Spino::Cursor* priv;
-    rapidjson::CrtAllocator* alloc;
+    shared_ptr<Spino::Cursor> priv;
 };
 
-SpinoCursor* spino_cursor_new(Spino::Cursor* cursor, rapidjson::CrtAllocator* alloc);
+SpinoCursor* spino_cursor_new(shared_ptr<Spino::Cursor> cursor);
 
 G_END_DECLS
 
