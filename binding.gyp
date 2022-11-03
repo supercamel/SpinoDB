@@ -35,18 +35,40 @@
             "cppsrc/squirrel/sqstdlib/sqstdsystem.cpp"
 
                 ],
-                "cflags!": [ "-fno-exceptions" ],
-                "cflags_cc!": [ "-fno-rtti","-fno-exceptions" ],
-                "cflags": [ "-O3" ],
-                "cflags_cc": ["-O3"],
+                "cflags!": [ "-fno-exceptions", "-std=c++20" ],
+                "cflags_cc!": [ "-fno-rtti","-fno-exceptions", "-std=c++20" ],
+                "cflags": [ "-O3" , "-std=c++20"],
+                "cflags_cc": ["-O3", "-std=c++20"],
                 "include_dirs": ["cppsrc/squirrel/include"],
+                   'xcode_settings': {
+                        'OTHER_CFLAGS': [
+                          "-std=c++20",
+                          "-stdlib=libc++"
+                        ],
+                      },
                 "conditions": [
+                        ["OS=='linux'", {
+
+                          "ldflags": [
+                            "-fPIC",
+                            "-fvisibility=hidden"
+                          ],
+                          "cflags": [
+                            "-fPIC",
+                            "-fvisibility=hidden","-std=c++20", "-O3", "-msse4.2", "-march=native"
+                          ],
+                          "cflags_cc": [
+                            "-fPIC",
+                            "-fvisibility=hidden",
+                            "-fvisibility-inlines-hidden","-std=c++20", "-O3", "-msse4.2", "-march=native"
+                          ]
+                        }],
                         [
                           "OS==\"mac\"", {
                             "xcode_settings": {
                               "OTHER_CFLAGS": [
                                 "-mmacosx-version-min=10.7",
-                                "-std=c++14",
+                                "-std=c++20",
                                 "-stdlib=libc++"
                               ],
                               "GCC_ENABLE_CPP_RTTI": "YES",

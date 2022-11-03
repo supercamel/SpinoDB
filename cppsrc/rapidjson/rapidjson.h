@@ -277,7 +277,7 @@
 #  elif defined(RAPIDJSON_DOXYGEN_RUNNING)
 #    define RAPIDJSON_ENDIAN
 #  else
-#    error Unknown machine endianness detected. User needs to define RAPIDJSON_ENDIAN.   
+#    error Unknown machine endianness detected. User needs to define RAPIDJSON_ENDIAN.
 #  endif
 #endif // RAPIDJSON_ENDIAN
 
@@ -379,6 +379,16 @@
     If any of these symbols is defined, RapidJSON defines the macro
     \c RAPIDJSON_SIMD to indicate the availability of the optimized code.
 */
+
+
+// check for processor architecture and configure SIMD type
+#if defined(__arm__) || defined(__arm64__)
+#define RAPIDJSON_NEON
+#else
+#define RAPIDJSON_SSE42
+#endif
+
+
 #if defined(RAPIDJSON_SSE2) || defined(RAPIDJSON_SSE42) \
     || defined(RAPIDJSON_NEON) || defined(RAPIDJSON_DOXYGEN_RUNNING)
 #define RAPIDJSON_SIMD
@@ -412,13 +422,13 @@ RAPIDJSON_NAMESPACE_BEGIN
     instead of using \c size_t. Users may override the SizeType by defining
     \ref RAPIDJSON_NO_SIZETYPEDEFINE.
 */
-typedef unsigned SizeType;
+    typedef unsigned SizeType;
 RAPIDJSON_NAMESPACE_END
 #endif
 
 // always import std::size_t to rapidjson namespace
 RAPIDJSON_NAMESPACE_BEGIN
-using std::size_t;
+    using std::size_t;
 RAPIDJSON_NAMESPACE_END
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -454,15 +464,15 @@ RAPIDJSON_NAMESPACE_END
 //!@cond RAPIDJSON_HIDDEN_FROM_DOXYGEN
 #endif
 RAPIDJSON_NAMESPACE_BEGIN
-template <bool x> struct STATIC_ASSERTION_FAILURE;
-template <> struct STATIC_ASSERTION_FAILURE<true> { enum { value = 1 }; };
-template <size_t x> struct StaticAssertTest {};
+    template <bool x> struct STATIC_ASSERTION_FAILURE;
+    template <> struct STATIC_ASSERTION_FAILURE<true> { enum { value = 1 }; };
+    template <size_t x> struct StaticAssertTest {};
 RAPIDJSON_NAMESPACE_END
 
 #if defined(__GNUC__) || defined(__clang__)
 #define RAPIDJSON_STATIC_ASSERT_UNUSED_ATTRIBUTE __attribute__((unused))
 #else
-#define RAPIDJSON_STATIC_ASSERT_UNUSED_ATTRIBUTE 
+#define RAPIDJSON_STATIC_ASSERT_UNUSED_ATTRIBUTE
 #endif
 #ifndef __clang__
 //!@endcond
@@ -513,7 +523,7 @@ RAPIDJSON_NAMESPACE_END
 
 //!@cond RAPIDJSON_HIDDEN_FROM_DOXYGEN
 
-#define RAPIDJSON_MULTILINEMACRO_BEGIN do {  
+#define RAPIDJSON_MULTILINEMACRO_BEGIN do {
 #define RAPIDJSON_MULTILINEMACRO_END \
 } while((void)0, 0)
 
@@ -666,15 +676,15 @@ RAPIDJSON_NAMESPACE_END
 //!@endcond
 
 //! Assertion (in non-throwing contexts).
- /*! \ingroup RAPIDJSON_CONFIG
-    Some functions provide a \c noexcept guarantee, if the compiler supports it.
-    In these cases, the \ref RAPIDJSON_ASSERT macro cannot be overridden to
-    throw an exception.  This macro adds a separate customization point for
-    such cases.
+/*! \ingroup RAPIDJSON_CONFIG
+   Some functions provide a \c noexcept guarantee, if the compiler supports it.
+   In these cases, the \ref RAPIDJSON_ASSERT macro cannot be overridden to
+   throw an exception.  This macro adds a separate customization point for
+   such cases.
 
-    Defaults to C \c assert() (as \ref RAPIDJSON_ASSERT), if \c noexcept is
-    supported, and to \ref RAPIDJSON_ASSERT otherwise.
- */
+   Defaults to C \c assert() (as \ref RAPIDJSON_ASSERT), if \c noexcept is
+   supported, and to \ref RAPIDJSON_ASSERT otherwise.
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // RAPIDJSON_NOEXCEPT_ASSERT
@@ -726,15 +736,15 @@ RAPIDJSON_NAMESPACE_END
 RAPIDJSON_NAMESPACE_BEGIN
 
 //! Type of JSON value
-enum Type {
-    kNullType = 0,      //!< null
-    kFalseType = 1,     //!< false
-    kTrueType = 2,      //!< true
-    kObjectType = 3,    //!< object
-    kArrayType = 4,     //!< array 
-    kStringType = 5,    //!< string
-    kNumberType = 6     //!< number
-};
+    enum Type {
+        kNullType = 0,      //!< null
+        kFalseType = 1,     //!< false
+        kTrueType = 2,      //!< true
+        kObjectType = 3,    //!< object
+        kArrayType = 4,     //!< array
+        kStringType = 5,    //!< string
+        kNumberType = 6     //!< number
+    };
 
 RAPIDJSON_NAMESPACE_END
 
