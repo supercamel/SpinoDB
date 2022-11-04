@@ -187,7 +187,7 @@ namespace Spino
             bool equals(DomView *other) const;
 
 
-            inline int get_int() const { return value.i; }
+            inline int64_t get_int() const { return value.i; }
             inline uint64_t get_uint() const { return value.u; }
             const char* get_string() const;
             uint32_t get_string_length() const;

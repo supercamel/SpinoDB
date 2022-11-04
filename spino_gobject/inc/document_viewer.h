@@ -36,7 +36,14 @@ G_DECLARE_FINAL_TYPE(SpinoDocView, spino_docview, Spino, DocView, GObject)
 
 
 void spino_member_iterator_next(SpinoMemberIterator* iter);
+
+/**
+ * spino_member_iterator_get_name: 
+ * @iter: the self
+ * Returns: (transfer full):
+ */
 const gchar* spino_member_iterator_get_name(SpinoMemberIterator* iter);
+
 /**
  * spino_member_iterator_get_view:
  * @iter: the self
@@ -57,8 +64,8 @@ SpinoDocView* spino_value_iterator_get_view(SpinoValueIterator* iter);
 gboolean spino_value_iterator_compare(SpinoValueIterator* iter, SpinoValueIterator* other);
 gboolean spino_value_iterator_is_not(SpinoValueIterator* iter, SpinoValueIterator* other);
 
-int spino_docview_get_int(SpinoDocView* self);
-guint spino_docview_get_uint(SpinoDocView* self);
+gint64 spino_docview_get_int(SpinoDocView* self);
+guint64 spino_docview_get_uint(SpinoDocView* self);
 double spino_docview_get_double(SpinoDocView* self);
 gboolean spino_docview_get_bool(SpinoDocView* self);
 const gchar* spino_docview_get_string(SpinoDocView* self);

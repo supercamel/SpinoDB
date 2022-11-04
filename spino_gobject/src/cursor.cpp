@@ -1,5 +1,6 @@
 #include "cursor_private.h"
 
+#include "document_viewer_private.h"
 G_BEGIN_DECLS
 
 
@@ -35,6 +36,13 @@ SpinoCursor* spino_cursor_new(shared_ptr<Spino::Cursor> cursor)
 gchar* spino_cursor_next(SpinoCursor* self)
 {
     gchar* nxt = self->priv->next();
+    return nxt;
+}
+
+SpinoDocView* spino_cursor_next_view(SpinoCursor* self)
+{
+    SpinoDocView* nxt = (SpinoDocView*)g_object_new(SPINO_TYPE_DOCVIEW, NULL);
+    nxt->priv = self->priv->next_dom();
     return nxt;
 }
 
