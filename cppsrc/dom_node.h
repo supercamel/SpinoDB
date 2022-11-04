@@ -253,7 +253,10 @@ namespace Spino
             void from_not_bson(std::ifstream &fin, DOM_NODE_TYPE node_type);
 
             void add_member(const std::string& name, DomNode* node);
+            void remove_member(const std::string& name);
             void push_back(DomNode* node);
+            void pop_back();
+            ElementIterator erase(ElementIterator iter);
 
             void destroy();
         private:

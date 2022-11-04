@@ -1,5 +1,7 @@
 #include "collection_private.h"
 #include "cursor_private.h"
+#include "document_node_private.h"
+#include "document_viewer_private.h"
 
 G_BEGIN_DECLS
 
@@ -45,6 +47,12 @@ void spino_collection_append(SpinoCollection* self, const gchar* doc)
     self->priv->append(doc);
 }
 
+void spino_collection_append_node(SpinoCollection* self, SpinoDocNode* node)
+{
+    self->priv->append(node->priv);
+    node->priv = Spino::dom_node_allocator.make();
+}
+
 void spino_collection_upsert(
         SpinoCollection* self, const gchar* query, const gchar* doc)
 {
@@ -54,6 +62,17 @@ void spino_collection_upsert(
 const gchar* spino_collection_find_one(SpinoCollection* self, const gchar* query)
 {
     return g_strdup(self->priv->find_one(query));
+}
+
+SpinoDocView* spino_collection_find_one_view(SpinoCollection* self, const gchar* query)
+{
+    Spino::DomView* view = self->priv->find_one_dom(query);
+    if(view != nullptr) {
+        SpinoDocView* val = (SpinoDocView*)g_object_new(SPINO_TYPE_DOCVIEW, NULL);
+        val->priv = view;
+        return val;
+    }
+    return NULL;
 }
 
 SpinoCursor* spino_collection_find(

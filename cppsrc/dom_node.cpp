@@ -807,6 +807,18 @@ namespace Spino
         }
     }
 
+    void DomNode::remove_member(const std::string &name)
+    {
+        if (type == DOM_NODE_TYPE_OBJECT)
+        {
+            get_object()->remove(name);
+        }
+        else
+        {
+            cout << "remove_member: not an object" << endl;
+        }
+    }
+
     void DomNode::push_back(DomNode *node)
     {
         if (type == DOM_NODE_TYPE_ARRAY)
@@ -817,6 +829,30 @@ namespace Spino
         {
             cout << "push_back: not an array" << endl;
         }
+    }
+
+    void DomNode::pop_back()
+    {
+        if (type == DOM_NODE_TYPE_ARRAY)
+        {
+            get_array()->pop_back();
+        }
+        else
+        {
+            cout << "pop_back: not an array" << endl;
+        }
+    }
+
+    ElementIterator DomNode::erase(ElementIterator iter) {
+        if (type == DOM_NODE_TYPE_ARRAY)
+        {
+            return get_array()->erase(iter);
+        }
+        else
+        {
+            cout << "erase: not an array" << endl;
+        }
+        return iter;
     }
 
     DomNodeAllocatorType dom_node_allocator;

@@ -24,7 +24,6 @@ namespace Spino {
 
     DomObject::~DomObject() {
         for(auto& i : members) {
-            //delete i.second;
             dom_node_allocator.delete_object(i.second);
         }
     }
@@ -44,6 +43,15 @@ namespace Spino {
     void DomObject::append(const std::string& key, DomNode* val)
     {
         members.insert({key, val});
+    }
+
+    void DomObject::remove(const std::string& key) 
+    {
+        auto result = members.find(key);
+        if(result != members.end()) {
+            dom_node_allocator.delete_object(result->second);
+            members.erase(result);
+        }
     }
 
     const DomView& DomObject::get_member(const std::string& key, size_t len) const

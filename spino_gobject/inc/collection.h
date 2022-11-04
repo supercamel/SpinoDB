@@ -4,6 +4,7 @@
 #include <glib-object.h>
 #include <stdint.h>
 #include "cursor.h"
+#include "document_node.h"
 
 G_BEGIN_DECLS
 
@@ -21,14 +22,23 @@ void spino_collection_create_index(SpinoCollection* self, const gchar* name);
 void spino_collection_drop_index(SpinoCollection* self, const gchar* name);
 void spino_collection_append(SpinoCollection* self, const gchar* doc);
 void spino_collection_upsert(SpinoCollection* self, const gchar* query, const gchar* doc);
+void spino_collection_append_node(SpinoCollection* self, SpinoDocNode* node);
 
 /**
  * spino_collection_find_one:
  * @self: the self
  * @query: the query
- * Returns: (transfer none):
+ * Returns: (transfer full):
  */
 const gchar* spino_collection_find_one(SpinoCollection* self, const gchar* query);
+
+/**
+ * spino_collection_find_one_view:
+ * @self: the self
+ * @query: the query
+ * Returns: (transfer full):
+ */
+SpinoDocView* spino_collection_find_one_view(SpinoCollection* self, const gchar* query);
 
 /**
  * spino_collection_find:

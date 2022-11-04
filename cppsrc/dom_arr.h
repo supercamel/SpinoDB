@@ -32,6 +32,7 @@ namespace Spino {
             const DomView& next();
 
         private:
+            friend class DomArray;
             const std::vector<class DomNode*> *array;
             std::vector<class DomNode*>::const_iterator it;
     };
@@ -42,6 +43,9 @@ namespace Spino {
             DomArray();
             ~DomArray();
             void push_back(DomNode* val);
+            void pop_back();
+
+            ElementIterator erase(ElementIterator iter);
 
             const class DomView& get_index(size_t pos) const;
             ElementIterator element_begin() const;

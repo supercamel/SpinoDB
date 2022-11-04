@@ -33,6 +33,22 @@ namespace Spino {
         elements.push_back(val);
     }
 
+    void DomArray::pop_back()
+    {
+        if(elements.size() > 0) {
+            auto& last_node = elements.back();
+            dom_node_allocator.delete_object(last_node);
+            elements.pop_back();
+        }
+    }
+
+    ElementIterator DomArray::erase(ElementIterator iter)
+    {
+        DomNode* node = *(iter.it);
+        dom_node_allocator.delete_object(node);
+        iter.it = elements.erase(iter.it);
+        return iter;
+    }
 
     ElementIterator DomArray::element_begin() const
     {

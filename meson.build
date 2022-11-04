@@ -32,7 +32,8 @@ spino_sources= [
   'spino_gobject/src/collection.cpp',
   'spino_gobject/src/cursor.cpp', 
   'spino_gobject/src/spino.cpp',
-  'spino_gobject/src/document_viewer.cpp'
+  'spino_gobject/src/document_viewer.cpp',
+  'spino_gobject/src/document_node.cpp'
   ]
 
 spinolib= shared_library('spino-1.2',
@@ -56,7 +57,8 @@ headers = [
   'spino_gobject/inc/database.h',
   'spino_gobject/inc/collection.h',
   'spino_gobject/inc/cursor.h',
-  'spino_gobject/inc/document_viewer.h'
+  'spino_gobject/inc/document_viewer.h',
+  'spino_gobject/inc/document_node.h'
   ]
 
 install_headers(headers, subdir: 'spino')
@@ -64,10 +66,15 @@ install_headers(headers, subdir: 'spino')
 introspection_sources= [
   'spino_gobject/src/database.cpp',
   'spino_gobject/src/spino.cpp',
+  'spino_gobject/src/collection.cpp',
+  'spino_gobject/src/cursor.cpp',
+  'spino_gobject/src/document_viewer.cpp',
+  'spino_gobject/src/document_node.cpp',
   'spino_gobject/inc/cursor.h',
   'spino_gobject/inc/database.h',
   'spino_gobject/inc/collection.h',
   'spino_gobject/inc/document_viewer.h',
+  'spino_gobject/inc/document_node.h',
   'spino_gobject/inc/Spino-1.2.h'
   ]
 

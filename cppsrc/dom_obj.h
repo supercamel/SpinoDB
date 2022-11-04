@@ -66,6 +66,7 @@ namespace Spino {
             ~DomObject();
             bool has_member(const std::string& name) const;
             void append(const std::string& member, class DomNode* val);
+            void remove(const std::string& member);
 
             const class DomView& get_member(const std::string& key, size_t len = 0) const;
 
