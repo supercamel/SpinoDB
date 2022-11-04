@@ -21,8 +21,20 @@ gchar* spino_collection_get_name(SpinoCollection* self);
 void spino_collection_create_index(SpinoCollection* self, const gchar* name);
 void spino_collection_drop_index(SpinoCollection* self, const gchar* name);
 void spino_collection_append(SpinoCollection* self, const gchar* doc);
-void spino_collection_upsert(SpinoCollection* self, const gchar* query, const gchar* doc);
 void spino_collection_append_node(SpinoCollection* self, SpinoDocNode* node);
+
+void spino_collection_upsert(SpinoCollection* self, const gchar* query, const gchar* doc);
+void spino_collection_upsert_node(SpinoCollection* self, const gchar* query, SpinoDocNode* doc);
+
+/**
+ * spino_collection_update: this is an alias for spino_collection_upsert
+ */
+void spino_collection_update(SpinoCollection* self, const gchar* query, const gchar* doc);
+
+/**
+ * spino_collectino_update_node: this is an alias for spino_collection_upsert_node
+ */
+void spino_collection_update_node(SpinoCollection* self, const gchar* query, SpinoDocNode* doc);
 
 /**
  * spino_collection_find_one:

@@ -59,6 +59,24 @@ void spino_collection_upsert(
     self->priv->upsert(query, doc);
 }
 
+
+void spino_collection_upsert_node(SpinoCollection* self, const gchar* query, SpinoDocNode* doc)
+{
+    self->priv->upsert(query, doc->priv);
+    doc->priv = Spino::dom_node_allocator.make();
+}
+
+void spino_collection_update(SpinoCollection* self, const gchar* query, const gchar* doc)
+{
+    self->priv->upsert(query, doc);
+}
+
+void spino_collection_update_node(SpinoCollection* self, const gchar* query, SpinoDocNode* doc)
+{
+    self->priv->upsert(query, doc->priv);
+    doc->priv = Spino::dom_node_allocator.make();
+}
+
 const gchar* spino_collection_find_one(SpinoCollection* self, const gchar* query)
 {
     return g_strdup(self->priv->find_one(query));

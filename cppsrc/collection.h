@@ -38,10 +38,13 @@ namespace Spino
         DomView* find_one_dom(const std::string& index_key, const DomView& value);
         shared_ptr<Cursor> find(const std::string& query);
         size_t drop(const std::string& query, size_t limit = 1);
+
         void upsert(const std::string& query, DomNode *replacement);
         bool upsert(const std::string& query, const std::string& json);
+
         void append(DomNode *node);
         bool append(const std::string& json);
+
         size_t size();
         std::vector<Index>* get_indices();
         void print();
