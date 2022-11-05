@@ -42,6 +42,9 @@ namespace Spino
         void upsert(const std::string& query, DomNode *replacement);
         bool upsert(const std::string& query, const std::string& json);
 
+        void update(const std::string& query, DomNode* node);
+        bool update(const std::string& query, const std::string& json);
+
         void append(DomNode *node);
         bool append(const std::string& json);
 
@@ -54,6 +57,7 @@ namespace Spino
         void to_not_bson(std::ostream& out);
 
     private:
+        void merge_docs(DomNode* node, const DomView* view);
         void drop_one_by_iter(NodeListIterator id);
         rapidjson::StringBuffer sb;
         rapidjson::Writer<rapidjson::StringBuffer> writer;

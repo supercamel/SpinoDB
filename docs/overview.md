@@ -4,9 +4,9 @@ With Spino, you can create databases. Databases contain Collections. Collections
 
 Collections can be searched to find specific documents using the Spino query language (definitely not called SQL for short). Documents can be retrieved, updated, removed and new documents can be appended to the Collection. 
 
-The JSON documents are not required to conform to an schema. Each document in a collection can be completely unique and different. However, it is good practice to have at least one field that is consistent in every document so the documents can be indexed. Indexing is extremely important for query performance. 
+The JSON documents are not required to conform to a schema. Each document in a collection can be completely unique and different. However, it is good practice to have at least one field that is consistent in every document so the documents can be indexed. Indexing is extremely important for query performance. 
 
-SpinoDB is designed for fast retrieval of documents even when the documents number in the millions. Spino can insert over a million simple documents per second and perform a find query in under 0.1ms. That means it can search 1 million documents 10k times per second. In reality, it doesn't matter how many documents are in the database, the only real limit is how much RAM you have available, and loading/saving time.  
+SpinoDB is designed for fast retrieval of documents even when the documents number in the millions. Spino can insert over a million simple documents per second and perform a find query in under 0.1ms. 
 
 ## Creating A Database
 
@@ -71,14 +71,14 @@ The collection update function will merge a new document into an existing one. I
 
 ```
 // for all documents where idx is 1, change the name field to Steve
-col.update("{idx:1}", {name:"Steve"});
+col.update("{\"idx\":1}", {\"name\":"Steve"});
 ```
 
 ## Deleting Documents
 
 ```
 // delete all documents where idx is 1
-col.drop("{idx:1"});
+col.drop("{\"idx\":1"});
 ```
 
 ## Key Value Store

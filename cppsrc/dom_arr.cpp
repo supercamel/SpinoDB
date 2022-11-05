@@ -28,6 +28,11 @@ namespace Spino {
         return *elements.at(pos);
     }
 
+    DomNode* DomArray::get_index_node(size_t pos) const
+    {
+        return elements.at(pos);
+    }
+
     void DomArray::push_back(DomNode* val)
     {
         elements.push_back(val);

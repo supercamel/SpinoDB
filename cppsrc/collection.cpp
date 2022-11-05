@@ -142,24 +142,6 @@ namespace Spino
     {
         drop(query, 1);
         append(replacement);
-
-        if (jw.get_enabled())
-        {
-            rapidjson::StringBuffer sb;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-
-            writer.StartObject();
-            writer.Key("cmd");
-            writer.String("upsert");
-            writer.Key("collection");
-            writer.String(name.c_str());
-            writer.Key("query");
-            writer.String(query.c_str());
-            writer.Key("document");
-            replacement->stringify(writer);
-            writer.EndObject();
-            jw.append(sb.GetString());
-        }
     }
 
     bool Collection::upsert(const std::string &query, const std::string &json)
@@ -174,6 +156,42 @@ namespace Spino
         {
             upsert(query, dom);
             return true;
+        }
+    }
+
+    bool Collection::update(const std::string& query, const std::string& json)
+    {
+        Parser parser;
+        DomNode *dom = parser.parse(json);
+        if (dom == nullptr)
+        {
+            return false;
+        }
+        else
+        {
+            update(query, dom);
+            dom_node_allocator.delete_object(dom);
+            return true;
+        }
+    }
+
+    void Collection::update(const std::string &query, DomNode* node) 
+    {
+        QueryParser query_parser(indices, query.c_str());
+        IndexIteratorRange range;
+        auto instructions = query_parser.parse_query(range);
+        executor.set_instructions(instructions);
+        auto iter = range.first;
+        while (iter != range.second)
+        {
+            if(executor.execute_query(*iter->second) == true)
+            {
+                merge_docs(*iter->second, node);
+                return;
+            }
+            else {
+                iter++;
+            }
         }
     }
 
@@ -314,6 +332,34 @@ namespace Spino
         {
             os.put(DOM_NODE_TYPE_OBJECT);
             node->to_not_bson(os);
+        }
+    }
+
+    void Collection::merge_docs(DomNode* dst, const DomView* src)
+    {
+        for(auto iter = src->member_begin(); iter != src->member_end(); iter++)
+        {
+            if(dst->has_member(iter.get_key()) == false)
+            {
+                DomNode* other = dom_node_allocator.make();
+                other->copy(&(iter.get_value()));
+                dst->add_member(iter.get_key(), other);
+            }
+            else
+            {
+                if(iter.get_value().get_type() == DOM_NODE_TYPE_OBJECT)
+                {
+                    merge_docs(dst->get_member_node(iter.get_key()), &iter.get_value());
+                }
+                else
+                {
+                    dst->remove_member(iter.get_key());
+
+                    DomNode* other = dom_node_allocator.make();
+                    other->copy(&(iter.get_value()));
+                    dst->add_member(iter.get_key(), other);
+                }
+            }
         }
     }
 

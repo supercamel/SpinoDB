@@ -54,9 +54,14 @@ namespace Spino {
         }
     }
 
-    const DomView& DomObject::get_member(const std::string& key, size_t len) const
+    const DomView& DomObject::get_member(const std::string& key) const
     {
         return *(members.find(key)->second);
+    }
+
+    DomNode* DomObject::get_member_node(const std::string& key) const
+    {
+        return members.find(key)->second;
     }
 
     MemberIterator DomObject::member_begin() const

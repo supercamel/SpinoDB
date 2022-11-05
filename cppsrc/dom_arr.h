@@ -48,6 +48,7 @@ namespace Spino {
             ElementIterator erase(ElementIterator iter);
 
             const class DomView& get_index(size_t pos) const;
+            DomNode* get_index_node(size_t pos) const;
             ElementIterator element_begin() const;
             ElementIterator element_end() const;
 

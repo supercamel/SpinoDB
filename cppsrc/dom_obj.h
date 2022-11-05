@@ -21,7 +21,7 @@ namespace Spino {
                 return it == other.it;
             }
 
-            bool operator!=(const MemberIterator &other)
+            bool operator!=(const MemberIterator &other) const
             {
                 return it != other.it;
             }
@@ -68,7 +68,8 @@ namespace Spino {
             void append(const std::string& member, class DomNode* val);
             void remove(const std::string& member);
 
-            const class DomView& get_member(const std::string& key, size_t len = 0) const;
+            const class DomView& get_member(const std::string& key) const;
+            DomNode* get_member_node(const std::string& key) const;
 
             MemberIterator member_begin() const;
             MemberIterator member_end() const;

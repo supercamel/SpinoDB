@@ -68,12 +68,12 @@ void spino_collection_upsert_node(SpinoCollection* self, const gchar* query, Spi
 
 void spino_collection_update(SpinoCollection* self, const gchar* query, const gchar* doc)
 {
-    self->priv->upsert(query, doc);
+    self->priv->update(query, doc);
 }
 
 void spino_collection_update_node(SpinoCollection* self, const gchar* query, SpinoDocNode* doc)
 {
-    self->priv->upsert(query, doc->priv);
+    self->priv->update(query, doc->priv);
     doc->priv = Spino::dom_node_allocator.make();
 }
 

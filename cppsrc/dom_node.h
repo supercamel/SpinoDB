@@ -258,6 +258,9 @@ namespace Spino
             void pop_back();
             ElementIterator erase(ElementIterator iter);
 
+            DomNode* get_element_node(uint index);
+            DomNode* get_member_node(const std::string& name);
+
             void destroy();
         private:
 

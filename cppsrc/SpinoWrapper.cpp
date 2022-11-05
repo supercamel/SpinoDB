@@ -158,6 +158,7 @@ void CollectionWrapper::Init(Isolate* isolate){
     NODE_SET_PROTOTYPE_METHOD(tpl, "dropIndex", dropIndex);
     NODE_SET_PROTOTYPE_METHOD(tpl, "append", append);
     NODE_SET_PROTOTYPE_METHOD(tpl, "upsert", upsert);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "update", update);
     NODE_SET_PROTOTYPE_METHOD(tpl, "findOne", findOne);
     NODE_SET_PROTOTYPE_METHOD(tpl, "find", find);
     NODE_SET_PROTOTYPE_METHOD(tpl, "dropOne", dropOne);
@@ -224,6 +225,45 @@ void CollectionWrapper::append(const FunctionCallbackInfo<Value>& args) {
     }
 }
 
+void CollectionWrapper::update(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
+
+    if(args[0]->IsString() && args[1]->IsString()) {
+        v8::String::Utf8Value str(isolate, args[0]);
+        v8::String::Utf8Value str2(isolate, args[1]);
+        obj->collection->update(*str, *str2);
+    } 
+    else if(args[0]->IsObject() && args[1]->IsObject()) {
+        auto handle = args[0].As<v8::Object>();
+        auto jsonobj = v8::JSON::Stringify(isolate->GetCurrentContext(), handle).ToLocalChecked();
+        v8::String::Utf8Value s(isolate, jsonobj);
+
+        auto handle2 = args[1].As<v8::Object>();
+        auto jsonobj2 = v8::JSON::Stringify(isolate->GetCurrentContext(), handle2).ToLocalChecked();
+        v8::String::Utf8Value s2(isolate, jsonobj2);
+
+        try {
+            obj->collection->update(*s, *s2);
+        }
+        catch(std::regex_error& err) {
+            isolate->ThrowException(Exception::TypeError(
+                        String::NewFromUtf8(isolate,
+                            err.what()).ToLocalChecked()));
+        }
+        catch(Spino::parse_error& err) {
+            isolate->ThrowException(Exception::TypeError(
+                        String::NewFromUtf8(isolate,
+                            err.what()).ToLocalChecked()));
+        }
+        catch(...) {
+            isolate->ThrowException(Exception::TypeError(
+                        String::NewFromUtf8(isolate,
+                            "Unknown error caught during update query").ToLocalChecked()));
+        }
+    }
+}
+
 void CollectionWrapper::upsert(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
     v8::String::Utf8Value findstr(isolate, args[0]);
@@ -247,7 +287,7 @@ void CollectionWrapper::upsert(const FunctionCallbackInfo<Value>& args) {
     catch(...) {
         isolate->ThrowException(Exception::TypeError(
                     String::NewFromUtf8(isolate,
-                        "Unknown exception caught during update query").ToLocalChecked()));
+                        "Unknown exception caught during upsert query").ToLocalChecked()));
     }
 
 }

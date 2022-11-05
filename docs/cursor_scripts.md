@@ -1,6 +1,6 @@
 # Cursor Scripts
 
-**Cursor scripts are deprecated and likely to be removed in future.**
+**Cursor scripts are deprecated and were removed after v1.0.0**
 **If you are using Javascript, use Javascript. If you are using C/Vala, use the DocView API.**
 
 The Cursors returned from find queries can execute Squirrel scripts to further refine search results. Cursor scripting can be used to

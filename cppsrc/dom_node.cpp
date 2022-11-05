@@ -843,6 +843,32 @@ namespace Spino
         }
     }
 
+    DomNode* DomNode::get_element_node(uint32_t index)
+    {
+        if (type == DOM_NODE_TYPE_ARRAY)
+        {
+            return get_array()->get_index_node(index);
+        }
+        else
+        {
+            cout << "get_element: not an array" << endl;
+            return nullptr;
+        }
+    }
+
+    DomNode* DomNode::get_member_node(const std::string &name)
+    {
+        if (type == DOM_NODE_TYPE_OBJECT)
+        {
+            return get_object()->get_member_node(name);
+        }
+        else
+        {
+            cout << "get_member: not an object" << endl;
+            return nullptr;
+        }
+    }
+
     ElementIterator DomNode::erase(ElementIterator iter) {
         if (type == DOM_NODE_TYPE_ARRAY)
         {
