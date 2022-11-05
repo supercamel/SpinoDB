@@ -492,6 +492,12 @@ namespace Spino
                 }
                 fin.get();
 
+                if(typec == DOM_NODE_TYPE_ARRAY) {
+                    child->set_array();
+                }
+                else if(typec == DOM_NODE_TYPE_OBJECT) {
+                    child->set_object();
+                }
                 child->from_not_bson(fin, (DOM_NODE_TYPE)typec);
                 get_object()->append(key_string, child);
             } while (fin.peek() != 0x00);
