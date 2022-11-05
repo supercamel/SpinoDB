@@ -66,9 +66,9 @@ namespace Spino
                 result->stringify(writer);
                 return strdup(sb.GetString());
             }
-            else
+            else 
             {
-                return strdup("");
+                return nullptr;
             }
         }
 
