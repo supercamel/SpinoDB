@@ -86,8 +86,9 @@ void CursorWrapper::toArray(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
     auto txt = curwrap->cursor->next();
     uint32_t count = 0;
-    while(txt != "") {
-        auto v8str = v8::String::NewFromUtf8(isolate, txt.c_str());
+    while(txt != nullptr) {
+        auto v8str = v8::String::NewFromUtf8(isolate, txt);
+        delete txt;
         if(!v8str.IsEmpty()) {
             auto v8strlocal = v8str.ToLocalChecked();
             auto jsonobj = v8::JSON::Parse(isolate->GetCurrentContext(), v8strlocal);
@@ -116,8 +117,9 @@ void CursorWrapper::next(const v8::FunctionCallbackInfo<v8::Value>& args) {
     Isolate* isolate = args.GetIsolate();
     CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.Holder());
     auto next = curwrap->cursor->next();
-    if(next != "") {
-        args.GetReturnValue().Set(String::NewFromUtf8(isolate, next.c_str()).ToLocalChecked());
+    if(next != nullptr) {
+        args.GetReturnValue().Set(String::NewFromUtf8(isolate, next).ToLocalChecked());
+        delete next;
     }
 }
 
@@ -299,13 +301,7 @@ void CollectionWrapper::findOne(const FunctionCallbackInfo<Value>& args) {
     std::string f;
     CollectionWrapper* obj = ObjectWrap::Unwrap<CollectionWrapper>(args.Holder());
     try {
-        Spino::DomView* view = obj->collection->find_one(*str);
-        if(view != nullptr) {
-            f = view->stringify();
-        }
-        else {
-            f = "";
-        }
+        f = obj->collection->find_one(*str);
     }
     catch(Spino::parse_error& err){
         isolate->ThrowException(Exception::TypeError(
@@ -337,7 +333,7 @@ void CollectionWrapper::find(const FunctionCallbackInfo<Value>& args) {
         auto cursor = obj->collection->find(*str);
         if(args.Length() >= 2) {
             uint32_t limit = args[1].As<Number>()->Value();
-            cursor = cursor->set_limit(limit);
+            cursor->set_limit(limit);
         }
         CursorWrapper::NewInstance(args, cursor);
     }

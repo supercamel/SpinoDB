@@ -64,6 +64,7 @@ class CollectionWrapper: public node::ObjectWrap {
 		static void createIndex(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void dropIndex(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void append(const v8::FunctionCallbackInfo<v8::Value>& args);
+		static void update(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void upsert(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void findOne(const v8::FunctionCallbackInfo<v8::Value>& args);
 		static void find(const v8::FunctionCallbackInfo<v8::Value>& args);
