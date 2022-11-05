@@ -58,6 +58,7 @@ void CursorWrapper::Init(Isolate* isolate){
     NODE_SET_PROTOTYPE_METHOD(tpl, "toArray", toArray);
     NODE_SET_PROTOTYPE_METHOD(tpl, "count", count);
     NODE_SET_PROTOTYPE_METHOD(tpl, "setLimit", setLimit);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "runScript", runScript);
 
     Local<Context> context = isolate->GetCurrentContext();
     constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
@@ -120,6 +121,23 @@ void CursorWrapper::next(const v8::FunctionCallbackInfo<v8::Value>& args) {
     if(next != nullptr) {
         args.GetReturnValue().Set(String::NewFromUtf8(isolate, next).ToLocalChecked());
         delete next;
+    }
+}
+
+void CursorWrapper::runScript(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    CursorWrapper* curwrap = ObjectWrap::Unwrap<CursorWrapper>(args.Holder());
+    if(args[0]->IsString()) {
+        v8::String::Utf8Value str(isolate, args[0]);
+
+        std::string result = curwrap->cursor->run_script(*str);
+        args.GetReturnValue().Set(
+                String::NewFromUtf8(isolate, result.c_str()).ToLocalChecked());
+    }
+    else {
+        isolate->ThrowException(Exception::TypeError(
+                    String::NewFromUtf8(isolate,
+                        "expected parameter for runScript to be a string").ToLocalChecked()));
     }
 }
 
