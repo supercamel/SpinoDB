@@ -11,6 +11,7 @@
                 "cppsrc/dom_node.cpp",
                 "cppsrc/dom_obj.cpp",
                 "cppsrc/dom_arr.cpp",
+                "cppsrc/spino_squirrel.cpp",
                 "cppsrc/SpinoWrapper.cpp",
                 "cppsrc/squirrel/squirrel/sqapi.cpp",
                 "cppsrc/squirrel/squirrel/sqbaselib.cpp",
