@@ -36,8 +36,8 @@
                 ],
                 "cflags!": [ "-fno-exceptions" ],
                 "cflags_cc!": [ "-fno-rtti","-fno-exceptions" ],
-                "cflags": [ "-O3" ],
-                "cflags_cc": ["-O3"],
+                "cflags": [ "-g" ],
+                "cflags_cc": ["-g"],
                 "include_dirs": ["cppsrc/squirrel/include"],
                 "conditions": [
                         [

@@ -77,6 +77,7 @@ namespace Spino
 
     DomView *Collection::find_one_dom(const std::string &query)
     {
+        cout << "query: " << query << endl;
         auto cursor = find(query);
         DomView *next = cursor->next_dom();
         return next;
@@ -193,6 +194,28 @@ namespace Spino
                 iter++;
             }
         }
+
+        if (jw.get_enabled())
+        {
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+            writer.StartObject();
+            writer.Key("cmd");
+            writer.String("update");
+            writer.Key("collection");
+            writer.String(name.c_str());
+            writer.Key("query");
+            writer.String(query.c_str());
+            writer.Key("document");
+
+            rapidjson::StringBuffer sbdoc;
+            rapidjson::Writer<rapidjson::StringBuffer> docwriter(sbdoc);
+            node->stringify(docwriter);
+            writer.String(sbdoc.GetString());
+
+            writer.EndObject();
+            jw.append(sb.GetString());
+        }
     }
 
     void Collection::append(DomNode *node)
@@ -250,7 +273,12 @@ namespace Spino
             writer.Key("collection");
             writer.String(name.c_str());
             writer.Key("document");
-            node->stringify(writer);
+
+            rapidjson::StringBuffer sbdoc;
+            rapidjson::Writer<rapidjson::StringBuffer> docwriter(sbdoc);
+            node->stringify(docwriter);
+            writer.String(sbdoc.GetString());
+
             writer.EndObject();
             jw.append(sb.GetString());
         }

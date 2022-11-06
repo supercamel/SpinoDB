@@ -486,7 +486,7 @@ namespace Spino
                 char typec = fin.get();
                 DomNode *child = dom_node_allocator.make();
                 std::string key_string;
-                while (fin.peek() != 0x00)
+                while ((fin.peek() != 0x00) && (!fin.eof()))
                 {
                     key_string += fin.get();
                 }
@@ -500,7 +500,7 @@ namespace Spino
                 }
                 child->from_not_bson(fin, (DOM_NODE_TYPE)typec);
                 get_object()->append(key_string, child);
-            } while (fin.peek() != 0x00);
+            } while ((fin.peek() != 0x00) && (!fin.eof()));
             fin.get(); // read the end of object null char
         }
         break;
@@ -512,7 +512,7 @@ namespace Spino
                 char typec = fin.get();
                 DomNode *child = dom_node_allocator.make();
                 std::string key_string;
-                while (fin.peek() != 0x00)
+                while ((fin.peek() != 0x00) && (!fin.eof()))
                 {
                     key_string += fin.get();
                 }
@@ -526,7 +526,7 @@ namespace Spino
                 }
                 child->from_not_bson(fin, (DOM_NODE_TYPE)typec);
                 get_array()->push_back(child);
-            } while (fin.peek() != 0x00);
+            } while ((fin.peek() != 0x00) && (!fin.eof()));
             fin.get(); // read the end of object null char
         }
         break;
@@ -566,8 +566,14 @@ namespace Spino
         case DOM_NODE_TYPE_SHORT_STRING:
         {
             fin.read((char *)&value.sstr.len, 1);
+            if(value.sstr.len > 15) {
+                cout << "WARNING: short string length exceeds 15 bytes" << endl;
+                cout << (uint32_t)value.sstr.len << endl;
+                //exit(-1);
+                value.sstr.len = 15;
+            }
             fin.read(value.sstr.str, value.sstr.len);
-            value.sstr.str[value.sstr.len] = 0;
+            value.sstr.str[value.sstr.len-1] = 0;
             type = DOM_NODE_TYPE_SHORT_STRING;
         }
         break;

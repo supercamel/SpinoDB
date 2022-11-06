@@ -270,6 +270,7 @@ namespace Spino
             col->to_not_bson(out);
             out.put(0x00);
         }
+        out.put(0x00);
         out.flush();
         out.close();
 
@@ -433,7 +434,10 @@ namespace Spino
             std::string line;
             while (std::getline(file, line))
             {
-                execute(line);
+                std::string result = execute(line);
+                if(result != "{\"msg\":\"OK\"}") {
+                    cout << result << endl;
+                }
             }
             file.close();
         }
@@ -450,6 +454,8 @@ namespace Spino
         Parser parser;
         DomNode *doc = parser.parse(json);
         std::string result;
+
+        result = "{\"error\":\"unknown command\"}";
         if (doc == nullptr)
         {
             return "Error: Invalid JSON";
@@ -637,6 +643,29 @@ namespace Spino
             }
         }
 
+        if(cmd == "update") 
+        {
+            if (doc->has_member("collection") && doc->has_member("query") && doc->has_member("document"))
+            {
+                DomView colnode = doc->get_member("collection");
+                DomView querynode = doc->get_member("query");
+                DomView docnode = doc->get_member("document");
+                if ((!colnode.is_string()) || (!querynode.is_string()) || (!docnode.is_string()))
+                {
+                    result = "{\"error\":\"both collection and document must be of type string\"}";
+                    goto cleanup;
+                }
+
+                auto col = get_collection(colnode.get_string());
+                col->upsert(querynode.get_string(), docnode.get_string());
+                result = "{\"msg\":\"OK\"}";
+            }
+            else
+            {
+                result = "{\"error\":\"Collection, query and document fields are required\"}";
+            }
+        }
+
         if (cmd == "upsert")
         {
             if (doc->has_member("collection") && doc->has_member("query") && doc->has_member("document"))
@@ -668,15 +697,16 @@ namespace Spino
                 DomView querynode = doc->get_member("query");
                 DomView limitnode = doc->get_member("limit");
 
-                if ((!colnode.is_string()) || (!querynode.is_string()) || (!limitnode.is_string()))
+                if ((!colnode.is_string()) || (!querynode.is_string()) || (!limitnode.is_numeric()))
                 {
                     result = "{\"error\":\"collection and document must be of type string. limit must be an unsigned integer.\"}";
                     goto cleanup;
                 }
 
                 auto col = get_collection(colnode.get_string());
-                col->drop(querynode.get_string(), limitnode.get_uint());
+                col->drop(querynode.get_string(), limitnode.get_numeric_as_double()+0.5);
                 result = "{\"msg\":\"OK\"}";
+
             }
             else
             {
@@ -734,7 +764,6 @@ namespace Spino
             }
         }
 
-        result = "{\"error\":\"unknown command\"}";
         cleanup:
             dom_node_allocator.free(doc);
             return result;
