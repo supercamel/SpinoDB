@@ -61,4 +61,9 @@ guint spino_cursor_count(SpinoCursor* self)
     return self->priv->count();
 }
 
+gchar* spino_cursor_run_script(SpinoCursor* self, const gchar* script)
+{
+    return g_strdup(self->priv->run_script(script).c_str());
+}
+
 G_END_DECLS

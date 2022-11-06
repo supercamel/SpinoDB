@@ -264,7 +264,8 @@ DomNode* QueryParser::token_literal_to_node(Token t)
     case TOK_STRING_LITERAL:
     {
         DomNode* node = dom_node_allocator.make();
-        node->set_string(t.raw, t.len, true);
+        std::string str(t.raw, t.len);
+        node->set_string(str.c_str(), str.length(), true);
         return node;
     }
     break;
@@ -330,7 +331,6 @@ void QueryParser::parse_expression()
                 parse_literal();
                 if (index_resolved == false)
                 {
-
                     for (auto &idx : indicies)
                     {
                         std::string s(field_name.raw, field_name.len);

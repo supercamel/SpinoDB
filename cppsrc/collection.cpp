@@ -38,6 +38,7 @@ namespace Spino
             }
             iter++;
         }
+
     }
 
     void Collection::drop_index(const std::string &name)
@@ -77,7 +78,6 @@ namespace Spino
 
     DomView *Collection::find_one_dom(const std::string &query)
     {
-        cout << "query: " << query << endl;
         auto cursor = find(query);
         DomView *next = cursor->next_dom();
         return next;
@@ -110,7 +110,7 @@ namespace Spino
         bool jwenabled = jw.get_enabled();
         jw.set_enabled(false);
 
-        while (ret < limit && nodes.size())
+        while ((ret < limit) && (nodes.size() > 0))
         {
             auto cursor = find(query);
             if (cursor->has_next())
@@ -141,7 +141,7 @@ namespace Spino
 
     void Collection::upsert(const std::string &query, DomNode *replacement)
     {
-        drop(query, 1);
+        drop(query);
         append(replacement);
     }
 

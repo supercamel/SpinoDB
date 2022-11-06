@@ -31,6 +31,8 @@ void spino_cursor_set_limit(SpinoCursor* self, guint limit);
 
 guint spino_cursor_count(SpinoCursor* self);
 
+gchar* spino_cursor_run_script(SpinoCursor* self, const gchar* script);
+
 G_END_DECLS
 
 #endif

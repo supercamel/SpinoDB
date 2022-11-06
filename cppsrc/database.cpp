@@ -87,7 +87,8 @@ namespace Spino
         std::string query = "{k:\"";
         query += key;
         query += "\"}";
-        kvstore->upsert(query, doc);
+        kvstore->drop(query, UINT32_MAX);
+        kvstore->append(doc);
     }
 
     bool Database::get_bool_value(const std::string &key) const
@@ -119,7 +120,8 @@ namespace Spino
         std::string query = "{k:\"";
         query += key;
         query += "\"}";
-        kvstore->upsert(query.c_str(), doc);
+        kvstore->drop(query.c_str(), UINT32_MAX);
+        kvstore->append(doc);
     }
 
     int Database::get_int_value(const std::string &key) const
@@ -151,7 +153,8 @@ namespace Spino
         std::string query = "{k:\"";
         query += key;
         query += "\"}";
-        kvstore->upsert(query, doc);
+        kvstore->drop(query, UINT32_MAX);
+        kvstore->append(doc);
     }
 
     unsigned int Database::get_uint_value(const std::string &key) const
@@ -183,7 +186,8 @@ namespace Spino
         std::string query = "{k:\"";
         query += key;
         query += "\"}";
-        kvstore->upsert(query, doc);
+        kvstore->drop(query, UINT32_MAX);
+        kvstore->append(doc);
     }
 
     double Database::get_double_value(const std::string &key) const
@@ -217,7 +221,8 @@ namespace Spino
         query += key;
         query += "\"}";
 
-        kvstore->upsert(query, doc);
+        kvstore->drop(query, UINT32_MAX);
+        kvstore->append(doc);
     }
 
     const char* Database::get_string_value(const std::string &key) const
@@ -295,6 +300,7 @@ namespace Spino
 
         delete kvstore;
         kvstore = new Collection("__SpinoKeyValueStore__", jw);
+        kvstore->create_index("k");
 
         for(auto &col : collections)
         {
@@ -657,7 +663,7 @@ namespace Spino
                 }
 
                 auto col = get_collection(colnode.get_string());
-                col->upsert(querynode.get_string(), docnode.get_string());
+                col->update(querynode.get_string(), docnode.get_string());
                 result = "{\"msg\":\"OK\"}";
             }
             else
