@@ -520,11 +520,8 @@ namespace Spino
         {
             do
             {
-                char typec = fin.get();
                 DomNode *child = dom_node_allocator.make();
-                while ((fin.peek() != 0x00) && (!fin.eof()))
-                {
-                }
+                char typec = fin.get();
                 fin.get();
 
                 if(typec == DOM_NODE_TYPE_ARRAY) {
@@ -576,15 +573,14 @@ namespace Spino
         {
             fin.read((char *)&value.sstr.len, 1);
             if(value.sstr.len > MAX_SHORT_STRING_LEN) {
-                cout << "WARNING: short string length exceeds 14 bytes" << endl;
-                cout << (uint32_t)value.sstr.len << endl;
-                //exit(-1);
                 value.sstr.len = MAX_SHORT_STRING_LEN;
             }
             fin.read(value.sstr.str, value.sstr.len);
             value.sstr.str[value.sstr.len] = 0;
             type = DOM_NODE_TYPE_SHORT_STRING;
         }
+        break;
+        case DOM_NODE_TYPE_NULL:
         break;
         default:
             break;
