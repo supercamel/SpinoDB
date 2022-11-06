@@ -3,6 +3,11 @@
 #include "dom_node.h"
 
 namespace Spino {
+    bool key_compare_less(const char* a, const char* b)
+    {
+        return strcmp(a, b) < 0;
+    }
+
     const DomView& MemberIterator::operator*() const
     {
         return *(it->second);
@@ -18,17 +23,19 @@ namespace Spino {
         return *(it->second);
     }
 
-    DomObject::DomObject() {
+    DomObject::DomObject() : members(key_compare_less)
+    {
 
     }
 
     DomObject::~DomObject() {
         for(auto& i : members) {
             dom_node_allocator.delete_object(i.second);
+            delete i.first;
         }
     }
 
-    bool DomObject::has_member(const std::string& key) const
+    bool DomObject::has_member(const char* key) const
     {
         if(members.find(key) != members.end())
         {
@@ -40,26 +47,27 @@ namespace Spino {
         }
     }
 
-    void DomObject::append(const std::string& key, DomNode* val)
+    void DomObject::append(const char* key, DomNode* val)
     {
-        members.insert({key, val});
+        members.insert(std::pair<const char*,DomNode*>(key,val));
     }
 
-    void DomObject::remove(const std::string& key) 
+    void DomObject::remove(const char* key) 
     {
         auto result = members.find(key);
         if(result != members.end()) {
             dom_node_allocator.delete_object(result->second);
+            delete result->first;
             members.erase(result);
         }
     }
 
-    const DomView& DomObject::get_member(const std::string& key) const
+    const DomView& DomObject::get_member(const char* key) const
     {
         return *(members.find(key)->second);
     }
 
-    DomNode* DomObject::get_member_node(const std::string& key) const
+    DomNode* DomObject::get_member_node(const char* key) const
     {
         return members.find(key)->second;
     }
@@ -79,11 +87,8 @@ namespace Spino {
     {
         sb.StartObject();
 
-        size_t count = 0;
-        size_t sz = members.size();
-
         for(auto& i : members) {
-            sb.Key(i.first.c_str());
+            sb.Key(i.first);
             i.second->stringify(sb);
         }
         sb.EndObject();

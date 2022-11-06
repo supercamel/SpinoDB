@@ -36,7 +36,7 @@ void spino_member_iterator_next(SpinoMemberIterator* iter)
 
 const gchar* spino_member_iterator_get_name(SpinoMemberIterator* iter)
 {
-    return g_strdup(iter->iter.get_key().c_str());
+    return g_strdup(iter->iter.get_key());
 }
 
 SpinoDocView* spino_member_iterator_get_view(SpinoMemberIterator* iter)

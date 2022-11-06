@@ -31,17 +31,21 @@ public:
     template <class... U>
     T *make(U &&...u)
     {
+        /*
         void *ptr = alloc();
         T *t = new (ptr) T(std::forward<U>(u)...);
         return t;
-        //return new T(std::forward<U>(u)...);
+        */
+        return new T(std::forward<U>(u)...);
     }
 
     void delete_object(T *obj_ptr)
     {
+        /*
         obj_ptr->~T();
         free(obj_ptr);
-        //delete obj_ptr;
+        */
+        delete obj_ptr;
     }
 
     void *alloc()

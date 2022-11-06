@@ -78,7 +78,7 @@ namespace Spino {
         for (auto itr = jsonObj->member_begin();
                 itr != jsonObj->member_end(); ++itr)
         {
-            sq_pushstring(vm, itr.get_key().c_str(), -1);
+            sq_pushstring(vm, itr.get_key(), -1);
 
             if(itr.get_value().is_string()) {
                 sq_pushstring(vm, itr.get_value().get_string(), -1);
@@ -118,7 +118,6 @@ namespace Spino {
     void squirrelPushJsonArr(HSQUIRRELVM vm, const DomView* jsonArr) {
         sq_newarray(vm, 0);
 
-        int count = 0;
         for (auto iter = jsonArr->element_begin();
                 iter != jsonArr->element_end(); ++iter)
         {

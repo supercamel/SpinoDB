@@ -222,14 +222,14 @@ namespace Spino
 
     bool DomView::has_member(const std::string &name) const
     {
-        return get_object()->has_member(name);
+        return get_object()->has_member(name.c_str());
     }
 
     const DomView &DomView::get_member(const std::string &name) const
     {
         if (type == DOM_NODE_TYPE_OBJECT)
         {
-            return get_object()->get_member(name);
+            return get_object()->get_member(name.c_str());
         }
         else
         {
@@ -461,7 +461,7 @@ namespace Spino
             {
                 DomNode *n = dom_node_allocator.make();
                 n->copy(&(it.get_value()));
-                self->append(it.get_key(), n);
+                self->append(strdup(it.get_key()), n);
             }
         }
         else if(other_type == DOM_NODE_TYPE_NULL)
@@ -481,16 +481,27 @@ namespace Spino
         {
         case DOM_NODE_TYPE_OBJECT: // object
         {
+            char typec = fin.get();
             do
             {
-                char typec = fin.get();
                 DomNode *child = dom_node_allocator.make();
-                std::string key_string;
-                while ((fin.peek() != 0x00) && (!fin.eof()))
-                {
-                    key_string += fin.get();
+                char* key_string = new char[8];
+                uint32_t len = 0;
+                uint32_t available = 8;
+                char c;
+                do {
+                    c = fin.get();
+                    key_string[len++] = c;
+                    if (len >= available)
+                    {
+                        if(fin.eof()) {
+                            break;
+                        }
+                        available *= 2;
+                        key_string = (char*)realloc(key_string, available);
+                    }
                 }
-                fin.get();
+                while (c != 0x00);
 
                 if(typec == DOM_NODE_TYPE_ARRAY) {
                     child->set_array();
@@ -500,8 +511,8 @@ namespace Spino
                 }
                 child->from_not_bson(fin, (DOM_NODE_TYPE)typec);
                 get_object()->append(key_string, child);
-            } while ((fin.peek() != 0x00) && (!fin.eof()));
-            fin.get(); // read the end of object null char
+                typec = fin.get(); 
+            } while ((typec != 0x00) && (!fin.eof()));
         }
         break;
 
@@ -511,10 +522,8 @@ namespace Spino
             {
                 char typec = fin.get();
                 DomNode *child = dom_node_allocator.make();
-                std::string key_string;
                 while ((fin.peek() != 0x00) && (!fin.eof()))
                 {
-                    key_string += fin.get();
                 }
                 fin.get();
 
@@ -566,14 +575,14 @@ namespace Spino
         case DOM_NODE_TYPE_SHORT_STRING:
         {
             fin.read((char *)&value.sstr.len, 1);
-            if(value.sstr.len > 15) {
-                cout << "WARNING: short string length exceeds 15 bytes" << endl;
+            if(value.sstr.len > MAX_SHORT_STRING_LEN) {
+                cout << "WARNING: short string length exceeds 14 bytes" << endl;
                 cout << (uint32_t)value.sstr.len << endl;
                 //exit(-1);
-                value.sstr.len = 15;
+                value.sstr.len = MAX_SHORT_STRING_LEN;
             }
             fin.read(value.sstr.str, value.sstr.len);
-            value.sstr.str[value.sstr.len-1] = 0;
+            value.sstr.str[value.sstr.len] = 0;
             type = DOM_NODE_TYPE_SHORT_STRING;
         }
         break;
@@ -591,7 +600,10 @@ namespace Spino
             for (auto it = get_object()->member_begin(); it != get_object()->member_end(); it++)
             {
                 buff.push_back(it.get_value().get_type());
-                buff.insert(buff.end(), it.get_key().begin(), it.get_key().end());
+                //buff.insert(buff.end(), it.get_key().begin(), it.get_key().end());
+                for(size_t i = 0; i < strlen(it.get_key()); i++) {
+                    buff.push_back(it.get_key()[i]);
+                }
                 buff.push_back(0x00);
                 it.get_value().to_not_bson_buff(buff);
             }
@@ -632,17 +644,15 @@ namespace Spino
         break;
         case DOM_NODE_TYPE_LONG_STRING:
         {
-            uint32_t len = value.str.len + 1;
+            uint32_t len = value.str.len;
             buff.insert(buff.end(), (char*)&len, ((char*)&len) + 4);
-            buff.insert(buff.end(), value.str.str, value.str.str + (len-1));
-            buff.push_back(0x00);
+            buff.insert(buff.end(), value.str.str, value.str.str + len);
         }
         break;
         case DOM_NODE_TYPE_SHORT_STRING:
         {
-            buff.push_back(value.sstr.len+1);
+            buff.push_back(value.sstr.len);
             buff.insert(buff.end(), value.sstr.str, value.sstr.str + value.sstr.len);
-            buff.push_back(0x00);
         }
         break;
         default:
@@ -690,17 +700,15 @@ namespace Spino
         break;
         case DOM_NODE_TYPE_LONG_STRING:
         {
-            uint32_t len = value.str.len + 1;
+            uint32_t len = value.str.len;
             fout.write((char *)&len, 4);
-            fout.write(value.str.str, len - 1);
-            fout.put('\0');
+            fout.write(value.str.str, len);
         }
         break;
         case DOM_NODE_TYPE_SHORT_STRING:
         {
-            fout.put(value.sstr.len+1);
+            fout.put(value.sstr.len);
             fout.write(value.sstr.str, value.sstr.len);
-            fout.put('\0');
         }
         break;
         case DOM_NODE_TYPE_ARRAY:
@@ -724,7 +732,7 @@ namespace Spino
             while (it != obj->member_end())
             {
                 fout.put(it.get_value().get_type());
-                fout.write(it.get_key().c_str(), it.get_key().length());
+                fout.write(it.get_key(), strlen(it.get_key()));
                 fout.put(0x00);
                 it.get_value().to_not_bson(fout);
                 ++it;
@@ -817,7 +825,7 @@ namespace Spino
     {
         if (type == DOM_NODE_TYPE_OBJECT)
         {
-            get_object()->append(name, node);
+            get_object()->append(strdup(name.c_str()), node);
         }
         else
         {
@@ -829,7 +837,7 @@ namespace Spino
     {
         if (type == DOM_NODE_TYPE_OBJECT)
         {
-            get_object()->remove(name);
+            get_object()->remove(name.c_str());
         }
         else
         {
@@ -878,7 +886,7 @@ namespace Spino
     {
         if (type == DOM_NODE_TYPE_OBJECT)
         {
-            return get_object()->get_member_node(name);
+            return get_object()->get_member_node(name.c_str());
         }
         else
         {
@@ -900,4 +908,5 @@ namespace Spino
     }
 
     DomNodeAllocatorType dom_node_allocator;
+
 }

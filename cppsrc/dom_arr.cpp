@@ -68,8 +68,6 @@ namespace Spino {
     void DomArray::stringify(rapidjson::Writer<rapidjson::StringBuffer>& sb) const
     {
         sb.StartArray();
-        size_t count = 0;
-        size_t size = elements.size();
 
         for(auto& element : elements) {
             element->stringify(sb);

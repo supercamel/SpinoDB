@@ -264,14 +264,11 @@ namespace Spino
             void destroy();
         private:
 
-            static constexpr uint32_t MAX_SHORT_STRING_LEN = 15;
+            static constexpr uint32_t MAX_SHORT_STRING_LEN = 14;
     };
 
     typedef ObjectAllocator<DomNode, 1024> DomNodeAllocatorType;
     extern DomNodeAllocatorType dom_node_allocator;
-
-    typedef ObjectAllocator<char[16], 1024> SmallStringAllocatorType;
-    extern SmallStringAllocatorType small_string_allocator;
 }
 
 #endif
