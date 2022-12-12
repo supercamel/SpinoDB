@@ -3,11 +3,11 @@
 import gi
 import json
 
-gi.require_version("Spino", "1.0")
+gi.require_version("Spino", "1.2")
 from gi.repository import Spino
 
 db = Spino.Database.new()
-col = db.add_collection("test")
+col = db.get_collection("test")
 col.create_index("name")
 
 doc = { "name": "Camel", "score": None}

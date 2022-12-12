@@ -6,7 +6,11 @@
 void add_many_entries(Spino.Collection col)
 {
     for(int i = 0; i < 1000000; i++) {
-        col.append("{\"i\":" + i.to_string() + "}");
+        var doc = new Spino.DocNode();
+        doc.set_object();
+        doc.add_uint_member("i", (uint)i);
+        col.append_node(doc);
+        //col.append("{\"i\":" + i.to_string() + "}");
     }
 }
 

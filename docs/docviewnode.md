@@ -77,10 +77,10 @@ Arrays are traversed using ValueIterators. ValueIterators have the same API as M
 
 DocNode is a type for building JSON documents. 
 
-DocNodes require a collection in order to be created. This is for memory allocation reasons. Once a DocNode begins to construct a JSON DOM, it is using the memory allocator provided by the collection and essentially constructs the DOM in place. When the document is appended to the collection, there is not deep copy or large memory transfer. 
+To create a DocNode, call spino_docnode_new().
 
 ```
-    SpinoDocNode* doc = spino_collection_create_node(col);
+    SpinoDocNode* doc = spino_docnode_new();
 ```
 
 A DocNode can contain any JSON value, such as an object, array, integer, string, etc. When it is created, it will contain type NULL. All documents must be of type object, so the root node of a document must be an object. After creating the base DocNode for a new document, call the `set_object()`function. 
@@ -99,11 +99,11 @@ Once the node is an object, members can be added.
 Arrays can be created and added to the document
 
 ```
-    SpinoDocNode* arr = spino_collection_create_node(col);
+    SpinoDocNode* arr = spino_docnode_new();
     spino_docnode_set_array(arr); //set the node to be an array
 
     // create a node to temporarily hold values that we append to the array
-    SpinoDocNode* element = spino_collection_create_node(col);
+    SpinoDocNode* element = spino_docnode_new();
 
     // set_string sets the node type to be type string with value "Hello"
     spino_docnode_set_string(arr, element, "Hello"); 
@@ -117,6 +117,9 @@ Arrays can be created and added to the document
 
     // add the array to the document
     spino_docnode_add_member(doc, "arr", arr);
+
+    g_object_unref(element); // DocNodes must always been unreffed when they are no longer needed
+    g_object_unref(arr);
 
 ```
 
@@ -133,6 +136,12 @@ When a DocNode is moved, the DOM elements are transferred to the new DocNode con
     // 'arr' is now empty / null
     // doc now looks like this 
     // {myArray: ["Hello", 100]}
+```
+
+Note that every DocNode must be unreffed when it is no longer needed, even if it is moved into another DocNode. 
+
+```
+    g_object_unref(arr);
 ```
 
 ## Viewing DocNodes

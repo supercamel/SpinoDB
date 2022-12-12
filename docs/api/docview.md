@@ -132,6 +132,12 @@ Returns a ValueIterator to the first element of self. self must be of type array
 
 Returns a ValueIterator to the last element of self. self must be of type array.
 
+## compare
+    
+    `gboolean spino_docview_compare(SpinoDocView* self, SpinoDocView* other)`
+
+Return true if the two DocViews are of comparable types and are equal, otherwise false.
+
 ## stringify
 
     `gchar* spino_docview_stringify(SpinoDocView* self)`

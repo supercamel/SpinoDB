@@ -22,6 +22,10 @@ int main() {
     }
 
     spino_database_save(db, "db.json");
+
+    g_object_unref(cur);
+    g_object_unref(col);
+    g_object_unref(db);
     return 0;
 }
 

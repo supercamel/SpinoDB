@@ -2,11 +2,10 @@
 
 DocNodes are used to assemble new JSON documents directly in SpinoDBs memory. DocNode does not exist in NodeJS bindings. It is only in GObject bindings.
 
-DocNodes are created using the Collection that the document is intended for (appending or updating).
-
+To create a DocNode
 
 ```
-    SpinoDocNode* doc = spino_collection_create_node(col);
+    SpinoDocNode* doc = spino_docnode_new();
 ```
 
 ## set_object

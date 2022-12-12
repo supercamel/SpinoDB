@@ -31,21 +31,23 @@ public:
     template <class... U>
     T *make(U &&...u)
     {
-        /*
+#ifndef SPINO_USE_SYSTEM_ALLOC
         void *ptr = alloc();
         T *t = new (ptr) T(std::forward<U>(u)...);
         return t;
-        */
+#else 
         return new T(std::forward<U>(u)...);
+#endif
     }
 
     void delete_object(T *obj_ptr)
     {
-        /*
+#ifndef SPINO_USE_SYSTEM_ALLOC
         obj_ptr->~T();
         free(obj_ptr);
-        */
+#else
         delete obj_ptr;
+#endif
     }
 
     void *alloc()
@@ -64,7 +66,6 @@ public:
         }
 
         return firstBuffer->getBlock(bufferedBlocks++);
-        //return malloc(sizeof(T));
     }
 
     void free(void *pointer)
@@ -72,7 +73,6 @@ public:
         Block *block = reinterpret_cast<Block *>(pointer);
         block->next = firstFreeBlock;
         firstFreeBlock = block;
-       //::free(pointer);
     }
 
     size_t get_n_allocations() const

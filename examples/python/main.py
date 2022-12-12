@@ -15,7 +15,11 @@ col.create_index("score")
 start = time.time()
 for i in range(1000000):
     doc = { "name": "Camel", "score": i }
-    col.append(json.dumps(doc))
+    doc = Spino.DocNode.new()
+    doc.set_object()
+    doc.add_int_member("score", i)
+    doc.add_string_member("name", "Camel")
+    col.append_node(doc)
 end = time.time()
 print("Time to add 1 million documents: " + str(end - start))
 
