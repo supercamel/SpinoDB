@@ -367,7 +367,9 @@ namespace Spino
             type = DOM_NODE_TYPE_LONG_STRING;
             if (copy)
             {
-                value.str.str = strdup(c);
+                value.str.str = (char*)malloc(len + 1);
+                memcpy((void*)value.str.str, c, len);
+                ((char *)(value.str.str))[len] = 0;
                 value.str.len = len;
             }
             else
