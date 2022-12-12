@@ -320,6 +320,11 @@ SpinoValueIterator* spino_docview_end(SpinoDocView* self)
     return ret;
 }
 
+gboolean spino_docview_compare(SpinoDocView* self, SpinoDocView* other)
+{
+    return *self->priv == *other->priv;
+}
+
 gchar* spino_docview_stringify(SpinoDocView* self)
 {
     return g_strdup(self->priv->stringify().c_str());

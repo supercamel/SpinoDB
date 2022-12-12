@@ -1,14 +1,14 @@
 #include <stdio.h>
-#include <Spino-1.0.h>
+#include <Spino-1.2.h>
 #include <time.h>
 
 void add_entries(SpinoCollection* col) 
 {
     // pre-make some node objects
-    SpinoDocNode* doc = spino_collection_create_node(col);
-    SpinoDocNode* arr = spino_collection_create_node(col);
-    SpinoDocNode* str = spino_collection_create_node(col);
-    SpinoDocNode* dnode = spino_collection_create_node(col);
+    SpinoDocNode* doc = spino_docnode_new();
+    SpinoDocNode* arr = spino_docnode_new();
+    SpinoDocNode* str = spino_docnode_new();
+    SpinoDocNode* dnode = spino_docnode_new();
 
     for(int i = 0; i < 1000000; i++) {
         // set the document root node to be an object
@@ -54,7 +54,7 @@ void add_entries(SpinoCollection* col)
 int main() {
     SpinoDatabase* db = spino_database_new();
 
-    SpinoCollection* col = spino_database_add_collection(db, "my_collection");
+    SpinoCollection* col = spino_database_get_collection(db, "my_collection");
     spino_collection_create_index(col, "idx");
 
     clock_t start, end;

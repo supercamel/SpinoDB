@@ -1,10 +1,10 @@
 #include <stdio.h>
-#include <Spino-1.0.h>
+#include <Spino-1.2.h>
 
 int main() {
     SpinoDatabase* db = spino_database_new();
 
-    SpinoCollection* col = spino_database_add_collection(db, "my_collection");
+    SpinoCollection* col = spino_database_get_collection(db, "my_collection");
     spino_collection_create_index(col, "idx");
 
     for(int i = 0; i < 10; i++) {

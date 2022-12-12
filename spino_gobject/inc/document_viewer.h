@@ -124,6 +124,8 @@ SpinoValueIterator* spino_docview_begin(SpinoDocView* self);
  */
 SpinoValueIterator* spino_docview_end(SpinoDocView* self);
 
+gboolean spino_docview_compare(SpinoDocView* self, SpinoDocView* other);
+
 gchar* spino_docview_stringify(SpinoDocView* self);
 
 G_END_DECLS
