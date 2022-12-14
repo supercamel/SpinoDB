@@ -806,6 +806,7 @@ namespace Spino
         }
         break;
         }
+        type = DOM_NODE_TYPE_NULL;
     }
 
     void DomNode::add_member(const std::string &name, DomNode *node)

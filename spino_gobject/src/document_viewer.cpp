@@ -56,6 +56,27 @@ gboolean spino_member_iterator_is_not(SpinoMemberIterator* iter, SpinoMemberIter
     return (iter->iter != other->iter);
 }
 
+gboolean spino_member_iterator_has_next(SpinoMemberIterator* iter)
+{
+    return (iter->iter.has_next());
+}
+
+void spino_member_iterator_foreach(SpinoMemberIterator* iter, SpinoIteratorNextFunc func, gpointer user_data)
+{
+    while (iter->iter.has_next()) {
+        // create a new view
+        SpinoDocView* val = (SpinoDocView*)g_object_new(SPINO_TYPE_DOCVIEW, NULL);
+        val->priv = &(iter->iter.get_value());
+        gboolean result = func(val, user_data);
+        g_object_unref(val);
+
+        if(result == false) {
+            break;
+        }
+        iter->iter++;
+    }
+}
+
 G_DEFINE_TYPE(SpinoValueIterator, spino_value_iterator, G_TYPE_OBJECT)
 
 static void spino_value_iterator_finalize(GObject* object)
@@ -101,6 +122,27 @@ gboolean spino_value_iterator_compare(SpinoValueIterator* iter, SpinoValueIterat
 gboolean spino_value_iterator_is_not(SpinoValueIterator* iter, SpinoValueIterator* other)
 {
     return (iter->iter != other->iter);
+}
+
+gboolean spino_value_iterator_has_next(SpinoValueIterator* iter) 
+{
+    return iter->iter.has_next();
+}
+
+void spino_value_iterator_foreach(SpinoValueIterator* iter, SpinoIteratorNextFunc func, gpointer user_data)
+{
+    while (iter->iter.has_next()) {
+        SpinoDocView* val = (SpinoDocView*)g_object_new(SPINO_TYPE_DOCVIEW, NULL);
+        val->priv = &(iter->iter.get_value());
+        gboolean result = func(val, user_data);
+        g_object_unref(val);
+
+        if(result == false) {
+            break;
+        }
+        iter->iter++;
+
+    }
 }
 
 G_DEFINE_TYPE(SpinoDocView, spino_docview, G_TYPE_OBJECT)

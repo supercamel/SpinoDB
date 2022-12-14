@@ -9,10 +9,13 @@ G_DEFINE_TYPE(SpinoDocNode, spino_docnode, G_TYPE_OBJECT)
 static void spino_docnode_finalize(GObject* object) 
 {
     SpinoDocNode* self = (SpinoDocNode*)(object);
-    self->priv->destroy();
-    G_OBJECT_CLASS(spino_docnode_parent_class)->finalize(object);
+    if(self->priv != nullptr)  {
+        self->priv->destroy();
+        Spino::dom_node_allocator.delete_object(self->priv);
+        self->priv = nullptr;
+    }
 
-    Spino::dom_node_allocator.delete_object(self->priv);
+    G_OBJECT_CLASS(spino_docnode_parent_class)->finalize(object);
 }
 
 static void spino_docnode_class_init(SpinoDocNodeClass* klass) 
@@ -135,7 +138,7 @@ void spino_docnode_remove_member(SpinoDocNode* self, const gchar* name)
 void spino_docnode_append(SpinoDocNode* self, SpinoDocNode* other)
 {
     self->priv->push_back(other->priv);
-    self->priv = Spino::dom_node_allocator.make();
+    other->priv = Spino::dom_node_allocator.make();
 }
 
 

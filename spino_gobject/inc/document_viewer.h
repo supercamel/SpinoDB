@@ -33,6 +33,7 @@ G_DECLARE_FINAL_TYPE(SpinoValueIterator, spino_value_iterator, Spino, ValueItera
 #define SPINO_TYPE_DOCVIEW (spino_docview_get_type())
 G_DECLARE_FINAL_TYPE(SpinoDocView, spino_docview, Spino, DocView, GObject)
 
+typedef gboolean (*SpinoIteratorNextFunc)(const SpinoDocView* view, gpointer user_data);
 
 
 void spino_member_iterator_next(SpinoMemberIterator* iter);
@@ -52,6 +53,14 @@ const gchar* spino_member_iterator_get_name(SpinoMemberIterator* iter);
 SpinoDocView* spino_member_iterator_get_view(SpinoMemberIterator* iter);
 gboolean spino_member_iterator_compare(SpinoMemberIterator* iter, SpinoMemberIterator* other);
 gboolean spino_member_iterator_is_not(SpinoMemberIterator* iter, SpinoMemberIterator* other);
+gboolean spino_member_iterator_has_next(SpinoMemberIterator* iter);
+
+/**
+ * spino_member_iterator_foreach:
+ * @iter: the self
+ * @func: (scope call):
+ */
+void spino_member_iterator_foreach(SpinoMemberIterator* iter, SpinoIteratorNextFunc func, gpointer user_data);
 
 
 void spino_value_iterator_next(SpinoValueIterator* iter);
@@ -63,6 +72,14 @@ void spino_value_iterator_next(SpinoValueIterator* iter);
 SpinoDocView* spino_value_iterator_get_view(SpinoValueIterator* iter);
 gboolean spino_value_iterator_compare(SpinoValueIterator* iter, SpinoValueIterator* other);
 gboolean spino_value_iterator_is_not(SpinoValueIterator* iter, SpinoValueIterator* other);
+gboolean spino_value_iterator_has_next(SpinoValueIterator* iter);
+
+/**
+ * spino_value_iterator_foreach:
+ * @iter: the self
+ * @func: (scope call):
+ */
+void spino_value_iterator_foreach(SpinoValueIterator* iter, SpinoIteratorNextFunc func, gpointer user_data);
 
 gint64 spino_docview_get_int(SpinoDocView* self);
 guint64 spino_docview_get_uint(SpinoDocView* self);
