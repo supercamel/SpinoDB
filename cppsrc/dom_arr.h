@@ -29,6 +29,7 @@ namespace Spino {
 
             bool has_next();
 
+            const DomView& get_value();
             const DomView& next();
 
         private:

@@ -10,6 +10,7 @@ namespace Spino {
 
     bool ElementIterator::has_next() { return it != array->end(); }
 
+    const DomView& ElementIterator::get_value() { return **it; }
     const DomView& ElementIterator::next() { return **it++; }
 
 

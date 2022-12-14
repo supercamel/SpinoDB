@@ -23,6 +23,17 @@ if(val.get_value_type() == Spino.VALUETYPE.OBJECT):
 
 
 
+arr = Spino.DocNode.new()
+arr.set_array()
+for i in range(100):
+    val = Spino.DocNode.new()
+    val.set_int(i)
+    arr.append(val)
 
+iter = arr.get_view().begin()
+while(iter.is_not(arr.get_view().end())):
+    val = iter.get_view()
+    print(val.get_int())
+    iter.next()
 
 
