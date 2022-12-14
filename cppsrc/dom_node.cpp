@@ -138,7 +138,22 @@ namespace Spino
         }
         else if (is_string() && other.is_string())
         {
-            return strcmp(get_string(), other.get_string()) == 0;
+            uint32_t len_a = get_string_length();
+            uint32_t len_b = other.get_string_length();
+            if (len_a != len_b)
+            {
+                return false;
+            }
+
+            for(uint32_t i = 0; i < len_a; i++)
+            {
+                if (get_string()[i] != other.get_string()[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
         return false;
     }
@@ -378,32 +393,6 @@ namespace Spino
                 value.str.len = len;
             }
         }
-    }
-
-    const char *DomView::get_string() const
-    {
-        if (type == DOM_NODE_TYPE_LONG_STRING)
-        {
-            return value.str.str;
-        }
-        else if (type == DOM_NODE_TYPE_SHORT_STRING)
-        {
-            return value.sstr.str;
-        }
-        return nullptr;
-    }
-
-    uint32_t DomView::get_string_length() const
-    {
-        if (type == DOM_NODE_TYPE_LONG_STRING)
-        {
-            return value.str.len;
-        }
-        else if (type == DOM_NODE_TYPE_SHORT_STRING)
-        {
-            return value.sstr.len;
-        }
-        return 0;
     }
 
     void DomNode::set_null()

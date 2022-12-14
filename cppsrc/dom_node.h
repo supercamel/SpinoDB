@@ -189,8 +189,28 @@ namespace Spino
 
             inline int64_t get_int() const { return value.i; }
             inline uint64_t get_uint() const { return value.u; }
-            const char* get_string() const;
-            uint32_t get_string_length() const;
+            const char* get_string() const {
+                switch(type) {
+                    case DOM_NODE_TYPE_LONG_STRING:
+                        return value.str.str;
+                    case DOM_NODE_TYPE_SHORT_STRING:
+                        return value.sstr.str;
+                    default:
+                        return nullptr;
+                }
+            }
+
+            uint32_t get_string_length() const {
+                switch(type) {
+                    case DOM_NODE_TYPE_LONG_STRING:
+                        return value.str.len;
+                    case DOM_NODE_TYPE_SHORT_STRING:
+                        return value.sstr.len;
+                    default:
+                        return 0;
+                }
+            }
+
             double get_double() const;
             bool get_bool() const;
             inline DOM_NODE_TYPE get_type() const { return type; }
