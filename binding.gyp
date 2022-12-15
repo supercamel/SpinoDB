@@ -3,7 +3,6 @@
         {
             "target_name": "spinodb",
             "sources": [
-                "cppsrc/main.cpp",
                 "cppsrc/query_executor.cpp",
                 "cppsrc/query_parse.cpp",
                 "cppsrc/collection.cpp",
@@ -12,9 +11,10 @@
                 "cppsrc/dom_obj.cpp",
                 "cppsrc/dom_arr.cpp",
                 "cppsrc/spino_squirrel.cpp",
-                "cppsrc/SpinoWrapper.cpp",
-                "cppsrc/CollectionWrapper.cpp",
-                "cppsrc/CursorWrapper.cpp",
+                "spino_node/SpinoWrapper.cpp",
+                "spino_node/CollectionWrapper.cpp",
+                "spino_node/CursorWrapper.cpp",
+                "spino_node/main.cpp",
                 "cppsrc/squirrel/squirrel/sqapi.cpp",
                 "cppsrc/squirrel/squirrel/sqbaselib.cpp",
                 "cppsrc/squirrel/squirrel/sqclass.cpp",
@@ -40,7 +40,7 @@
             "cflags_cc!": ["-fno-rtti", "-fno-exceptions"],
             "cflags": ["-O3"],
             "cflags_cc": ["-O3"],
-            'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")", "cppsrc/squirrel/include"],
+            'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")", "cppsrc", "cppsrc/squirrel/include"],
             'dependencies': ["<!(node -p \"require('node-addon-api').gyp\")"],
             "conditions": [
                 [

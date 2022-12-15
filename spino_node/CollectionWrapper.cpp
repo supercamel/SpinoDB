@@ -3,6 +3,49 @@
 
 Napi::FunctionReference *CollectionWrapper::constructor;
 
+static Spino::DomNode* napi_value_to_dom_node(Napi::Value value) {
+    Napi::Env env = value.Env();
+    Napi::HandleScope scope(env);
+
+    Spino::DomNode* node = Spino::dom_node_allocator.make();
+
+    if(value.IsObject()) {
+        node->set_object();
+        Napi::Object obj = value.As<Napi::Object>();
+        Napi::Array keys = obj.GetPropertyNames();
+        for (unsigned int i = 0; i < keys.Length(); i++) {
+            Napi::Value key = keys.Get(i);
+            Napi::Value val = obj.Get(key);
+
+            Spino::DomNode* child = napi_value_to_dom_node(val);
+            node->add_member(key.As<Napi::String>().Utf8Value(), child);
+        }
+    }
+    else if(value.IsArray()) {
+        node->set_array();
+        Napi::Array arr = value.As<Napi::Array>();
+        for (unsigned int i = 0; i < arr.Length(); i++) {
+            Napi::Value val = arr.Get(i);
+
+            Spino::DomNode* child = napi_value_to_dom_node(val);
+            node->push_back(child);
+        }
+    }
+    else if(value.IsString()) {
+        std::string sval = value.As<Napi::String>().Utf8Value();
+        node->set_string(sval.c_str(), sval.length(), true);
+    }
+    else if(value.IsNumber()) {
+        node->set_double(value.As<Napi::Number>().DoubleValue());
+    }
+    else if(value.IsBoolean()) {
+        node->set_bool(value.As<Napi::Boolean>().Value());
+    }
+
+    return node;
+}
+
+
 Napi::Object CollectionWrapper::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::Function func =
@@ -94,8 +137,16 @@ Napi::Value CollectionWrapper::findOne(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
     }
 
+    std::string result;
     Napi::String data = info[0].As<Napi::String>();
-    std::string result = this->collection->find_one(data.Utf8Value().c_str());
+    try {
+        result = this->collection->find_one(data.Utf8Value().c_str());
+    }
+    catch(Spino::parse_error& err) {
+        // throw a JS error
+        std::string msg = "Parse error: ";
+        throw Napi::Error::New(env, msg + err.what());
+    }
 
     return Napi::String::New(env, result);
 }
@@ -111,13 +162,18 @@ Napi::Value CollectionWrapper::find(const Napi::CallbackInfo &info)
     }
 
     Napi::String query = info[0].As<Napi::String>();
-    shared_ptr<Spino::Cursor> cursor = this->collection->find(query.Utf8Value());
-
-    // Create an object that wraps the collection
-    Napi::Object obj = CursorWrapper::constructor->New({Napi::External<shared_ptr<Spino::Cursor>>::New(env, &cursor)});
-
-    // Return the object
-    return obj;
+    try {
+        shared_ptr<Spino::Cursor> cursor = this->collection->find(query.Utf8Value());
+        // wrap the cursor
+        Napi::Object obj = CursorWrapper::constructor->New({Napi::External<shared_ptr<Spino::Cursor>>::New(env, &cursor)});
+        return obj;
+    }
+    catch(Spino::parse_error& err) {
+        // throw a JS error
+        std::string msg = "Parse error: ";
+        throw Napi::Error::New(env, msg + err.what());
+    }
+    return env.Null();
 }
 
 Napi::Value CollectionWrapper::append(const Napi::CallbackInfo &info)
@@ -133,11 +189,15 @@ Napi::Value CollectionWrapper::append(const Napi::CallbackInfo &info)
     // if the argument is an object, stringify it
     if (info[0].IsObject())
     {
+        /*
         Napi::Object json_obj = info[0].As<Napi::Object>();
         Napi::Object json = env.Global().Get("JSON").As<Napi::Object>();
         Napi::Function stringify = json.Get("stringify").As<Napi::Function>();
         Napi::String str = stringify.Call(json, {json_obj}).As<Napi::String>();
         this->collection->append(str.Utf8Value());
+        */
+        Spino::DomNode* node = napi_value_to_dom_node(info[0]);
+        this->collection->append(node);
     }
     else
     {
@@ -161,7 +221,14 @@ Napi::Value CollectionWrapper::upsert(const Napi::CallbackInfo &info)
 
     Napi::String query = info[0].As<Napi::String>();
     Napi::String data = info[1].As<Napi::String>();
-    this->collection->upsert(query.Utf8Value(), data.Utf8Value());
+    try {
+        this->collection->upsert(query.Utf8Value(), data.Utf8Value());
+    }
+    catch(Spino::parse_error& err) {
+        // throw a JS error
+        std::string msg = "Parse error: ";
+        throw Napi::Error::New(env, msg + err.what());
+    }
 
     return env.Null();
 }
@@ -178,7 +245,14 @@ Napi::Value CollectionWrapper::update(const Napi::CallbackInfo &info)
 
     Napi::String query = info[0].As<Napi::String>();
     Napi::String data = info[1].As<Napi::String>();
-    this->collection->update(query.Utf8Value(), data.Utf8Value());
+    try {
+        this->collection->update(query.Utf8Value(), data.Utf8Value());
+    }
+    catch(Spino::parse_error& err) {
+        // throw a JS error
+        std::string msg = "Parse error: ";
+        throw Napi::Error::New(env, msg + err.what());
+    }
 
     return env.Null();
 }
@@ -194,7 +268,15 @@ Napi::Value CollectionWrapper::drop(const Napi::CallbackInfo &info)
     }
 
     Napi::String query = info[0].As<Napi::String>();
-    this->collection->drop(query.Utf8Value());
+
+    try {
+        this->collection->drop(query.Utf8Value());
+    }
+    catch(Spino::parse_error& err) {
+        // throw a JS error
+        std::string msg = "Parse error: ";
+        throw Napi::Error::New(env, msg + err.what());
+    }
 
     return env.Null();
 }

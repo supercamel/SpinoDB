@@ -14,9 +14,9 @@ G_DECLARE_FINAL_TYPE(SpinoCursor, spino_cursor, Spino, Cursor, GObject)
 /**
  * spino_cursor_next:
  * @self: the self
- * Returns: (transfer full):
+ * Returns: (transfer none):
  */
-gchar* spino_cursor_next(SpinoCursor* self);
+const gchar* spino_cursor_next(SpinoCursor* self);
 
 /**
  * spino_cursor_next_view:

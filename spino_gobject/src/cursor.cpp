@@ -33,10 +33,9 @@ SpinoCursor* spino_cursor_new(shared_ptr<Spino::Cursor> cursor)
     return cur;
 }
 
-gchar* spino_cursor_next(SpinoCursor* self)
+const gchar* spino_cursor_next(SpinoCursor* self)
 {
-    gchar* nxt = self->priv->next();
-    return nxt;
+    return self->priv->next();
 }
 
 SpinoDocView* spino_cursor_next_view(SpinoCursor* self)

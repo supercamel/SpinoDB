@@ -38,6 +38,7 @@ def eqAndNeq():
 
 def inNin():
     n = col.find("{name: {$in: [\"Horse\", \"Camel\", \"Donkey\"]}}").count()
+    print(n)
     if(n != 1):
         print("$in test failed")
     n = col.find_one("{name: {$nin: [\"Horse\", \"Camel\", \"Donkey\"]}}")
