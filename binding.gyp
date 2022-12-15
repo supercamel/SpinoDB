@@ -1,8 +1,8 @@
 {
     "targets": [
-    {
-        "target_name": "spinodb",
-            "sources": [ 
+        {
+            "target_name": "spinodb",
+            "sources": [
                 "cppsrc/main.cpp",
                 "cppsrc/query_executor.cpp",
                 "cppsrc/query_parse.cpp",
@@ -13,6 +13,8 @@
                 "cppsrc/dom_arr.cpp",
                 "cppsrc/spino_squirrel.cpp",
                 "cppsrc/SpinoWrapper.cpp",
+                "cppsrc/CollectionWrapper.cpp",
+                "cppsrc/CursorWrapper.cpp",
                 "cppsrc/squirrel/squirrel/sqapi.cpp",
                 "cppsrc/squirrel/squirrel/sqbaselib.cpp",
                 "cppsrc/squirrel/squirrel/sqclass.cpp",
@@ -33,27 +35,28 @@
                 "cppsrc/squirrel/sqstdlib/sqstdstream.cpp",
                 "cppsrc/squirrel/sqstdlib/sqstdio.cpp",
                 "cppsrc/squirrel/sqstdlib/sqstdsystem.cpp"
-                ],
-                "cflags!": [ "-fno-exceptions" ],
-                "cflags_cc!": [ "-fno-rtti","-fno-exceptions" ],
-                "cflags": [ "-g" ],
-                "cflags_cc": ["-g"],
-                "include_dirs": ["cppsrc/squirrel/include"],
-                "conditions": [
-                        [
-                          "OS==\"mac\"", {
-                            "xcode_settings": {
-                              "OTHER_CFLAGS": [
+            ],
+            "cflags!": ["-fno-exceptions"],
+            "cflags_cc!": ["-fno-rtti", "-fno-exceptions"],
+            "cflags": ["-O3"],
+            "cflags_cc": ["-O3"],
+            'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")", "cppsrc/squirrel/include"],
+            'dependencies': ["<!(node -p \"require('node-addon-api').gyp\")"],
+            "conditions": [
+                [
+                    "OS==\"mac\"", {
+                        "xcode_settings": {
+                            "OTHER_CFLAGS": [
                                 "-mmacosx-version-min=10.7",
                                 "-std=c++14",
                                 "-stdlib=libc++"
-                              ],
-                              "GCC_ENABLE_CPP_RTTI": "YES",
-                              "GCC_ENABLE_CPP_EXCEPTIONS": "YES"
-                            }
-                          }
-                        ]
-                      ]
-    }
+                            ],
+                            "GCC_ENABLE_CPP_RTTI": "YES",
+                            "GCC_ENABLE_CPP_EXCEPTIONS": "YES"
+                        }
+                    }
+                ]
+            ]
+        }
     ]
 }

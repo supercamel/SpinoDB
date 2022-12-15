@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <vector>
 
-#define SPINO_USE_SYSTEM_ALLOC
+//#define SPINO_USE_SYSTEM_ALLOC
 
 /*
 A ObjectAllocator reserves a block of memory and allocates objects from it.

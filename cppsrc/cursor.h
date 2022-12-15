@@ -57,15 +57,15 @@ namespace Spino
             }
         }
 
-        char *next()
+        const char *next()
         {
             const DomView *result = next_dom();
-            rapidjson::StringBuffer sb;
+            sb.Clear();
             rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
             if (result != nullptr)
             {
                 result->stringify(writer);
-                return strdup(sb.GetString());
+                return sb.GetString();
             }
             else 
             {
@@ -180,6 +180,7 @@ namespace Spino
         QueryExecutor executor;
         size_t limit;
         size_t n_results;
+        rapidjson::StringBuffer sb;
     };
 }
 
