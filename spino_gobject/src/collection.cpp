@@ -116,7 +116,7 @@ const gchar *spino_collection_find_one(SpinoCollection *self, const gchar *query
 {
     try
     {
-        return g_strdup(self->priv->find_one(query));
+        return g_strdup(self->priv->find_one(query).c_str());
     }
     catch (Spino::parse_error &err)
     {

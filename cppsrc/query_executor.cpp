@@ -97,8 +97,6 @@ namespace Spino
                 DomNode* b = *(--end);
                 DomNode* a = *(--end);
 
-                cout << "a: " << a->stringify() << endl;
-                cout << "b: " << b->stringify() << endl;
                 if (*a == *b)
                 {
                     a->set_bool(true);
