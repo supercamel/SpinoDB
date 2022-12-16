@@ -348,7 +348,12 @@ Napi::Value DatabaseWrapper::consolidate(const Napi::CallbackInfo &info)
 
     Napi::String path = info[0].As<Napi::String>();
 
-    this->db->consolidate(path);
+    try {
+        this->db->consolidate(path);
+    }
+    catch(std::exception& err) {
+        throw Napi::Error::New(env, err.what());
+    }
 
     return env.Undefined();
 }
@@ -391,7 +396,45 @@ Napi::Value DatabaseWrapper::execute(const Napi::CallbackInfo &info)
     }
 
     Napi::String query = info[0].As<Napi::String>();
-    std::string result = this->db->execute(query.Utf8Value());
+    std::string result;
+    try {
+        result = this->db->execute(query.Utf8Value());
+    }
+    catch(std::exception& err) {
+        throw Napi::Error::New(env, err.what());
+    }
+
+    return Napi::String::New(env, result);
+}
+
+Napi::Value DatabaseWrapper::Escape(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() != 1 || !info[0].IsString())
+    {
+        Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
+    }
+
+    Napi::String query = info[0].As<Napi::String>();
+    std::string result = Spino::escape(query.Utf8Value());
+
+    return Napi::String::New(env, result);
+}
+
+Napi::Value DatabaseWrapper::Unescape(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() != 1 || !info[0].IsString())
+    {
+        Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
+    }
+
+    Napi::String query = info[0].As<Napi::String>();
+    std::string result = Spino::unescape(query.Utf8Value());
 
     return Napi::String::New(env, result);
 }

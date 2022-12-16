@@ -166,6 +166,7 @@ namespace Spino
 		size_t len;
 		double value;
 		shared_ptr<std::regex> regex;
+		bool string_needs_unescape = false;
 	};
 
 	/**
@@ -176,12 +177,11 @@ namespace Spino
 	class QueryParser
 	{
 	public:
-		QueryParser(const std::vector<Index> &indicies, const char *text);
+		QueryParser(const std::vector<Index> &indicies, const std::string& query_string);
 
 		std::vector<Token>* parse_query(IndexIteratorRange &range);
 
 	private:
-		std::string query_string;
 		uint32_t cursor = 0;
 
 		const char *cursor_ptr()
@@ -200,7 +200,7 @@ namespace Spino
 		}
 
 		size_t read_identifier();
-		size_t read_string_literal();
+		Token read_string_literal();
 		double read_numeric_literal();
 		Token peek();
 		inline Token lex();
@@ -214,6 +214,7 @@ namespace Spino
 		DomNode* token_literal_to_node(Token t);
 
 		const std::vector<Index> &indicies;
+		const std::string query_string;
 		IndexIteratorRange range;
 		bool index_resolved;
 

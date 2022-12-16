@@ -31,6 +31,9 @@ public:
 	DatabaseWrapper(const Napi::CallbackInfo &info);
 	~DatabaseWrapper();
 
+	static Napi::Value Escape(const Napi::CallbackInfo &info);
+	static Napi::Value Unescape(const Napi::CallbackInfo &info);
+
 private:
 	Napi::Value getCollection(const Napi::CallbackInfo &info);
 	Napi::Value hasCollection(const Napi::CallbackInfo &info);

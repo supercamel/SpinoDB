@@ -36,8 +36,16 @@ static void spino_database_init(SpinoDatabase* self)
 
 gchar* spino_database_execute(SpinoDatabase* self, const gchar* command)
 {
-    std::string result = self->db->execute(command);
-    return g_strdup(result.c_str());
+    try {
+        std::string result = self->db->execute(command);
+        return g_strdup(result.c_str());
+    }
+    catch(Spino::parse_error& err) {
+        g_warning("Error parsing query: %s", err.what());
+    }
+    catch(...) {
+        g_warning("Unknown error caught while executing command.");
+    }
 }
 
 

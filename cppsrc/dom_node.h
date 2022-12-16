@@ -266,7 +266,7 @@ namespace Spino
             void set_uint(uint64_t u);
             void set_double(double d);
             void set_bool(bool b);
-            void set_string(const char* c, size_t len, bool copy);
+            void set_string(const char* c, size_t len = 0, bool copy = true);
             void set_null();
 
             void copy(const DomView *other);

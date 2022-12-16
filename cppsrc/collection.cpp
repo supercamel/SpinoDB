@@ -53,7 +53,7 @@ namespace Spino
         }
     }
 
-    const char *Collection::find_one(const char *query)
+    std::string Collection::find_one(const std::string& query)
     {
         QueryParser query_parser(indices, query);
         IndexIteratorRange range;
@@ -67,7 +67,7 @@ namespace Spino
                 sb.Clear();
                 writer.Reset(sb);
                 (*iter->second)->stringify(writer);
-                return sb.GetString();
+                return std::string(sb.GetString(), sb.GetSize());
             }
             else {
                 iter++;
@@ -178,7 +178,7 @@ namespace Spino
 
     void Collection::update(const std::string &query, DomNode* node) 
     {
-        QueryParser query_parser(indices, query.c_str());
+        QueryParser query_parser(indices, query);
         IndexIteratorRange range;
         auto instructions = query_parser.parse_query(range);
         executor.set_instructions(instructions);

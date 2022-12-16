@@ -142,10 +142,8 @@ Napi::Value CollectionWrapper::findOne(const Napi::CallbackInfo &info)
     try {
         result = this->collection->find_one(data.Utf8Value().c_str());
     }
-    catch(Spino::parse_error& err) {
-        // throw a JS error
-        std::string msg = "Parse error: ";
-        throw Napi::Error::New(env, msg + err.what());
+    catch(std::exception& err) {
+        throw Napi::Error::New(env, err.what());
     }
 
     return Napi::String::New(env, result);
@@ -168,10 +166,8 @@ Napi::Value CollectionWrapper::find(const Napi::CallbackInfo &info)
         Napi::Object obj = CursorWrapper::constructor->New({Napi::External<shared_ptr<Spino::Cursor>>::New(env, &cursor)});
         return obj;
     }
-    catch(Spino::parse_error& err) {
-        // throw a JS error
-        std::string msg = "Parse error: ";
-        throw Napi::Error::New(env, msg + err.what());
+    catch(std::exception& err) {
+        throw Napi::Error::New(env, err.what());
     }
     return env.Null();
 }
@@ -202,7 +198,12 @@ Napi::Value CollectionWrapper::append(const Napi::CallbackInfo &info)
     else
     {
         Napi::String data = info[0].As<Napi::String>();
-        this->collection->append(data.Utf8Value());
+        try {
+            this->collection->append(data.Utf8Value());
+        }
+        catch(std::exception& err) {
+            throw Napi::Error::New(env, err.what());
+        }
     }
 
     return env.Null();
@@ -214,20 +215,33 @@ Napi::Value CollectionWrapper::upsert(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    if (info.Length() != 2 || !info[0].IsString() || !info[1].IsString())
+    if (info.Length() != 2 || !info[0].IsString())
     {
         Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
     }
 
     Napi::String query = info[0].As<Napi::String>();
-    Napi::String data = info[1].As<Napi::String>();
-    try {
-        this->collection->upsert(query.Utf8Value(), data.Utf8Value());
+
+    if(info[1].IsString()) {
+        Napi::String data = info[1].As<Napi::String>();
+        try {
+            this->collection->upsert(query.Utf8Value(), data.Utf8Value());
+        }
+        catch(std::exception& err) {
+            throw Napi::Error::New(env, err.what());
+        }
     }
-    catch(Spino::parse_error& err) {
-        // throw a JS error
-        std::string msg = "Parse error: ";
-        throw Napi::Error::New(env, msg + err.what());
+    else if(info[1].IsObject()) {
+        Spino::DomNode* node = napi_value_to_dom_node(info[1]);
+        try {
+            this->collection->upsert(query.Utf8Value(), node);
+        }
+        catch(std::exception& err) {
+            throw Napi::Error::New(env, err.what());
+        }
+    }
+    else {
+        Napi::TypeError::New(env, "String or Object expected").ThrowAsJavaScriptException();
     }
 
     return env.Null();
@@ -248,10 +262,8 @@ Napi::Value CollectionWrapper::update(const Napi::CallbackInfo &info)
     try {
         this->collection->update(query.Utf8Value(), data.Utf8Value());
     }
-    catch(Spino::parse_error& err) {
-        // throw a JS error
-        std::string msg = "Parse error: ";
-        throw Napi::Error::New(env, msg + err.what());
+    catch(std::exception& err) {
+        throw Napi::Error::New(env, err.what());
     }
 
     return env.Null();
@@ -272,10 +284,8 @@ Napi::Value CollectionWrapper::drop(const Napi::CallbackInfo &info)
     try {
         this->collection->drop(query.Utf8Value());
     }
-    catch(Spino::parse_error& err) {
-        // throw a JS error
-        std::string msg = "Parse error: ";
-        throw Napi::Error::New(env, msg + err.what());
+    catch(std::exception& err) {
+        throw Napi::Error::New(env, err.what());
     }
 
     return env.Null();

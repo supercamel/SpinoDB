@@ -30,6 +30,11 @@ namespace SpinoDB
 
     Napi::Object InitAll(Napi::Env env, Napi::Object exports)
     {
+        exports.Set(Napi::String::New(env, "escape"), 
+                    Napi::Function::New(env, DatabaseWrapper::Escape));
+        exports.Set(Napi::String::New(env, "unescape"),
+                    Napi::Function::New(env, DatabaseWrapper::Unescape));
+
         CursorWrapper::Init(env, exports);
         // init the collection wrapper and database wrapper
         CollectionWrapper::Init(env, exports);

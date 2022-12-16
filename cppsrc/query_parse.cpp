@@ -28,9 +28,8 @@ using namespace std;
 
 using namespace Spino;
 
-QueryParser::QueryParser(const std::vector<Index> &indicies, const char *query) : indicies(indicies)
+QueryParser::QueryParser(const std::vector<Index> &indicies, const std::string& query_string) : indicies(indicies), query_string(query_string)
 {
-    query_string = query;
     cursor = 0;
     instructions.reserve(10);
 }
@@ -52,7 +51,7 @@ Token QueryParser::peek()
 inline Token QueryParser::lex()
 {
     // while there are characters left to consume
-    while (curc() != '\0')
+    while (cursor != query_string.length())
     {
         // get the current character
         switch (curc())
@@ -87,9 +86,12 @@ inline Token QueryParser::lex()
             return Token(TOK_COMMA, nullptr, 0);
         case '"':
         {
+            /*
             const char *start = &cursor_ptr()[1];
             size_t len = read_string_literal();
             return Token(TOK_STRING_LITERAL, start, len);
+            */
+            return read_string_literal();
         }
         break;
         case '$':
@@ -196,7 +198,7 @@ inline Token QueryParser::lex()
 size_t QueryParser::read_identifier()
 {
     size_t counter = 0;
-    while (curc() != '\0')
+    while (cursor < query_string.length())
     {
         next();
         counter++;
@@ -211,23 +213,55 @@ size_t QueryParser::read_identifier()
 
 // read_string_literal() reads a string . .
 // such a "Hello world"
-size_t QueryParser::read_string_literal()
+Token QueryParser::read_string_literal()
 {
+    const char *start = &cursor_ptr()[1];
+    Token tok(TOK_STRING_LITERAL);
+    tok.raw = start;
+
     size_t count = 0;
     next();
-    while (curc() != '\0')
+    while (cursor < query_string.length())
     {
-        if (curc() == '"')
+        // parse escape sequences
+        if( curc() == '\\' )
         {
             next();
-            return count;
+            switch( curc() )
+            {
+            case '"':
+            case '\\':
+            case '/':
+                break;
+            case 'b':
+                break;
+            case 'f':
+                break;
+            case 'n':
+                break;
+            case 'r':
+                break;
+            case 't':
+                break;
+            case 'u':
+                break;
+            default:
+                throw parse_error("Invalid escape sequence");
+            }
+            count++;
+            tok.string_needs_unescape = true;
+        }
+        else if (curc() == '"')
+        {
+            next();
+            tok.len = count;
+            return tok;
         }
         next();
 
         count++;
     }
     throw parse_error("Unexpected end of query");
-    return count;
 }
 
 // read_numeric_literal

@@ -16,7 +16,7 @@ namespace Spino
     class Cursor
     {
     public:
-        Cursor(std::vector<Index>* indices, const std::string &query) : indices(indices), query(query), query_parser(*indices, query.c_str())
+        Cursor(std::vector<Index>* indices, const std::string &query) : indices(indices), query(query), query_parser(*indices, query)
         {
             limit = SIZE_MAX;
             n_results = 0;

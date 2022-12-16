@@ -44,15 +44,6 @@ namespace Spino
             return true;
         }
 
-/*
-        while(stack.size())
-        {
-            DomNode n = stack.back();
-            stack.pop_back();
-            n.destroy();
-        }
-        */
-
         for (auto tok : tokens)
         {
             switch (tok.token)
@@ -60,7 +51,13 @@ namespace Spino
             case TOK_STRING_LITERAL:
             {
                 DomNode* d = dom_node_allocator.make();
-                d->set_string(tok.raw, tok.len, true);
+                if(tok.string_needs_unescape) {
+                    std::string s = unescape(std::string(tok.raw, tok.len));
+                    d->set_string(s.c_str(), s.length(), true);
+                }
+                else {
+                    d->set_string(tok.raw, tok.len, true);
+                }
                 stack.push_back(d);
             }
             break;
@@ -100,6 +97,8 @@ namespace Spino
                 DomNode* b = *(--end);
                 DomNode* a = *(--end);
 
+                cout << "a: " << a->stringify() << endl;
+                cout << "b: " << b->stringify() << endl;
                 if (*a == *b)
                 {
                     a->set_bool(true);

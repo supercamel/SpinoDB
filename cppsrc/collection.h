@@ -33,7 +33,7 @@ namespace Spino
         const std::string& get_name() { return name; }
         void create_index(const std::string& name);
         void drop_index(const std::string& name);
-        const char* find_one(const char* query);
+        std::string find_one(const std::string& query);
         DomView* find_one_dom(const std::string& query);
         DomView* find_one_dom(const std::string& index_key, const DomView& value);
         shared_ptr<Cursor> find(const std::string& query);
