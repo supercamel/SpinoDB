@@ -64,44 +64,14 @@ Limits the number of documents that the cursor can retrieve.
 
 A self-reference to the cursor.
 
-## setProjection
-
-A projection can be used to select which fields are to be retrived rather than the whole document. SpinoDB uses whitelist projections only. 
-
-The projection is in the form of a JSON object where the keys of the JSON object are the fields that should be returned, and the values must be 1. E.g.
-
-```
-{
-    "name": 1,
-    "age": 1,
-    "profile": {
-        "picture": 1
-    }
-}
-```
-
-**Parameters**
-
-A projection JSON document.
-
-**Returns**
-
-A self-reference to the cursor.
-
-**Example**
-
-setLimit and setProjection return self references and can be chained together. 
-
-NodeJS
-```
-cursor.setLimit(10).setProjection("{\"name\": 1}");
-```
-
 ## runScript
+
+*DEPRECATED* don't use, please plan to remove it from existing code.
 
 Cursors can run Squirrel scripts to order, aggregate, format or otherwise process query results. 
 
 Refer to the scripting section for more details.
+
 
 **Parameters**
 
