@@ -79,6 +79,21 @@ update will merge a document into existing documents that match the query. updat
 
 No return value.
 
+## upsert
+
+The upsert function is basically shorthand for drop + insert. It will remove any document that matches the query and then append a new document to the collection.
+
+    upsert(<query>, <document>);
+
+**Parameters**
+
+1. A query string
+2. A JSON document to merge
+
+**Returns**
+
+No return value.
+
 ## findOne
 
 findOne will return the first document that matches the query string, or an empty string if no documents match the query. 
@@ -107,56 +122,20 @@ find will run a query and return a Cursor that can be used to iterate over the r
 
 A Cursor that can be used to iterate the results. Refer to the Cursor API documentation. 
 
-## dropOne
-
-Deletes the first document that matches the query.
-
-    dropOne(<query>)
-
-**Parameters**
-
-1. A query as a string
-
-**Returns**
-
-No return value
-
 ## drop
 
 Deletes every document that matches the query.
 
-    drop(<query>)
+    drop(<query>, <limit>)
 
 **Parameters**
 
 1. A query as a string
+2. Optional. A maximum number of documents to remove. By default, there is no limit.
 
 **Returns**
 
 The number of documents that were deleted.
-
-## dropOlderThan
-
-Deletes documents older than a timestamp. The timestamp is the number of milliseconds since the 1970 epoch.
-
-    dropOlderThan(<timestamp>)
-
-**Parameters**
-
-1. The number of milliseconds since 1970 epoch. 
-
-**Returns**
-
-No return value
-
-**Example**
-
-NodeJS
-```
-let now = new Date().getTime();
-let twoWeeksAgo = now - (1000*60*60*24*14); //2 weeks in milliseconds
-let nDocumentsDropped = collection.dropOlderThan(twoWeeksAgo);
-```
 
 ## size
 
