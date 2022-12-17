@@ -77,7 +77,14 @@ namespace Spino
             break;
             case TOK_FIELD_NAME:
             {
-                std::string field_name = std::string(tok.raw, tok.len);
+                std::string field_name; 
+                if(tok.string_needs_unescape) {
+                    field_name = unescape(std::string(tok.raw, tok.len));
+                }
+                else {
+                    field_name = std::string(tok.raw, tok.len);
+                }
+
                 if(document->has_member(field_name)) {
                     DomView tmp = document->get_member(field_name);
                     DomNode* d = dom_node_allocator.make();
@@ -137,20 +144,13 @@ namespace Spino
                 DomNode* doc = *--end;
 
                 DomNode* result = dom_node_allocator.make();
-                if (!doc->is_numeric())
+                if ((*doc >= *min) && (*doc <= *max))
                 {
-                    result->set_bool(false);
+                    result->set_bool(true);
                 }
                 else
                 {
-                    if ((*doc >= *min) && (*doc <= *max))
-                    {
-                        result->set_bool(true);
-                    }
-                    else
-                    {
-                        result->set_bool(false);
-                    }
+                    result->set_bool(false);
                 }
 
                 stack.erase(end, stack.end());
@@ -169,21 +169,8 @@ namespace Spino
                 stack.pop_back();
 
                 DomNode* result = dom_node_allocator.make();
-                if (!doc->is_numeric())
-                {
-                    result->set_bool(false);
-                }
-                else
-                {
-                    if (*doc > *val)
-                    {
-                        result->set_bool(true);
-                    }
-                    else
-                    {
-                        result->set_bool(false);
-                    }
-                }
+                result->set_bool(*doc > *val);
+
                 dom_node_allocator.delete_object(doc);
                 dom_node_allocator.delete_object(val);
                 stack.push_back(result);
@@ -197,22 +184,10 @@ namespace Spino
                 DomNode* doc = stack.back();
                 stack.pop_back();
 
+
                 DomNode* result = dom_node_allocator.make();
-                if (!doc->is_numeric())
-                {
-                    result->set_bool(false);
-                }
-                else
-                {
-                    if (*doc < *val)
-                    {
-                        result->set_bool(true);
-                    }
-                    else
-                    {
-                        result->set_bool(false);
-                    }
-                }
+                result->set_bool(*doc < *val);
+
                 dom_node_allocator.delete_object(doc);
                 dom_node_allocator.delete_object(val);
                 stack.push_back(result);
@@ -240,7 +215,7 @@ namespace Spino
                 stack.pop_back();
 
                 result->set_bool(true);
-                while (--count)
+                while (count--)
                 {
                     auto v = stack.back();
                     stack.pop_back();
@@ -256,14 +231,15 @@ namespace Spino
             case TOK_OR:
             {
                 DomNode* result = stack.back();
-                int count = result ->get_double();
+                int count = result->get_double();
                 stack.pop_back();
 
                 result->set_bool(false);
-                while (--count)
+                while (count--)
                 {
                     auto v = stack.back();
                     stack.pop_back();
+
                     if (v->get_bool() == true)
                     {
                         result->set_bool(true);

@@ -273,16 +273,24 @@ Napi::Value CollectionWrapper::drop(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
+    Napi::String query;
+    size_t limit = SIZE_MAX;
 
-    if (info.Length() != 1 || !info[0].IsString())
+    // check that parameter 1 is a string and that optional parameter 2 is a number
+    if((info.Length() == 1) && info[0].IsString())
     {
-        Napi::TypeError::New(env, "String expected").ThrowAsJavaScriptException();
+        query = info[0].As<Napi::String>();
+    }
+    else if((info.Length() == 2) && (info[0].IsString()) && (info[1].IsNumber())) {
+        query = info[0].As<Napi::String>();
+        limit = info[1].As<Napi::Number>().Int64Value();
+    }
+    else {
+        throw Napi::Error::New(env, "Invalid parameters, expected string and optional length as a number.");
     }
 
-    Napi::String query = info[0].As<Napi::String>();
-
     try {
-        this->collection->drop(query.Utf8Value());
+        this->collection->drop(query.Utf8Value(), limit);
     }
     catch(std::exception& err) {
         throw Napi::Error::New(env, err.what());
