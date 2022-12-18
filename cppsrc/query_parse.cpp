@@ -188,7 +188,7 @@ inline Token QueryParser::lex()
             return tok;
         }
         // else throw an error because dunno what this is supposed to be
-        throw parse_error("Expected character " + curc());
+        throw parse_error("Expected character " + std::string(1,curc()));
     }
     return Token(TOK_EOF, nullptr, 0);
 }

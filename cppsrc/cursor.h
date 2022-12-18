@@ -171,7 +171,7 @@ namespace Spino
         }
 
     private:
-        std::vector<Index>* indices;
+        [[maybe_unused]] std::vector<Index>* indices;
         IndexIterator iter;
         IndexIteratorRange range;
         std::string query;
