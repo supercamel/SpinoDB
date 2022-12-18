@@ -3,7 +3,7 @@
 
 Napi::FunctionReference *CollectionWrapper::constructor;
 
-static Spino::DomNode* napi_value_to_dom_node(Napi::Value value) {
+Spino::DomNode* napi_value_to_dom_node(Napi::Value value) {
     Napi::Env env = value.Env();
     Napi::HandleScope scope(env);
 
@@ -43,6 +43,51 @@ static Spino::DomNode* napi_value_to_dom_node(Napi::Value value) {
     }
 
     return node;
+}
+
+Napi::Value dom_node_to_napi_value(Napi::Env env, const Spino::DomView* node) {
+    switch(node->get_type()) {
+        case Spino::DOM_NODE_TYPE_OBJECT:
+        {
+            Napi::Object obj = Napi::Object::New(env);
+            for(auto it = node->member_begin(); it != node->member_end(); it++) {
+                auto key = it.get_key();
+                const Spino::DomView* val = &it.get_value();
+
+                //cout << key << ":" << val->stringify() << endl;
+                obj.Set(key, dom_node_to_napi_value(env, val));
+            }
+            return obj;
+        }
+        case Spino::DOM_NODE_TYPE_ARRAY:
+        {
+            Napi::Array arr = Napi::Array::New(env);
+            size_t count = 0;
+            for(auto it = node->element_begin(); it != node->element_end(); it++) {
+                arr[count++] = dom_node_to_napi_value(env, &it.get_value());
+            }
+            return arr;
+        }
+        case Spino::DOM_NODE_TYPE_LONG_STRING:
+        case Spino::DOM_NODE_TYPE_SHORT_STRING:
+        {
+            return Napi::String::New(env, node->get_string());
+        }
+        case Spino::DOM_NODE_TYPE_INT:
+        case Spino::DOM_NODE_TYPE_UINT:
+        case Spino::DOM_NODE_TYPE_DOUBLE:
+        {
+            return Napi::Number::New(env, node->get_numeric_as_double());
+        }
+        case Spino::DOM_NODE_TYPE_BOOL:
+        {
+            return Napi::Boolean::New(env, node->get_bool());
+        }
+        default:
+        {
+            return env.Null();
+        }
+    }
 }
 
 
@@ -140,7 +185,8 @@ Napi::Value CollectionWrapper::findOne(const Napi::CallbackInfo &info)
     std::string result;
     Napi::String data = info[0].As<Napi::String>();
     try {
-        result = this->collection->find_one(data.Utf8Value().c_str());
+        //result = this->collection->find_one(data.Utf8Value().c_str());
+        return dom_node_to_napi_value(env, this->collection->find_one_dom(data.Utf8Value().c_str()));
     }
     catch(std::exception& err) {
         throw Napi::Error::New(env, err.what());

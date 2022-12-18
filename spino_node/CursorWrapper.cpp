@@ -1,6 +1,8 @@
 #include "CursorWrapper.h"
 
 
+Napi::Value dom_node_to_napi_value(Napi::Env env, const Spino::DomView* node);
+
 Napi::FunctionReference* CursorWrapper::constructor;
 
 Napi::Object CursorWrapper::Init(Napi::Env env, Napi::Object exports)
@@ -48,7 +50,7 @@ Napi::Value CursorWrapper::next(const Napi::CallbackInfo &info)
 
     if (this->cursor->has_next())
     {
-        return Napi::String::New(env, this->cursor->next());
+        return dom_node_to_napi_value(env, this->cursor->next_dom());
     }
     else
     {
