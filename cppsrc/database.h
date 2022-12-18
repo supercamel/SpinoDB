@@ -23,6 +23,7 @@ namespace Spino
             ~Database();
             Collection *get_collection(const std::string& name);
             bool has_collection(const std::string& name) const;
+            vector<string> listCollections() const;
             void drop_collection(const std::string& name);
             void set_bool_value(const std::string& key, bool value);
             bool get_bool_value(const std::string& key) const;

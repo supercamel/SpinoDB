@@ -64,7 +64,7 @@ namespace Spino
 
         std::string name;
         ContainerType nodes;
-        std::vector<Index> indices;
+        [[maybe_unused]] std::vector<Index> indices;
         uint64_t id;
         QueryExecutor executor;
         JournalWriter &jw;

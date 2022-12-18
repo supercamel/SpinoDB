@@ -127,14 +127,22 @@ namespace Spino
 
         jw.set_enabled(jwenabled);
 
-        if (jw.get_enabled())
-        {
-            stringstream ss;
-            ss << "{\"cmd\":\"drop\",\"collection\":\"";
-            ss << escape(name);
-            ss << "\",\"query\":\"" << escape(query);
-            ss << "\",\"limit\":" << limit << "}";
-            jw.append(ss.str());
+        if (jw.get_enabled()) {
+
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+            writer.StartObject();
+            writer.Key("cmd");
+            writer.String("drop");
+            writer.Key("collection");
+            writer.String(name.c_str());
+            writer.Key("query");
+            writer.String(query.c_str());
+            writer.Key("limit");
+            writer.Int(limit);
+
+            writer.EndObject();
+            jw.append(sb.GetString());
         }
         return ret;
     }

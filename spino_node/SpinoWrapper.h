@@ -37,7 +37,8 @@ public:
 private:
 	Napi::Value getCollection(const Napi::CallbackInfo &info);
 	Napi::Value hasCollection(const Napi::CallbackInfo &info);
-	Napi::Value dropCollection(const Napi::CallbackInfo &info);
+    Napi::Value listCollections(const Napi::CallbackInfo &info);
+    Napi::Value dropCollection(const Napi::CallbackInfo &info);
 	Napi::Value setBoolValue(const Napi::CallbackInfo& info);
 	Napi::Value getBoolValue(const Napi::CallbackInfo& info);
 	Napi::Value setIntValue(const Napi::CallbackInfo& info);

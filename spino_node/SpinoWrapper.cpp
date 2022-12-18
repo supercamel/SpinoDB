@@ -28,6 +28,7 @@ Napi::Object DatabaseWrapper::Init(Napi::Env env, Napi::Object exports)
                     "Spino",
                     {InstanceMethod("getCollection", &DatabaseWrapper::getCollection),
                     InstanceMethod("hasCollection", &DatabaseWrapper::hasCollection),
+                    InstanceMethod("listCollections", &DatabaseWrapper::listCollections),
                     InstanceMethod("dropCollection", &DatabaseWrapper::dropCollection),
                     InstanceMethod("setBoolValue", &DatabaseWrapper::setBoolValue),
                     InstanceMethod("getBoolValue", &DatabaseWrapper::getBoolValue),
@@ -102,6 +103,23 @@ Napi::Value DatabaseWrapper::hasCollection(const Napi::CallbackInfo &info)
 
     // Return the object
     return Napi::Boolean::New(env, hasCollection);
+}
+
+Napi::Value DatabaseWrapper::listCollections(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    auto collections = this->db->listCollections();
+
+    Napi::Array array = Napi::Array::New(env);
+
+    int count = 0;
+    for(auto name : collections) {
+        array[count++] = Napi::String::New(env, name);
+    }
+
+    return array;
 }
 
 Napi::Value DatabaseWrapper::dropCollection(const Napi::CallbackInfo &info)

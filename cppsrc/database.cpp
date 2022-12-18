@@ -1,5 +1,6 @@
 #include "database.h"
 #include <memory>
+#include <sstream>
 
 namespace Spino
 {
@@ -48,25 +49,35 @@ namespace Spino
         return false;
     }
 
-    void Database::drop_collection(const std::string &name)
-    {
-        for (auto iter = collections.begin(); iter != collections.end(); iter++)
-        {
-            if (std::string((*iter)->get_name()) == name)
-            {
+    vector <string> Database::listCollections() const {
+        vector <string> collectionNames;
+        for (auto collection: collections) {
+            collectionNames.push_back(collection->get_name());
+        }
+        return collectionNames;
+    }
+
+
+    void Database::drop_collection(const std::string &name) {
+        for (auto iter = collections.begin(); iter != collections.end(); iter++) {
+            if (std::string((*iter)->get_name()) == name) {
                 collections.erase(iter);
                 delete *iter;
                 return;
             }
         }
 
-        if (jw.get_enabled())
-        {
-            stringstream ss;
-            ss << "{\"cmd\":\"dropCollection\",\"collection\":\"";
-            ss << escape(name);
-            ss << "\"}";
-            jw.append(ss.str());
+        if (jw.get_enabled()) {
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+            writer.StartObject();
+            writer.Key("cmd");
+            writer.String("dropCollection");
+            writer.Key("collection");
+            writer.String(name.c_str());
+
+            writer.EndObject();
+            jw.append(sb.GetString());
         }
     }
 
