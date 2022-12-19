@@ -101,7 +101,8 @@ Napi::Value CursorWrapper::toArray(const Napi::CallbackInfo &info)
     int i = 0;
     while (this->cursor->has_next())
     {
-        array[i++] = Napi::String::New(env, this->cursor->next());
+        auto obj = dom_node_to_napi_value(env, this->cursor->next_dom());
+        array[i++] = obj;
     }
 
     return array;
