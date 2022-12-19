@@ -63,6 +63,11 @@ def existsTypeStartsWith():
     if(col.find("{name: {$startsWith: \"C\"}}").count() != 1):
         print("$startsWith test failed")
 
+def andOrQueries():
+    n = col.find("{$and: [{name: {$eq: \"Camel\"}}, {score: {$lt: 10000}}]}").count()
+    if(n != 1):
+        print("$and test failed")
+        
     
 
 
@@ -70,6 +75,6 @@ greaterAndLessThan()
 eqAndNeq()
 inNin()
 existsTypeStartsWith()
-
+andOrQueries()
 
 

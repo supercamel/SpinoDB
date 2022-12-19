@@ -44,6 +44,13 @@ namespace Spino
             return true;
         }
 
+/*
+        cout << "Instructions:" << endl;
+        for(auto tok : tokens) {
+            cout << "\t" << token_to_string(tok.token) << " " << std::string(tok.raw, tok.len) << endl;
+        }
+        */
+
         for (auto tok : tokens)
         {
             switch (tok.token)
@@ -435,4 +442,9 @@ namespace Spino
         return result;
     }
 
+    void QueryExecutor::print_stack() {
+        for (auto it = stack.begin(); it != stack.end(); ++it) {
+            std::cout << (*it)->stringify() << std::endl;
+        }
+    }
 }

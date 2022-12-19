@@ -37,6 +37,8 @@ namespace Spino
 		void set_instructions(const std::vector<Token>* tokens);
 		bool execute_query(DomNode *document);
 	private:
+		void print_stack();
+
         std::vector<DomNode*> stack;
 		std::vector<Token> tokens;
 	};

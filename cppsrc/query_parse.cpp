@@ -183,7 +183,7 @@ inline Token QueryParser::lex()
             // read a numeric literal
             const char *start = cursor_ptr();
             double value = read_numeric_literal();
-            Token tok = Token(TOK_NUMERIC_LITERAL, cursor_ptr(), cursor_ptr() - start);
+            Token tok = Token(TOK_NUMERIC_LITERAL, start, cursor_ptr() - start);
             tok.value = value;
             return tok;
         }
@@ -298,9 +298,15 @@ DomNode* QueryParser::token_literal_to_node(Token t)
     case TOK_STRING_LITERAL:
     {
         DomNode* node = dom_node_allocator.make();
-        std::string str(t.raw, t.len);
-        node->set_string(str.c_str(), str.length(), true);
-        return node;
+        if(t.string_needs_unescape) {
+            std::string str = unescape(std::string(t.raw, t.len));
+            node->set_string(str.c_str(), str.length(), true);
+            return node;
+        }
+        else {
+            node->set_string(t.raw, t.len, true);
+            return node;
+        }
     }
     break;
     case TOK_NUMERIC_LITERAL:
@@ -372,27 +378,15 @@ void QueryParser::parse_expression()
                         {
                             Token t = instructions.back();
                             DomNode* top = token_literal_to_node(t);
-                            instructions.pop_back();
                             range = idx.index.equal_range(*top);
                             dom_node_allocator.delete_object(top);
                             index_resolved = true;
-                            if (lex().token != TOK_RH_BRACE)
-                            {
-                                throw parse_error("Missing close brace after field comparison");
-                            }
-
-                            return;
+                            break;
                         }
                     }
-
-                    instructions.push_back(field_name);
-                    instructions.push_back(Token(TOK_EQUAL));
                 }
-                else
-                {
-                    instructions.push_back(field_name);
-                    instructions.push_back(Token(TOK_EQUAL));
-                }
+                instructions.push_back(field_name);
+                instructions.push_back(Token(TOK_EQUAL));
 
                 if (lex().token != TOK_RH_BRACE)
                 {
