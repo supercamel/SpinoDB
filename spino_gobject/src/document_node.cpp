@@ -36,6 +36,40 @@ SpinoDocNode* spino_docnode_new()
     return val;
 }
 
+void spino_docnode_from_json(SpinoDocNode* self, const gchar* json)
+{
+    try {
+        Spino::DomNode* dom = Spino::DomNode::from_json(json);
+        self->priv->destroy();
+        Spino::dom_node_allocator.delete_object(self->priv);
+        self->priv = dom;
+    }
+    catch(std::exception& e) {
+        g_warning("Error parsing json: %s", e.what());
+        self->priv = Spino::dom_node_allocator.make();
+    }
+}
+
+void spino_docnode_from_view(SpinoDocNode* self, SpinoDocView* view)
+{
+    self->priv->destroy();
+    self->priv->copy(view->priv);
+}
+
+void spino_docnode_from_json_file(SpinoDocNode* self, const gchar* filename)
+{
+    try {
+        Spino::DomNode* dom = Spino::DomNode::from_json_file(filename);
+
+        self->priv->destroy();
+        Spino::dom_node_allocator.delete_object(self->priv);
+        self->priv = dom;
+    }
+    catch(...) {
+        g_warning("Error parsing json");
+        self->priv = Spino::dom_node_allocator.make();
+    }
+}
 
 void spino_docnode_set_object(SpinoDocNode* self)
 {
@@ -155,6 +189,9 @@ void spino_docnode_remove(SpinoDocNode* self, SpinoValueIterator* iter)
 
 SpinoDocView* spino_docnode_get_view(SpinoDocNode* self)
 {
+    assert(g_type_is_a(G_OBJECT_TYPE(self), SPINO_TYPE_DOCNODE));
+    assert(self->priv != NULL);
+
     SpinoDocView* val = (SpinoDocView*)g_object_new(SPINO_TYPE_DOCVIEW, NULL);
     val->priv = self->priv;
     return val;

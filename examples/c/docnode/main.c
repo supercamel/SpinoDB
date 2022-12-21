@@ -52,6 +52,11 @@ void add_entries(SpinoCollection* col)
 
 
 int main() {
+    SpinoDocNode* n = spino_docnode_new();
+    spino_docnode_from_json_file(n, "sample.json");
+    SpinoDocView* view = spino_docnode_get_view(n);
+    printf("%s\n", spino_docview_stringify(view));
+    /*
     SpinoDatabase* db = spino_database_new();
 
     SpinoCollection* col = spino_database_get_collection(db, "my_collection");
@@ -71,6 +76,7 @@ int main() {
 
     g_object_unref(cur);
     g_object_unref(db);
+    */
 
     return 0;
 }

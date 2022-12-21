@@ -721,7 +721,12 @@ namespace Spino
                 }
 
                 auto col = get_collection(colnode.get_string());
-                col->drop(querynode.get_string(), limitnode.get_numeric_as_double()+0.5);
+                if(limitnode.get_numeric_as_double() < 0.5) {
+                    col->drop(querynode.get_string(), SIZE_MAX);
+                }
+                else {
+                    col->drop(querynode.get_string(), limitnode.get_numeric_as_double()+0.5);
+                }
                 result = "{\"msg\":\"OK\"}";
 
             }

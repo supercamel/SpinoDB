@@ -11,7 +11,15 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE(SpinoDocNode, spino_docnode, Spino, DocNode, GObject)
 
+/**
+ * spino_docnode_new: (constructor)
+ * Returns: (transfer full):  
+ */
 SpinoDocNode* spino_docnode_new();
+
+void spino_docnode_from_json(SpinoDocNode* self, const gchar* json);
+void spino_docnode_from_view(SpinoDocNode* self, SpinoDocView* view);
+void spino_docnode_from_json_file(SpinoDocNode* self, const gchar* path);
 
 void spino_docnode_set_object(SpinoDocNode* self);
 void spino_docnode_set_array(SpinoDocNode* self);

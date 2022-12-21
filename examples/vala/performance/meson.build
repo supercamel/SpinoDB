@@ -10,6 +10,6 @@ dependencies = [
 
 sources = files('main.vala')
 
-executable('perf', sources, c_args:['-O3'], dependencies: dependencies)
+executable('perf', sources, c_args:['-g'], dependencies: dependencies)
 
 

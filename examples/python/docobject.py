@@ -33,7 +33,28 @@ for i in range(100):
 iter = arr.get_view().begin()
 while(iter.is_not(arr.get_view().end())):
     val = iter.get_view()
-    print(val.get_int())
     iter.next()
 
 
+dictionary = {
+    "name": "John",
+    "age": 30,
+    "city": "New York"
+}
+with open("sample.json", "w") as outfile:
+    json.dump(dictionary, outfile)
+
+startTime = time.time()
+for i in range(10000):
+    doc = Spino.DocNode.new_from_json_file("sample.json")
+endTime = time.time()
+print("Time to parse 10000 JSON files: " + str(endTime - startTime) + " seconds")
+
+startTime = time.time()
+for i in range(10000):
+    # load a JSON file using the json module
+    with open("sample.json", "r") as infile:
+        dictionary = json.load(infile)
+
+endTime = time.time()
+print("Time to parse 10000 JSON files using the json module: " + str(endTime - startTime) + " seconds")

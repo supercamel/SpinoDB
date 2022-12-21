@@ -1,6 +1,7 @@
 #include "dom_node.h"
 #include "dom_obj.h"
 #include "dom_arr.h"
+#include "parser.h"
 
 namespace Spino
 {
@@ -310,6 +311,20 @@ namespace Spino
         {
             throw std::runtime_error("DomView::member_end() called on non-object");
         }
+    }
+
+    DomNode* DomNode::from_json(const std::string& json)
+    {
+        Parser parser;
+        DomNode* node = parser.parse(json);
+        return node;
+    }
+
+    DomNode* DomNode::from_json_file(const std::string& json) 
+    {
+        Parser parser;
+        DomNode* node = parser.parse_file(json);
+        return node;
     }
 
     void DomNode::set_array()

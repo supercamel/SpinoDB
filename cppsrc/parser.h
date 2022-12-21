@@ -6,6 +6,7 @@
 #include "rapidjson/reader.h"
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
+#include "rapidjson/filereadstream.h"
 #include "rapidjson/error/en.h"
 
 namespace Spino
@@ -170,9 +171,27 @@ namespace Spino
         // dom_node_allocator.delete_object(result);
         DomNode *parse(const std::string &str)
         {
-            rapidjson::Reader reader;
             rapidjson::StringStream ss(str.c_str());
-            reader.Parse(ss, *this);
+            return parse_stream(ss);
+        }
+
+        DomNode* parse_file(const std::string& file_path) 
+        {
+            FILE* fp = fopen(file_path.c_str(), "rb"); // non-Windows use "r"
+ 
+            constexpr size_t buffer_sz = 65536;
+            char* read_buffer = new char[buffer_sz];
+            rapidjson::FileReadStream is(fp, read_buffer, buffer_sz);
+            DomNode* result = parse_stream(is);
+            delete read_buffer;
+            return result;
+        }
+
+    private:
+        template <typename T> DomNode* parse_stream(T stream) 
+        {
+            rapidjson::Reader reader;
+            reader.Parse(stream, *this);
             if (reader.HasParseError())
             {
                 std::string err_msg = "json parse error: ";
@@ -190,8 +209,6 @@ namespace Spino
             }
             return stack[0];
         }
-
-    private:
         std::vector<DomNode *> stack;
     };
 }

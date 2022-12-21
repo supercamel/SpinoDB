@@ -47,6 +47,24 @@ public static int main() {
     usec2 = GLib.get_real_time();
     print("Unindexed Search Time: %ius\n", (int)(usec2-usec));
 
+
+    msec = GLib.get_real_time() / 1000;
+    var node = new Spino.DocNode();
+    for(int i = 0; i < 100000; i++) {
+        node.from_json_file("sample.json");
+    }
+    msec2 = GLib.get_real_time() / 1000;
+    print("JSON Parse Time: %ims\n", (int)(msec2-msec));
+
+    // compare to json-glib
+    msec = GLib.get_real_time() / 1000;
+    var parser = new Json.Parser();
+    for(int i = 0; i < 100000; i++) {
+        parser.load_from_file("sample.json");
+        var root = parser.get_root();
+    }
+    msec2 = GLib.get_real_time() / 1000;
+    print("JSON Parse Time (json-glib): %ims\n", (int)(msec2-msec));
     return 0;
 }
 

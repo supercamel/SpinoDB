@@ -141,7 +141,6 @@ void spino_value_iterator_foreach(SpinoValueIterator* iter, SpinoIteratorNextFun
             break;
         }
         iter->iter++;
-
     }
 }
 

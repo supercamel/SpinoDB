@@ -256,6 +256,9 @@ namespace Spino
             DomNode(bool b);
             DomNode &operator=(DomNode &other);
 
+            static DomNode* from_json(const std::string& json);
+            static DomNode* from_json_file(const std::string& filename);
+
             DomNode(const DomNode& other) = delete;
             ~DomNode();
 
