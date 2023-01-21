@@ -80,8 +80,6 @@ namespace Spino
                 DomNode* d = dom_node_allocator.make();
                 d->set_bool(tok.raw[0] == 't');
                 stack.push_back(d);
-
-                cout << "bool literal: " << (tok.raw[0] == 't') << endl;
             }
             break;
             case TOK_FIELD_NAME:
