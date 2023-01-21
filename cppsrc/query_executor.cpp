@@ -80,6 +80,8 @@ namespace Spino
                 DomNode* d = dom_node_allocator.make();
                 d->set_bool(tok.raw[0] == 't');
                 stack.push_back(d);
+
+                cout << "bool literal: " << (tok.raw[0] == 't') << endl;
             }
             break;
             case TOK_FIELD_NAME:
@@ -202,17 +204,20 @@ namespace Spino
             break;
             case TOK_EXISTS:
             {
-                DomNode* val = stack.back();
+                DomNode* exists = stack.back();
                 stack.pop_back();
 
-                DomNode* exists = stack.back();
+                DomNode* val = stack.back();
 
                 if (val->get_type() == DOM_NODE_TYPE_INVALID)
                 {
-                    exists->set_bool(!exists->get_bool());
+                    val->set_bool(!exists->get_bool());
+                }
+                else {
+                    val->set_bool(exists->get_bool());
                 }
 
-                dom_node_allocator.delete_object(val);
+                dom_node_allocator.delete_object(exists);
             }
             break;
             case TOK_AND:

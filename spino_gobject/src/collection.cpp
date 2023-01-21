@@ -196,7 +196,7 @@ guint spino_collection_drop(
 {
     try
     {
-        return self->priv->drop(query);
+        return self->priv->drop(query, SIZE_MAX);
     }
     catch (Spino::parse_error &err)
     {

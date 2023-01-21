@@ -193,6 +193,9 @@ gboolean spino_docview_has_member(SpinoDocView* self, const gchar* name)
     if(self->priv->get_type() == Spino::DOM_NODE_TYPE_OBJECT) {
         return self->priv->has_member(name);
     }
+    else {
+        printf("spino_docview_has_member: not an object\n");
+    }
     return false;
 }
 
@@ -259,7 +262,8 @@ int spino_docview_get_int_member(SpinoDocView* self, const gchar* name)
     if(self->priv->get_type() == Spino::DOM_NODE_TYPE_OBJECT) {
         if(self->priv->has_member(name)) {
             auto member = self->priv->get_member(name);
-            if(member.get_type() == Spino::DOM_NODE_TYPE_INT) {
+            if((member.get_type() == Spino::DOM_NODE_TYPE_INT) || 
+                (member.get_type() == Spino::DOM_NODE_TYPE_UINT)) {
                 return member.get_int();
             }
         }
@@ -272,7 +276,8 @@ guint spino_docview_get_uint_member(SpinoDocView* self, const gchar* name)
     if(self->priv->get_type() == Spino::DOM_NODE_TYPE_OBJECT) {
         if(self->priv->has_member(name)) {
             auto member = self->priv->get_member(name);
-            if(member.get_type() == Spino::DOM_NODE_TYPE_UINT) {
+            if((member.get_type() == Spino::DOM_NODE_TYPE_UINT) || 
+                (member.get_type() == Spino::DOM_NODE_TYPE_INT)) {
                 return member.get_uint();
             }
         }
