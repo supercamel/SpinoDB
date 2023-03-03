@@ -488,7 +488,7 @@ namespace Spino
         case DOM_NODE_TYPE_OBJECT: // object
         {
             char typec = fin.get();
-            do
+            while((typec != 0x00) && (!fin.eof()))
             {
                 DomNode *child = dom_node_allocator.make();
                 char* key_string = new char[8];
@@ -518,16 +518,16 @@ namespace Spino
                 child->from_not_bson(fin, (DOM_NODE_TYPE)typec);
                 get_object()->append(key_string, child);
                 typec = fin.get(); 
-            } while ((typec != 0x00) && (!fin.eof()));
+            } 
         }
         break;
 
         case DOM_NODE_TYPE_ARRAY: // array
         {
-            do
+            char typec = fin.get();
+            while((typec != 0x00) && (!fin.eof()))
             {
                 DomNode *child = dom_node_allocator.make();
-                char typec = fin.get();
                 fin.get();
 
                 if(typec == DOM_NODE_TYPE_ARRAY) {
@@ -538,8 +538,8 @@ namespace Spino
                 }
                 child->from_not_bson(fin, (DOM_NODE_TYPE)typec);
                 get_array()->push_back(child);
-            } while ((fin.peek() != 0x00) && (!fin.eof()));
-            fin.get(); // read the end of object null char
+                typec = fin.get();
+            }
         }
         break;
         case DOM_NODE_TYPE_BOOL:
@@ -722,7 +722,7 @@ namespace Spino
                 fout.put(it->get_type());
                 fout.put(0x00);
                 it->to_not_bson(fout);
-                it++;
+                ++it;
             }
             fout.put(0x00);
         }
@@ -765,7 +765,7 @@ namespace Spino
             break;
         case DOM_NODE_TYPE_LONG_STRING:
         case DOM_NODE_TYPE_SHORT_STRING:
-            sb.String(get_string());
+            sb.String(get_string(), get_string_length());
             break;
         case DOM_NODE_TYPE_OBJECT:
             get_object()->stringify(sb);
