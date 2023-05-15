@@ -220,7 +220,7 @@ namespace Spino
 
             bool has_member(const std::string& name) const;
             const DomView& get_member(const std::string& name) const;
-            const DomView& get_element(uint index) const;
+            const DomView& get_element(uint32_t index) const;
 
             ElementIterator element_begin() const;
             ElementIterator element_end() const;
@@ -249,7 +249,7 @@ namespace Spino
             DomNode(const std::string& str);
             DomNode(const char *str, size_t len, bool copy);
             DomNode(int i);
-            DomNode(uint u);
+            DomNode(uint32_t u);
             DomNode(int64_t i);
             DomNode(uint64_t u);
             DomNode(double d);
@@ -281,7 +281,7 @@ namespace Spino
             void pop_back();
             ElementIterator erase(ElementIterator iter);
 
-            DomNode* get_element_node(uint index);
+            DomNode* get_element_node(uint32_t index);
             DomNode* get_member_node(const std::string& name);
 
             void destroy();

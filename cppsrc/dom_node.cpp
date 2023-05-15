@@ -24,7 +24,7 @@ namespace Spino
         set_int(i);
     }
 
-    DomNode::DomNode(uint u)
+    DomNode::DomNode(uint32_t u)
     {
         set_uint(u);
     }
@@ -253,7 +253,7 @@ namespace Spino
         }
     }
 
-    const DomView &DomView::get_element(uint index) const
+    const DomView &DomView::get_element(uint32_t index) const
     {
         if (type == DOM_NODE_TYPE_ARRAY)
         {
