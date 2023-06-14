@@ -4,6 +4,7 @@
 #include <new>
 #include <cstdint>
 #include <vector>
+#include <cstddef>
 
 //#define SPINO_USE_SYSTEM_ALLOC
 
