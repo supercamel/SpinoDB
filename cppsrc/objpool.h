@@ -8,18 +8,11 @@
 
 //#define SPINO_USE_SYSTEM_ALLOC
 
-/*
-A ObjectAllocator reserves a block of memory and allocates objects from it.
-The memory is created as an array, and the objects are allocated from the array.
-It has no memory overhead for the objects, but it has a fixed size.
-*/
 template <typename T, size_t growSize>
 class ObjectAllocator
 {
 public:
-    ObjectAllocator()
-    {
-    }
+    ObjectAllocator() : bufferedBlocks(0) {}
 
     ~ObjectAllocator()
     {
@@ -29,6 +22,7 @@ public:
             firstBuffer = buffer->next;
             delete buffer;
         }
+        // Optionally: assert(n_allocated == 0 && "Objects still in use");
     }
 
     template <class... U>
@@ -36,8 +30,13 @@ public:
     {
 #ifndef SPINO_USE_SYSTEM_ALLOC
         void *ptr = alloc();
-        T *t = new (ptr) T(std::forward<U>(u)...);
-        return t;
+        try {
+            T *t = new (ptr) T(std::forward<U>(u)...);
+            return t;
+        } catch (...) {
+            free(ptr);
+            throw;
+        }
 #else 
         return new T(std::forward<U>(u)...);
 #endif
@@ -59,15 +58,17 @@ public:
         {
             Block *block = firstFreeBlock;
             firstFreeBlock = block->next;
+            n_allocated++;
             return reinterpret_cast<T *>(block);
         }
 
-        if (bufferedBlocks >= growSize)
+        if (bufferedBlocks >= growSize || !firstBuffer)
         {
             firstBuffer = new Buffer(firstBuffer);
             bufferedBlocks = 0;
         }
 
+        n_allocated++;
         return firstBuffer->getBlock(bufferedBlocks++);
     }
 
@@ -76,6 +77,7 @@ public:
         Block *block = reinterpret_cast<Block *>(pointer);
         block->next = firstFreeBlock;
         firstFreeBlock = block;
+        n_allocated--;
     }
 
     size_t get_n_allocations() const
@@ -93,14 +95,12 @@ private:
     {
         static const std::size_t blockSize =
             sizeof(T) > sizeof(Block) ? sizeof(T) : sizeof(Block);
-        uint8_t data[blockSize * growSize];
+        alignas(T) uint8_t data[blockSize * growSize];
 
     public:
         Buffer *const next;
 
-        Buffer(Buffer *next) : next(next)
-        {
-        }
+        Buffer(Buffer *next) : next(next) {}
 
         void *getBlock(std::size_t index)
         {
@@ -110,20 +110,8 @@ private:
 
     Block *firstFreeBlock = nullptr;
     Buffer *firstBuffer = nullptr;
-    std::size_t bufferedBlocks = growSize;
-
-    /*
-            union Block
-            {
-                Block *next;
-                uint8_t space[sizeof(T)];
-            };
-
-            std::vector<Block*> block_list;
-            */
+    std::size_t bufferedBlocks;
     size_t n_allocated = 0;
-
-    // Block *free_head;
 };
 
-#endif 
+#endif

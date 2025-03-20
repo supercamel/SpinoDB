@@ -8,7 +8,8 @@
 		"bindings": "^1.5.0",
 		"mongodb": "^4.4.1",
 		"node-addon-api": "^5.0.0",
-		"node-gyp": "^9.0.0"
+		"node-gyp": "^9.0.0",
+		"nopt": "^7.2.0"
 	},
 	"keywords": [
 		"NoSQL",
