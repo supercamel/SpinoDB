@@ -98,66 +98,66 @@ inline Token QueryParser::lex()
         {
             next();
             const char *start = cursor_ptr();
-            read_identifier();
-            if (strncmp(start, "eq", 2) == 0)
+            size_t ident = read_identifier();
+            if ((ident == 2) && (strncmp(start, "eq", 2) == 0))
             {
                 return Token(TOK_EQUAL, nullptr, 0);
             }
-            else if (strncmp(start, "gt", 2) == 0)
+            else if ((ident == 2) && (strncmp(start, "gt", 2) == 0))
             {
                 return Token(TOK_GREATER_THAN, nullptr, 0);
             }
-            else if (strncmp(start, "lt", 2) == 0)
+            else if ((ident == 2) && (strncmp(start, "lt", 2) == 0))
             {
                 return Token(TOK_LESS_THAN, nullptr, 0);
             }
-            else if (strncmp(start, "and", 3) == 0)
+            else if ((ident == 3) && (strncmp(start, "and", 3) == 0))
             {
                 return Token(TOK_AND, nullptr, 0);
             }
-            else if (strncmp(start, "or", 2) == 0)
+            else if ((ident == 2) && (strncmp(start, "or", 2) == 0))
             {
                 return Token(TOK_OR, nullptr, 0);
             }
-            else if (strncmp(start, "ne", 2) == 0)
+            else if ((ident == 2) && (strncmp(start, "ne", 2) == 0))
             {
                 return Token(TOK_NE, nullptr, 0);
             }
-            else if (strncmp(start, "nin", 3) == 0)
+            else if ((ident == 3) && (strncmp(start, "nin", 3) == 0))
             {
                 return Token(TOK_NIN, nullptr, 0);
             }
-            else if (strncmp(start, "not", 3) == 0)
+            else if ((ident == 3) && (strncmp(start, "not", 3) == 0))
             {
                 return Token(TOK_NOT, nullptr, 0);
             }
-            else if (strncmp(start, "in", 2) == 0)
+            else if ((ident == 2) && (strncmp(start, "in", 2) == 0))
             {
                 return Token(TOK_IN, nullptr, 0);
             }
-            else if (strncmp(start, "exists", 6) == 0)
+            else if ((ident == 6) && (strncmp(start, "exists", 6) == 0))
             {
                 return Token(TOK_EXISTS, nullptr, 0);
             }
-            else if (strncmp(start, "type", 4) == 0)
+            else if ((ident == 4) && (strncmp(start, "type", 4) == 0))
             {
                 return Token(TOK_TYPE, nullptr, 0);
             }
-            else if (strncmp(start, "startsWith", 10) == 0)
+            else if ((ident == 10) && (strncmp(start, "startsWith", 10) == 0))
             {
                 return Token(TOK_STARTS_WITH, nullptr, 0);
             }
-            else if (strncmp(start, "regex", 5) == 0)
+            else if ((ident == 5) && (strncmp(start, "regex", 5) == 0))
             {
                 return Token(TOK_REGEX, nullptr, 0);
             }
-            else if (strncmp(start, "range", 5) == 0)
+            else if ((ident == 5) && (strncmp(start, "range", 5) == 0))
             {
                 return Token(TOK_RANGE, nullptr, 0);
             }
             else
             {
-                throw parse_error("Unknown $ operator " + string(start, 10));
+                throw parse_error("Unknown $ operator " + string(start, ident));
             }
         }
         break;
@@ -169,9 +169,10 @@ inline Token QueryParser::lex()
             // read an identifier
             size_t ident = read_identifier();
             // if its true/false then it's a boolean literal
-            if ((strncmp(start, "true", 4) == 0) || (strncmp(start, "false", 5) == 0))
+            if (((ident == 4) && (strncmp(start, "true", 4) == 0)) ||
+                ((ident == 5) && (strncmp(start, "false", 5) == 0)))
             {
-                return Token(TOK_BOOL_LITERAL, start, 4);
+                return Token(TOK_BOOL_LITERAL, start, ident);
             }
             // otherwise it's a field name
 
@@ -198,16 +199,12 @@ inline Token QueryParser::lex()
 size_t QueryParser::read_identifier()
 {
     size_t counter = 0;
-    while (cursor < query_string.length())
+    while ((cursor < query_string.length()) &&
+           (isalpha(curc()) || isdigit(curc()) || (curc() == '_') || (curc() == '.')))
     {
         next();
         counter++;
-        if ((!isalpha(curc())) && (!isdigit(curc())) && (curc() != '_') && (curc() != '.'))
-        {
-            return counter;
-        }
     }
-    throw parse_error("Unexpected end of query");
     return counter;
 }
 
@@ -273,6 +270,10 @@ double QueryParser::read_numeric_literal()
     char *end;
     double result = strtod(cursor_ptr(), &end);
     len = end - cursor_ptr();
+    if (len == 0)
+    {
+        throw parse_error("Invalid numeric literal");
+    }
     cursor += len;
     return result;
 }

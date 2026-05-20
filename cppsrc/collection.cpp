@@ -186,6 +186,7 @@ namespace Spino
 
     void Collection::update(const std::string &query, DomNode* node) 
     {
+        bool updated = false;
         QueryParser query_parser(indices, query);
         IndexIteratorRange range;
         auto instructions = query_parser.parse_query(range);
@@ -195,14 +196,25 @@ namespace Spino
         {
             if(executor.execute_query(*iter->second) == true)
             {
+                remove_index_entries(iter->second);
                 merge_docs(*iter->second, node);
-                return;
+                insert_index_entries(iter->second);
+                updated = true;
+                break;
             }
             else {
                 iter++;
             }
         }
 
+        if (updated)
+        {
+            append_update_journal(query, node);
+        }
+    }
+
+    void Collection::append_update_journal(const std::string& query, DomNode* node)
+    {
         if (jw.get_enabled())
         {
             rapidjson::StringBuffer sb;
@@ -262,14 +274,7 @@ namespace Spino
         auto end = nodes.end();
         end--;
 
-        for (auto &index : indices)
-        {
-            if (node->has_member(index.field_name))
-            {
-                DomView member = node->get_member(index.field_name);
-                index.index.insert(std::make_pair(member, end));
-            }
-        }
+        insert_index_entries(end);
 
         if (jw.get_enabled())
         {
@@ -330,36 +335,44 @@ namespace Spino
 
     void Collection::drop_one_by_iter(NodeListIterator iter)
     {
+        remove_index_entries(iter);
+
+        dom_node_allocator.delete_object(*iter);
+        nodes.erase(iter);
+    }
+
+    void Collection::insert_index_entries(NodeListIterator iter)
+    {
+        for (auto &index : indices)
+        {
+            if ((*iter)->has_member(index.field_name))
+            {
+                DomView member = (*iter)->get_member(index.field_name);
+                index.index.insert(std::make_pair(member, iter));
+            }
+        }
+    }
+
+    void Collection::remove_index_entries(NodeListIterator iter)
+    {
         for (auto &index : indices)
         {
             if ((*iter)->has_member(index.field_name))
             {
                 DomView value = (*iter)->get_member(index.field_name);
                 auto range = index.index.equal_range(value);
-
                 auto it = range.first;
-                // iterate range and erase all elements with the same value
-                while (it != index.index.end())
+                while (it != range.second)
                 {
                     if (it->second == iter)
                     {
-                        it = index.index.erase(it);
+                        index.index.erase(it);
                         break;
                     }
-                    else if (it == range.second)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        it++;
-                    }
+                    ++it;
                 }
             }
         }
-
-        dom_node_allocator.delete_object(*iter);
-        nodes.erase(iter);
     }
 
     void Collection::to_not_bson(std::ostream &os)

@@ -29,10 +29,7 @@ namespace Spino
             {
                 while (executor.execute_query(*iter->second) == false)
                 {
-                    auto second = iter->second;
-
-                    iter++;
-                    second = iter->second;
+                    ++iter;
                     if (iter == range.second)
                     {
                         break;

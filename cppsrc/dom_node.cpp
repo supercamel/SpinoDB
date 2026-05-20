@@ -2,6 +2,7 @@
 #include "dom_obj.h"
 #include "dom_arr.h"
 #include "parser.h"
+#include <new>
 
 namespace Spino
 {
@@ -427,6 +428,7 @@ namespace Spino
         {
             memcpy(value.sstr.str, other->value.sstr.str, other->value.sstr.len);
             value.sstr.len = other->value.sstr.len;
+            value.sstr.str[value.sstr.len] = 0;
             type = DOM_NODE_TYPE_SHORT_STRING;
             
         }
@@ -568,7 +570,11 @@ namespace Spino
         case DOM_NODE_TYPE_LONG_STRING:
         {
             fin.read((char *)&value.str.len, 4);
-            char *pstr = new char[value.str.len + 1];
+            char *pstr = (char*)malloc(value.str.len + 1);
+            if (pstr == nullptr)
+            {
+                throw std::bad_alloc();
+            }
             fin.read(pstr, value.str.len);
             pstr[value.str.len] = 0;
             value.str.str = pstr;
@@ -806,7 +812,7 @@ namespace Spino
             break;
         case DOM_NODE_TYPE_LONG_STRING:
         {
-            delete value.str.str;
+            free((void*)value.str.str);
         }
         break;
         case DOM_NODE_TYPE_ARRAY:

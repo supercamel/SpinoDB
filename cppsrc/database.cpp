@@ -61,23 +61,23 @@ namespace Spino
     void Database::drop_collection(const std::string &name) {
         for (auto iter = collections.begin(); iter != collections.end(); iter++) {
             if (std::string((*iter)->get_name()) == name) {
+                Collection *col = *iter;
                 collections.erase(iter);
-                delete *iter;
+                delete col;
+                if (jw.get_enabled()) {
+                    rapidjson::StringBuffer sb;
+                    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+                    writer.StartObject();
+                    writer.Key("cmd");
+                    writer.String("dropCollection");
+                    writer.Key("collection");
+                    writer.String(name.c_str());
+
+                    writer.EndObject();
+                    jw.append(sb.GetString());
+                }
                 return;
             }
-        }
-
-        if (jw.get_enabled()) {
-            rapidjson::StringBuffer sb;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-            writer.StartObject();
-            writer.Key("cmd");
-            writer.String("dropCollection");
-            writer.Key("collection");
-            writer.String(name.c_str());
-
-            writer.EndObject();
-            jw.append(sb.GetString());
         }
     }
 
@@ -581,7 +581,8 @@ namespace Spino
                 }
 
                 auto col = get_collection(colnode.get_string());
-                return col->find_one(querynode.get_string());
+                result = col->find_one(querynode.get_string());
+                goto cleanup;
             }
             else
             {
@@ -787,7 +788,7 @@ namespace Spino
         }
 
         cleanup:
-            dom_node_allocator.free(doc);
+            dom_node_allocator.delete_object(doc);
             return result;
     }
 

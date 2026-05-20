@@ -2,6 +2,8 @@
 #define SPINO_JSON_PARSER_H
 
 #include <exception>
+#include <memory>
+#include <vector>
 #include "dom_node.h"
 #include "rapidjson/reader.h"
 #include "rapidjson/rapidjson.h"
@@ -177,19 +179,34 @@ namespace Spino
 
         DomNode* parse_file(const std::string& file_path) 
         {
-            FILE* fp = fopen(file_path.c_str(), "rb"); // non-Windows use "r"
+            struct FileCloser
+            {
+                void operator()(FILE *file) const
+                {
+                    if (file != nullptr)
+                    {
+                        fclose(file);
+                    }
+                }
+            };
+
+            std::unique_ptr<FILE, FileCloser> fp(fopen(file_path.c_str(), "rb"));
+            if (!fp)
+            {
+                throw json_parse_error("json parse error: unable to open file " + file_path);
+            }
  
             constexpr size_t buffer_sz = 65536;
-            char* read_buffer = new char[buffer_sz];
-            rapidjson::FileReadStream is(fp, read_buffer, buffer_sz);
+            std::vector<char> read_buffer(buffer_sz);
+            rapidjson::FileReadStream is(fp.get(), read_buffer.data(), buffer_sz);
             DomNode* result = parse_stream(is);
-            delete read_buffer;
             return result;
         }
 
     private:
-        template <typename T> DomNode* parse_stream(T stream) 
+        template <typename T> DomNode* parse_stream(T& stream) 
         {
+            stack.clear();
             rapidjson::Reader reader;
             reader.Parse(stream, *this);
             if (reader.HasParseError())
@@ -207,7 +224,13 @@ namespace Spino
 
                 throw json_parse_error(err_msg);
             }
-            return stack[0];
+            if (stack.empty())
+            {
+                throw json_parse_error("json parse error: empty document");
+            }
+            DomNode *result = stack[0];
+            stack.clear();
+            return result;
         }
         std::vector<DomNode *> stack;
     };

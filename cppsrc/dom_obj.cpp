@@ -1,4 +1,5 @@
 #include "dom_obj.h"
+#include <cstdlib>
 #include <sstream>
 #include "dom_node.h"
 
@@ -31,7 +32,7 @@ namespace Spino {
     DomObject::~DomObject() {
         for(auto& i : members) {
             dom_node_allocator.delete_object(i.second);
-            delete i.first;
+            free((void*)i.first);
         }
     }
 
@@ -57,7 +58,7 @@ namespace Spino {
         auto result = members.find(key);
         if(result != members.end()) {
             dom_node_allocator.delete_object(result->second);
-            delete result->first;
+            free((void*)result->first);
             members.erase(result);
         }
     }
@@ -96,5 +97,3 @@ namespace Spino {
 
     DomObjectAllocatorType dom_object_allocator;
 }
-
-

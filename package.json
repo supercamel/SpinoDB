@@ -20,7 +20,7 @@
 		"datastore"
 	],
 	"scripts": {
-		"test": "node test.js",
+		"test": "bash tests/run_cpp_tests.sh",
 		"build": "node-gyp rebuild",
 		"clean": "node-gyp clean",
 		"install": "node-gyp rebuild"

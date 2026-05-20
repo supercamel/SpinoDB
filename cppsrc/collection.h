@@ -59,6 +59,9 @@ namespace Spino
     private:
         void merge_docs(DomNode* node, const DomView* view);
         void drop_one_by_iter(NodeListIterator id);
+        void insert_index_entries(NodeListIterator iter);
+        void remove_index_entries(NodeListIterator iter);
+        void append_update_journal(const std::string& query, DomNode* node);
         rapidjson::StringBuffer sb;
         rapidjson::Writer<rapidjson::StringBuffer> writer;
 
